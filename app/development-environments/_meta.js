@@ -1,4 +1,4 @@
 export default {
-  'remix-quickstart': 'Remix Quickstart',
-  'foundry-quickstart': 'Foundry Quickstart'
-}
+  "remix-quickstart": "Remix quickstart",
+  "foundry-quickstart": "Foundry quickstart",
+};
