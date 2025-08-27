@@ -1,4 +1,4 @@
 export default {
-  'viem-quickstart': 'Viem Quickstart',
-  'wagmi-quickstart': 'wagmi Quickstart'
-}
+  "viem-quickstart": "viem quickstart",
+  "wagmi-quickstart": "wagmi quickstart",
+};

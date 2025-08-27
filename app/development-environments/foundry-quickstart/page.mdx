@@ -1,24 +1,25 @@
-# Eden / Foundry Quickstart
+# Eden Foundry quickstart
 
 import { EDEN_NETWORKS } from '../../../constants'
 import { Callout } from 'nextra/components'
 
 A minimal guide to deploying and interacting with smart contracts on **Celestia Eden** using [Foundry](https://book.getfoundry.sh/).
 
-
 ## Prerequisites
 
 * [Foundry](https://book.getfoundry.sh/getting-started/installation) installed (`foundryup`)
 * A funded Eden testnet address (use the [Eden faucet](/networks/faucet))
 
+import { Steps } from 'nextra/components'
 
-## 1. Initialize a project
+<Steps>
+## Initialize a project
 
 ```bash
 forge init eden-forge && cd eden-forge
 ```
 
-## 2. Configure `foundry.toml`
+## Configure `foundry.toml`
 
 ```toml
 [profile.default]
@@ -37,17 +38,17 @@ eden = "http://rpc-evnode-edennet-1-testnet.binary.builders:8080"
 </Callout>
 
 
-## 3. Use the example contract
+## Use the example contract
 
-The `forge init` command automatically creates an example `Counter.sol` contract in `src/Counter.sol`. 
+The `forge init` command automatically creates an example `Counter.sol` contract in `src/Counter.sol`.
 
 
-## 4. Use the example deploy script
+## Use the example deploy script
 
 The `forge init` command automatically creates an example deploy script in `script/Counter.s.sol`.
 
 
-## 5. Manage keys securely
+## Manage keys securely
 
 Use Foundry's encrypted keystore and add your private key when prompted:
 
@@ -59,7 +60,7 @@ cast wallet import eden-deployer --interactive
   Your private key will be used to sign transactions on the blockchain. Never share your private key with anyone, and always use secure key management practices. Never store private keys in plain text files like `.env`.
 </Callout>
 
-## 6. Deploy your contract
+## Deploy your contract
 
 Deploy with:
 
@@ -78,7 +79,7 @@ forge script script/DeployCounter.s.sol:DeployCounter \
 If the RPC does not support [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), add `--legacy`.
 
 
-## 7. Interact with the contract
+## Interact with the contract
 
 You can interact with your contract using `cast` commands in your CLI:
 
@@ -106,7 +107,7 @@ import {Counter} from "../src/Counter.sol";
 contract InteractCounter is Script {
     // The deployed contract address
     address constant COUNTER_ADDRESS = 0x3f5bB2bd20147FbA8b275dEf2375aF04116f1cc5;
-    
+
     Counter public counter;
 
     function setUp() public {
@@ -118,28 +119,28 @@ contract InteractCounter is Script {
 
         console2.log("=== Counter Contract Interaction ===");
         console2.log("Contract Address:", address(counter));
-        
+
         // Read current number
         uint256 currentNumber = counter.number();
         console2.log("Current number:", currentNumber);
-        
+
         // Increment the counter
         console2.log("Incrementing counter...");
         counter.increment();
-        
+
         // Read the new number
         uint256 newNumber = counter.number();
         console2.log("New number after increment:", newNumber);
-        
+
         // Set a specific number
         uint256 targetNumber = 42;
         console2.log("Setting number to:", targetNumber);
         counter.setNumber(targetNumber);
-        
+
         // Read the final number
         uint256 finalNumber = counter.number();
         console2.log("Final number:", finalNumber);
-        
+
         console2.log("=== Interaction Complete ===");
 
         vm.stopBroadcast();
@@ -148,13 +149,13 @@ contract InteractCounter is Script {
 ```
 
 
-## 8. Explorer
+## Explorer
 
 Check addresses and transactions at:
 
 [{EDEN_NETWORKS.testnet.explorer}]({EDEN_NETWORKS.testnet.explorer})
 
-## 9. Contract Verification
+## Contract Verification
 
 Contract verification is currently under development for Eden. The standard Foundry verification methods (Sourcify, Etherscan) do not yet support chain ID {EDEN_NETWORKS.testnet.chainId}.
 
@@ -163,8 +164,9 @@ For now, you can:
 - Interact with contracts using `cast` commands or custom scripts
 - Monitor the Eden testnet status for verification feature updates
 
+</Steps>
 
-## 10. Troubleshooting
+## Troubleshooting
 
 ### RPC Endpoint Issues
 If you get "503 Service Unavailable" errors, try different RPC endpoints from the [RPC list](/networks/rpcs).
@@ -181,5 +183,6 @@ curl -s https://status-edennet-1-testnet.binary.builders:8443/status/edennet-1
 ### Common Issues
 - **RPC timeouts**: Try different endpoints from the [RPC list](/networks/rpcs) or wait and retry
 - **Gas estimation failures**: Ensure you have sufficient testnet TIA from the [faucet](/networks/faucet)
+
 
 That's it, you're live on Eden!

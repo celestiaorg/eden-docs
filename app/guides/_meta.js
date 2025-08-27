@@ -1,5 +1,5 @@
 export default {
-  'build-a-frontend': 'Build a Frontend',
-  'wallet-integrations': 'Wallet Integrations',
-  'create-eden-app': 'Create Eden App'
-}
+  "build-a-frontend": "Build a frontend",
+  "wallet-integrations": "Wallet integrations",
+  "create-eden-app": "create-eden-app",
+};

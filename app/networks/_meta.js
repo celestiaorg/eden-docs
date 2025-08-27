@@ -1,6 +1,5 @@
 export default {
-  'eden-networks': 'Testnet & mainnet',
-  rpcs: 'RPCs',
-  faucet: 'Faucet',
-  explorer: 'Explorer'
-}
+  mainnet: "Eden Mainnet",
+  testnet: "Eden Testnet",
+  "differences-from-ethereum": "Differences from Ethereum",
+};
