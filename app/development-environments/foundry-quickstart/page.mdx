@@ -14,13 +14,13 @@ import { Steps } from 'nextra/components'
 <Steps>
 ## Initialize a project
 
-```bash
+```bash copy
 forge init eden-forge && cd eden-forge
 ```
 
 ## Configure `foundry.toml`
 
-```toml
+```toml copy
 [profile.default]
 src = "src"
 out = "out"
@@ -29,7 +29,7 @@ optimizer = true
 optimizer_runs = 200
 
 [rpc_endpoints]
-eden = "http://rpc-evnode-edennet-1-testnet.binary.builders:8080"
+eden = "http://116.203.189.103:8545/"
 ```
 
 <Callout type="info">
@@ -48,7 +48,7 @@ The `forge init` command automatically creates an example deploy script in `scri
 
 Use Foundry's encrypted keystore and add your private key when prompted:
 
-```bash
+```bash copy
 cast wallet import eden-deployer --interactive
 ```
 
@@ -60,7 +60,7 @@ cast wallet import eden-deployer --interactive
 
 Deploy with:
 
-```bash
+```bash copy
 forge script script/Counter.s.sol:CounterScript \
   --rpc-url eden \
   --chain-id 1234 \
@@ -76,22 +76,28 @@ If the RPC does not support [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559),
 
 ## Interact with the contract
 
-You can interact with your contract using `cast` commands in your CLI:
+First save the contract from the output as a variable:
 
-```bash
+```bash copy
+export DEPLOYED_ADDRESS=<0x...contract_address>
+```
+
+Now you can interact with your contract using `cast` commands in your CLI:
+
+```bash copy
 # read state
-cast call <DEPLOYED_ADDRESS> "number()(uint256)" --rpc-url eden
+cast call $DEPLOYED_ADDRESS "number()(uint256)" --rpc-url eden
 
 # send tx (increment count)
-cast send <DEPLOYED_ADDRESS> "increment()" --rpc-url eden --account eden-deployer
+cast send $DEPLOYED_ADDRESS "increment()" --rpc-url eden --account eden-deployer
 
 # set a specific number
-cast send <DEPLOYED_ADDRESS> "setNumber(uint256)" 42 --rpc-url eden --account eden-deployer
+cast send $DEPLOYED_ADDRESS "setNumber(uint256)" 42 --rpc-url eden --account eden-deployer
 ```
 
 Or programmatically by creating custom scripts as in the following example:
 
-```solidity
+```solidity copy
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
@@ -100,8 +106,8 @@ import {console2} from "forge-std/console2.sol";
 import {Counter} from "../src/Counter.sol";
 
 contract InteractCounter is Script {
-    // The deployed contract address
-    address constant COUNTER_ADDRESS = 0x3f5bB2bd20147FbA8b275dEf2375aF04116f1cc5;
+    // TODO: Put your deployed contract address here
+    address constant COUNTER_ADDRESS = 0x...your_contract_address;
 
     Counter public counter;
 
@@ -153,13 +159,13 @@ Use the `verify-contract` command to verify your contract. When using the code b
 
 Use the `verify-contract` command to verify your contract. When using the code below, replace the contract address with the address of your deployed contract.
 
-```bash
+```bash copy
 forge verify-contract \
     --rpc-url http://116.203.189.103:8545 \
     --verifier blockscout \
     --verifier-url 'https://explorer-edennet-1-testnet.binary.builders:8443/api/' \
     --compiler-version 0.8.28 \
-    <CONTRACT_ADDRESS> \
+    $DEPLOYED_ADDRESS \
     src/Counter.sol:Counter
 ```
 
@@ -168,10 +174,12 @@ forge verify-contract \
 ## Troubleshooting
 
 ### RPC endpoint issues
+
 If you get "503 Service Unavailable" errors, try different RPC endpoints from the [RPC list](/networks/testnet#rpcs).
 
 ### Check network status
-```bash
+
+```bash copy
 # Test RPC connectivity
 curl -s http://rpc-evnode-edennet-1-testnet.binary.builders:8080 -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
 
@@ -179,7 +187,34 @@ curl -s http://rpc-evnode-edennet-1-testnet.binary.builders:8080 -X POST -H "Con
 curl -s https://status-edennet-1-testnet.binary.builders:8443/status/edennet-1
 ```
 
+### Complier version mismatch
+
+If you have a compiler version mismatch:
+
+```log
+Error: No matching artifact found for Counter with compiler version 0.8.28. This could be due to:
+- Compiler version mismatch - the contract was compiled with a different Solidity version
+```
+
+You can check the version used to compile your contract by running:
+```bash copy
+forge build --sizes
+```
+
+Then run the command with the correct version:
+
+```bash copy
+forge verify-contract \
+    --rpc-url http://116.203.189.103:8545 \
+    --verifier blockscout \
+    --verifier-url 'https://explorer-edennet-1-testnet.binary.builders:8443/api/' \
+    --compiler-version 0.8.30 \ # Change this version
+    $DEPLOYED_ADDRESS \
+    src/Counter.sol:Counter
+```
+
 ### Common issues
+
 - **RPC timeouts**: Try different endpoints from the [RPC list](/networks/testnet#rpcs) or wait and retry
 - **Gas estimation failures**: Ensure you have sufficient testnet TIA from the [faucet](/networks/testnet#faucet)
 
