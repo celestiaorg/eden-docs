@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.12",
     "next": "^15.5.2",
