@@ -168,10 +168,10 @@ For now, you can:
 
 ## Troubleshooting
 
-### RPC Endpoint Issues
+### RPC endpoint issues
 If you get "503 Service Unavailable" errors, try different RPC endpoints from the [RPC list](/networks/rpcs).
 
-### Check Network Status
+### Check network status
 ```bash
 # Test RPC connectivity
 curl -s http://rpc-evnode-edennet-1-testnet.binary.builders:8080 -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
@@ -180,7 +180,7 @@ curl -s http://rpc-evnode-edennet-1-testnet.binary.builders:8080 -X POST -H "Con
 curl -s https://status-edennet-1-testnet.binary.builders:8443/status/edennet-1
 ```
 
-### Common Issues
+### Common issues
 - **RPC timeouts**: Try different endpoints from the [RPC list](/networks/rpcs) or wait and retry
 - **Gas estimation failures**: Ensure you have sufficient testnet TIA from the [faucet](/networks/faucet)
 
