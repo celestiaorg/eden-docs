@@ -65,7 +65,7 @@ cast wallet import eden-deployer --interactive
 Deploy with:
 
 ```bash
-forge script script/DeployCounter.s.sol:DeployCounter \
+forge script script/Counter.s.sol:CounterScript \
   --rpc-url eden \
   --chain-id 1234 \
   --broadcast \
@@ -148,21 +148,27 @@ contract InteractCounter is Script {
 }
 ```
 
-
 ## Explorer
 
 Check addresses and transactions at:
 
 [{EDEN_NETWORKS.testnet.explorer}]({EDEN_NETWORKS.testnet.explorer})
 
-## Contract Verification
+## Contract verification
 
-Contract verification is currently under development for Eden. The standard Foundry verification methods (Sourcify, Etherscan) do not yet support chain ID {EDEN_NETWORKS.testnet.chainId}.
+Use the `verify-contract` command to verify your contract. When using the code below, replace the contract address with the address of your deployed contract.
 
-For now, you can:
-- View your deployed contracts on the [explorer]({EDEN_NETWORKS.testnet.explorer})
-- Interact with contracts using `cast` commands or custom scripts
-- Monitor the Eden testnet status for verification feature updates
+Use the `verify-contract` command to verify your contract. When using the code below, replace the contract address with the address of your deployed contract.
+
+```bash
+forge verify-contract \
+    --rpc-url http://116.203.189.103:8545 \
+    --verifier blockscout \
+    --verifier-url 'https://explorer-edennet-1-testnet.binary.builders:8443/api/' \
+    --compiler-version 0.8.28 \
+    <CONTRACT_ADDRESS> \
+    src/Counter.sol:Counter
+```
 
 </Steps>
 

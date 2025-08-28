@@ -1,1 +1,72 @@
 # Wallets
+
+import { EDEN_NETWORKS } from '../../../constants'
+import { Callout } from 'nextra/components'
+
+Eden is an EVM-compatible chains. You can use MetaMask, WalletConnect, Rainbow, or any other EVM wallet to interact with Eden.
+
+## Adding Eden to MetaMask
+
+import { Steps } from 'nextra/components'
+
+<Steps>
+## Open MetaMask
+
+Launch MetaMask in your browser and ensure you're logged in.
+
+## Add network
+
+Click the network dropdown (usually shows "Ethereum Mainnet") and select "Add network".
+
+## Manual network addition
+
+Click "Add a network manually" and enter these details for testnet:
+
+**Network Name:** Eden Testnet  
+**New RPC URL:** {EDEN_NETWORKS.testnet.rpc}  
+**Chain ID:** {EDEN_NETWORKS.testnet.chainId}  
+**Currency Symbol:** TIA  
+**Block Explorer URL:** {EDEN_NETWORKS.testnet.explorer}
+
+Or these for mainnet:
+
+**Network Name:** Eden Mainnet  
+**New RPC URL:** {EDEN_NETWORKS.mainnet.rpc}  
+**Chain ID:** {EDEN_NETWORKS.mainnet.chainId}  
+**Currency Symbol:** TIA  
+**Block Explorer URL:** {EDEN_NETWORKS.mainnet.explorer}
+
+<Callout type="info">
+  Use an RPC endpoint from the RPCs list ([testnet](/networks/testnet) or [mainnet](/networks/mainnet)). Some endpoints may be temporarily unavailable, if one fails, try another from the list.
+</Callout>
+
+## Save and switch
+
+Click "Save" and MetaMask will automatically switch to Eden testnet.
+
+## Get testnet TIA
+
+If you're using the testnet, visit the [Eden faucet](/networks/testnet) to get testnet TIA for transactions.
+</Steps>
+
+
+## Other wallets
+
+Most EVM wallets support custom network addition. The process is similar:
+
+1. Find the "Add Network" or "Custom RPC" option
+2. Enter the Eden network details above
+3. Save and connect
+
+## Troubleshooting
+
+### Network already exists
+If you see "Network already exists", the network is already configured in MetaMask.
+
+### RPC endpoint issues
+If you get connection errors, try different RPC endpoints from the RPC list ([testnet](/networks/testnet) or [mainnet](/networks/mainnet)).
+
+### Wrong chain ID
+Ensure you're using the correct chain ID: {EDEN_NETWORKS.testnet.chainId} for testnet, {EDEN_NETWORKS.mainnet.chainId} for mainnet.
+
+That's it! You're ready to use Eden with your wallet.
