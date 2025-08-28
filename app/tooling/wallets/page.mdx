@@ -1,6 +1,5 @@
 # Wallets
 
-import { EDEN_NETWORKS } from '../../../constants'
 import { Callout } from 'nextra/components'
 
 Eden is an EVM-compatible chains. You can use MetaMask, WalletConnect, Rainbow, or any other EVM wallet to interact with Eden.
@@ -20,24 +19,24 @@ Click the network dropdown (usually shows "Ethereum Mainnet") and select "Add ne
 
 ## Manual network addition
 
-Click "Add a network manually" and enter these details for testnet:
+Click **"Add a network manually"** in MetaMask and enter these details for the Eden Testnet:
 
-**Network Name:** Eden Testnet  
-**New RPC URL:** {EDEN_NETWORKS.testnet.rpc}  
-**Chain ID:** {EDEN_NETWORKS.testnet.chainId}  
-**Currency Symbol:** TIA  
-**Block Explorer URL:** {EDEN_NETWORKS.testnet.explorer}
+- **Network Name:** Eden Testnet
+- **New RPC URL:** https://rpc-evnode-edennet-1-testnet.binary.builders:8443
+- **Chain ID:** 1234
+- **Currency Symbol:** TIA
+- **Block Explorer URL:** https://explorer-edennet-1-testnet.binary.builders:8443/
 
 Or these for mainnet:
 
-**Network Name:** Eden Mainnet  
-**New RPC URL:** {EDEN_NETWORKS.mainnet.rpc}  
-**Chain ID:** {EDEN_NETWORKS.mainnet.chainId}  
-**Currency Symbol:** TIA  
-**Block Explorer URL:** {EDEN_NETWORKS.mainnet.explorer}
+- **Network Name:** Eden Mainnet
+- **New RPC URL:** TODO
+- **Chain ID:** TODO
+- **Currency Symbol:** TIA
+- **Block Explorer URL:** TODO
 
 <Callout type="info">
-  Use an RPC endpoint from the RPCs list ([testnet](/networks/testnet) or [mainnet](/networks/mainnet)). Some endpoints may be temporarily unavailable, if one fails, try another from the list.
+  Use an RPC endpoint from the RPCs list ([testnet](/networks/testnet#rpcs) or [mainnet](/networks/mainnet#rpcs)). Some endpoints may be temporarily unavailable, if one fails, try another from the list.
 </Callout>
 
 ## Save and switch
@@ -46,9 +45,8 @@ Click "Save" and MetaMask will automatically switch to Eden testnet.
 
 ## Get testnet TIA
 
-If you're using the testnet, visit the [Eden faucet](/networks/testnet) to get testnet TIA for transactions.
+If you're using the testnet, visit the [Eden faucet](/networks/testnet#faucet) to get testnet TIA for transactions.
 </Steps>
-
 
 ## Other wallets
 
@@ -61,12 +59,15 @@ Most EVM wallets support custom network addition. The process is similar:
 ## Troubleshooting
 
 ### Network already exists
+
 If you see "Network already exists", the network is already configured in MetaMask.
 
 ### RPC endpoint issues
-If you get connection errors, try different RPC endpoints from the RPC list ([testnet](/networks/testnet) or [mainnet](/networks/mainnet)).
+
+If you get connection errors, try different RPC endpoints from the RPC list ([testnet](/networks/testnet#rpcs) or [mainnet](/networks/mainnet#rpcs)).
 
 ### Wrong chain ID
-Ensure you're using the correct chain ID: {EDEN_NETWORKS.testnet.chainId} for testnet, {EDEN_NETWORKS.mainnet.chainId} for mainnet.
+
+Ensure you're using the correct chain ID: 1234 for testnet, 42420 for mainnet.
 
 That's it! You're ready to use Eden with your wallet.
