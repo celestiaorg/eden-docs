@@ -1,39 +1,28 @@
-import { Footer, Layout, Navbar } from "nextra-theme-docs";
-import { Banner, Head } from "nextra/components";
-import { getPageMap } from "nextra/page-map";
-import "./globals.css";
-import Link from "next/link";
-import { BsTelegram } from "react-icons/bs";
-import Image from "next/image";
+import { Footer, Layout, Navbar } from 'nextra-theme-docs' // eslint-disable-line no-unused-vars
+import { Banner, Head } from 'nextra/components' // eslint-disable-line no-unused-vars
+import { getPageMap } from 'nextra/page-map'
+import './globals.css'
+import Link from 'next/link' // eslint-disable-line no-unused-vars
+
+import Image from 'next/image' // eslint-disable-line no-unused-vars
 
 export const metadata = {
-  title: "Eden docs",
-  description: "Documentation for Eden",
-};
+  title: 'Eden docs',
+  description: 'Documentation for Eden'
+}
 
 const banner = (
-  <Link
-    href="https://mammothon.celestia.org"
-    style={{ textDecoration: "none", color: "inherit" }}
-  >
-    <Banner storageKey="eden-banner">
-      Return to Eden hackathon starts today! 🎉
-    </Banner>
+  <Link href="https://mammothon.celestia.org" style={{ textDecoration: 'none', color: 'inherit' }}>
+    <Banner storageKey="eden-banner">Return to Eden hackathon starts today! 🎉</Banner>
   </Link>
-);
+)
 const navbar = (
   <Navbar
     logoLink="/"
     logo={
       <>
-        <Image
-          src="/favicon.svg"
-          alt="Eden cherry blossom"
-          width={24}
-          height={24}
-          priority
-        />
-        <span style={{ marginLeft: ".4em", fontWeight: 800 }}>Eden</span>
+        <Image src="/favicon.svg" alt="Eden cherry blossom" width={24} height={24} priority />
+        <span style={{ marginLeft: '.4em', fontWeight: 800 }}>Eden</span>
       </>
     }
     projectLink="https://github.com/celestiaorg/eden-docs"
@@ -48,8 +37,8 @@ const navbar = (
     //   </svg>
     // }
   />
-);
-const footer = <Footer>Built with 🌸</Footer>;
+)
+const footer = <Footer>Built with 🌸</Footer>
 
 export default async function RootLayout({ children }) {
   return (
@@ -71,12 +60,12 @@ export default async function RootLayout({ children }) {
           footer={footer}
           sidebar={{
             autoCollapse: true, // collapse inactive folders
-            defaultMenuCollapseLevel: 1,
+            defaultMenuCollapseLevel: 1
           }}
         >
           {children}
         </Layout>
       </body>
     </html>
-  );
+  )
 }
