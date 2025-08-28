@@ -12,13 +12,8 @@ export const metadata = {
 }
 
 const banner = (
-  <Link
-    href="https://mammothon.celestia.org"
-    style={{ textDecoration: 'none', color: 'inherit' }}
-  >
-    <Banner storageKey="eden-banner">
-      Return to Eden hackathon starts today! 🎉
-    </Banner>
+  <Link href="https://mammothon.celestia.org" style={{ textDecoration: 'none', color: 'inherit' }}>
+    <Banner storageKey="eden-banner">Return to Eden hackathon starts today! 🎉</Banner>
   </Link>
 )
 const navbar = (
@@ -26,13 +21,7 @@ const navbar = (
     logoLink="/"
     logo={
       <>
-        <Image
-          src="/favicon.svg"
-          alt="Eden cherry blossom"
-          width={24}
-          height={24}
-          priority
-        />
+        <Image src="/favicon.svg" alt="Eden cherry blossom" width={24} height={24} priority />
         <span style={{ marginLeft: '.4em', fontWeight: 800 }}>Eden</span>
       </>
     }

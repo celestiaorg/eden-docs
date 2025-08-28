@@ -6,8 +6,8 @@ A minimal guide to deploying and interacting with smart contracts on **Celestia 
 
 ## Prerequisites
 
-* [Foundry](https://book.getfoundry.sh/getting-started/installation) installed (`foundryup`)
-* A funded Eden testnet address (use the [Eden faucet](/networks/testnet#faucet))
+- [Foundry](https://book.getfoundry.sh/getting-started/installation) installed (`foundryup`)
+- A funded Eden testnet address (use the [Eden faucet](/networks/testnet#faucet))
 
 import { Steps } from 'nextra/components'
 
@@ -33,7 +33,8 @@ eden = "http://116.203.189.103:8545/"
 ```
 
 <Callout type="info">
-  Use an RPC endpoint from the [RPCs list](/networks/testnet#rpcs). Some endpoints may be temporarily unavailable, if one fails, try another from the list.
+  Use an RPC endpoint from the [RPCs list](/networks/testnet#rpcs). Some endpoints may be
+  temporarily unavailable, if one fails, try another from the list.
 </Callout>
 
 ## Use the example contract
@@ -53,7 +54,9 @@ cast wallet import eden-deployer --interactive
 ```
 
 <Callout type="warning" emoji="🔐">
-  Your private key will be used to sign transactions on the blockchain. Never share your private key with anyone, and always use secure key management practices. Never store private keys in plain text files like `.env`.
+  Your private key will be used to sign transactions on the blockchain. Never share your private key
+  with anyone, and always use secure key management practices. Never store private keys in plain
+  text files like `.env`.
 </Callout>
 
 ## Deploy your contract
@@ -69,7 +72,8 @@ forge script script/Counter.s.sol:CounterScript \
 ```
 
 <Callout type="info">
-  The chain ID 1234 is for Eden testnet. For mainnet, use chain ID 42420. See the [RPCs page](/networks/rpcs) for current values.
+  The chain ID 1234 is for Eden testnet. For mainnet, use chain ID 42420. See the [RPCs
+  page](/networks/rpcs) for current values.
 </Callout>
 
 If the RPC does not support [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), add `--legacy`.
@@ -197,6 +201,7 @@ Error: No matching artifact found for Counter with compiler version 0.8.28. This
 ```
 
 You can check the version used to compile your contract by running:
+
 ```bash copy
 forge build --sizes
 ```
