@@ -1,6 +1,5 @@
 # Eden Foundry quickstart
 
-import { EDEN_NETWORKS } from '../../../constants'
 import { Callout } from 'nextra/components'
 
 A minimal guide to deploying and interacting with smart contracts on **Celestia Eden** using [Foundry](https://book.getfoundry.sh/).
@@ -8,7 +7,7 @@ A minimal guide to deploying and interacting with smart contracts on **Celestia 
 ## Prerequisites
 
 * [Foundry](https://book.getfoundry.sh/getting-started/installation) installed (`foundryup`)
-* A funded Eden testnet address (use the [Eden faucet](/networks/faucet))
+* A funded Eden testnet address (use the [Eden faucet](/networks/testnet#faucet))
 
 import { Steps } from 'nextra/components'
 
@@ -34,19 +33,16 @@ eden = "http://rpc-evnode-edennet-1-testnet.binary.builders:8080"
 ```
 
 <Callout type="info">
-  Use an RPC endpoint from the [RPCs list](/networks/rpcs). Some endpoints may be temporarily unavailable, if one fails, try another from the list.
+  Use an RPC endpoint from the [RPCs list](/networks/testnet#rpcs). Some endpoints may be temporarily unavailable, if one fails, try another from the list.
 </Callout>
-
 
 ## Use the example contract
 
 The `forge init` command automatically creates an example `Counter.sol` contract in `src/Counter.sol`.
 
-
 ## Use the example deploy script
 
 The `forge init` command automatically creates an example deploy script in `script/Counter.s.sol`.
-
 
 ## Manage keys securely
 
@@ -73,11 +69,10 @@ forge script script/Counter.s.sol:CounterScript \
 ```
 
 <Callout type="info">
-  The chain ID {EDEN_NETWORKS.testnet.chainId} is for Eden testnet. For mainnet, use chain ID {EDEN_NETWORKS.mainnet.chainId}. See the [RPCs page](/networks/rpcs) for current values.
+  The chain ID 1234 is for Eden testnet. For mainnet, use chain ID 42420. See the [RPCs page](/networks/rpcs) for current values.
 </Callout>
 
 If the RPC does not support [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), add `--legacy`.
-
 
 ## Interact with the contract
 
@@ -150,9 +145,7 @@ contract InteractCounter is Script {
 
 ## Explorer
 
-Check addresses and transactions at:
-
-[{EDEN_NETWORKS.testnet.explorer}]({EDEN_NETWORKS.testnet.explorer})
+Check addresses and transactions at [https://explorer-edennet-1-testnet.binary.builders:8443/](https://explorer-edennet-1-testnet.binary.builders:8443/)
 
 ## Contract verification
 
@@ -175,7 +168,7 @@ forge verify-contract \
 ## Troubleshooting
 
 ### RPC endpoint issues
-If you get "503 Service Unavailable" errors, try different RPC endpoints from the [RPC list](/networks/rpcs).
+If you get "503 Service Unavailable" errors, try different RPC endpoints from the [RPC list](/networks/testnet#rpcs).
 
 ### Check network status
 ```bash
@@ -187,8 +180,7 @@ curl -s https://status-edennet-1-testnet.binary.builders:8443/status/edennet-1
 ```
 
 ### Common issues
-- **RPC timeouts**: Try different endpoints from the [RPC list](/networks/rpcs) or wait and retry
-- **Gas estimation failures**: Ensure you have sufficient testnet TIA from the [faucet](/networks/faucet)
-
+- **RPC timeouts**: Try different endpoints from the [RPC list](/networks/testnet#rpcs) or wait and retry
+- **Gas estimation failures**: Ensure you have sufficient testnet TIA from the [faucet](/networks/testnet#faucet)
 
 That's it, you're live on Eden!
