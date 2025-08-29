@@ -20,10 +20,14 @@ const navbar = (
   <Navbar
     logoLink="/"
     logo={
-      <>
-        <Image src="/favicon.svg" alt="Eden cherry blossom" width={24} height={24} priority />
-        <span style={{ marginLeft: '.4em', fontWeight: 800 }}>Eden</span>
-      </>
+      <Image
+        src="/celestia-eden-logo.svg"
+        alt="Celestia Eden"
+        width={140}
+        height={32}
+        priority
+        style={{ height: 'auto' }}
+      />
     }
     projectLink="https://github.com/celestiaorg/eden-docs"
     // TODO: add public link for telegram chat
