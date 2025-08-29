@@ -45,14 +45,13 @@ const navbar = (
 const footer = (
   <Footer>
     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-      <Link href="https://eden.celestia.org" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center' }}>
-        <Image
-          src="/eden-logo.svg"
-          alt="Eden"
-          width={60}
-          height={20}
-          style={{ height: 'auto' }}
-        />
+      <Link
+        href="https://eden.celestia.org"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ display: 'flex', alignItems: 'center' }}
+      >
+        <Image src="/eden-logo.svg" alt="Eden" width={60} height={20} style={{ height: 'auto' }} />
       </Link>
       <span style={{ color: '#35A35A', fontWeight: '500' }}>•</span>
       <span>Infinity starts here</span>
