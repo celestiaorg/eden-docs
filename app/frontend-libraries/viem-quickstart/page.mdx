@@ -1,1 +1,205 @@
 # viem quickstart
+
+import { Steps } from 'nextra/components'
+
+Learn how to use viem to interact with Eden in a React application.
+
+## Prerequisites
+
+- Node.js 18+ and npm
+- Basic knowledge of React and TypeScript
+
+<Steps>
+
+### Create a new React app
+
+```bash copy
+npm create vite@latest eden-viem-app -- --template react-ts
+cd eden-viem-app
+npm install viem
+```
+
+### Configure Vite proxy to handle CORS
+
+Create a `vite.config.ts` file to proxy RPC requests:
+
+```typescript copy
+// vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      '/rpc': {
+        target: 'http://116.203.189.103:8545',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/rpc/, ''),
+      },
+    },
+  },
+})
+```
+
+### Set up Eden configuration
+
+Create a new file `src/config.ts`:
+
+```typescript copy
+// src/config.ts
+import { createPublicClient, http, defineChain } from 'viem'
+
+export const eden = defineChain({
+  id: 1234,
+  name: 'Eden',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Eden',
+    symbol: 'TIA',
+  },
+  rpcUrls: {
+    default: {
+      http: ['http://localhost:5173/rpc'],  // Use proxied URL in development
+    },
+  },
+})
+
+export const publicClient = createPublicClient({
+  chain: eden,
+  transport: http(),
+})
+```
+
+### Build a simple blockchain explorer
+
+Replace `src/App.tsx`:
+
+```tsx copy
+// src/App.tsx
+import { useEffect, useState } from 'react'
+import { formatEther } from 'viem'
+import { publicClient, eden } from './config'
+import './App.css'
+
+function App() {
+  const [blockNumber, setBlockNumber] = useState<bigint>()
+  const [gasPrice, setGasPrice] = useState<bigint>()
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [block, gas] = await Promise.all([
+          publicClient.getBlockNumber(),
+          publicClient.getGasPrice()
+        ])
+        setBlockNumber(block)
+        setGasPrice(gas)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+    const interval = setInterval(fetchData, 12000) // Update every 12 seconds
+
+    return () => clearInterval(interval)
+  }, [])
+
+  if (loading) return <div>Loading...</div>
+
+  return (
+    <div className="App">
+      <h1>Eden Network Status</h1>
+      <div className="stats">
+        <div className="stat-card">
+          <h3>Chain</h3>
+          <p>{eden.name} (ID: {eden.id})</p>
+        </div>
+        <div className="stat-card">
+          <h3>Latest Block</h3>
+          <p>{blockNumber?.toString()}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Gas Price</h3>
+          <p>{gasPrice ? formatEther(gasPrice) : '0'} {eden.nativeCurrency.symbol}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default App
+```
+
+### Add some basic styles
+
+Update `src/App.css`:
+
+```css copy
+/* src/App.css */
+.App {
+    text-align: center;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.stat-card {
+    background: #f4f4f4;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.stat-card h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-card p {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+```
+
+### Run the application
+
+```bash copy
+npm run dev
+```
+
+</Steps>
+
+## Troubleshooting
+
+### CORS errors
+
+If you see CORS errors in the browser console, this means the RPC endpoint doesn't allow requests from browser origins. The Vite proxy configuration above handles this by routing requests through your development server.
+
+For production deployments, you'll need to:
+- Use an RPC provider that supports CORS
+- Set up your own proxy server
+- Use a service like [Cloudflare Workers](https://workers.cloudflare.com/) to proxy requests
+
+## Next steps
+
+- Add wallet connection using [viem's wallet actions](https://viem.sh/docs/actions/wallet/introduction)
+- Interact with smart contracts using [contract actions](https://viem.sh/docs/contract/readContract)
+- Check out the [wagmi quickstart](./wagmi-quickstart) for a more feature-rich React integration
