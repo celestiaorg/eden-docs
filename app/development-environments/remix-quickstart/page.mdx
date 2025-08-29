@@ -11,7 +11,8 @@ A minimal guide to deploying and interacting with smart contracts on **Celestia 
 - Eden network configured in your wallet (see [Wallets](/tooling/wallets) guide)
 
 <Callout type="warning" emoji="🔐">
-  Before starting, make sure you've added Eden to your wallet following the [Wallets](/tooling/wallets) guide. 
+  Before starting, make sure you've added Eden to your wallet following the
+  [Wallets](/tooling/wallets) guide.
 </Callout>
 
 import { Steps } from 'nextra/components'
@@ -52,7 +53,9 @@ contract TreeOfKnowledge is ERC20, Ownable, ERC20Permit {
 ```
 
 <Callout type="info">
-  This contract was created using the [OpenZeppelin Wizard](https://wizard.openzeppelin.com/). You can generate other contract types like ERC721 (NFTs), ERC1155 (Multi-tokens), Stablecoins, RWAs, and more from the wizard.
+  This contract was created using the [OpenZeppelin Wizard](https://wizard.openzeppelin.com/). You
+  can generate other contract types like ERC721 (NFTs), ERC1155 (Multi-tokens), Stablecoins, RWAs,
+  and more from the wizard.
 </Callout>
 
 ## Compile the contract
@@ -70,7 +73,9 @@ contract TreeOfKnowledge is ERC20, Ownable, ERC20Permit {
 4. Set "Account" to your Eden address
 
 <Callout type="info">
-  Make sure your wallet is connected to Eden ([testnet](/networks/testnet) or [mainnet](/networks/mainnet)). If you haven't added Eden yet, follow the [Wallets](/tooling/wallets) guide first.
+  Make sure your wallet is connected to Eden ([testnet](/networks/testnet) or
+  [mainnet](/networks/mainnet)). If you haven't added Eden yet, follow the
+  [Wallets](/tooling/wallets) guide first.
 </Callout>
 
 ## Deploy the contract
@@ -104,6 +109,7 @@ Check your deployed contract and transactions at the [Eden explorer](/networks/t
 Contract verification is currently under development for Eden. The standard Remix verification methods do not yet support Eden's chain IDs.
 
 For now, you can:
+
 - View your deployed contracts on the [explorer](/networks/testnet#explorer) (testnet) or [explorer](/networks/mainnet#explorer) (mainnet)
 - Interact with contracts using Remix's built-in interface
 - Monitor the Eden network status for verification feature updates
@@ -111,15 +117,19 @@ For now, you can:
 ## Troubleshooting
 
 ### Wallet not connected
+
 Ensure your wallet is connected to Remix and switched to Eden ([testnet](/networks/testnet) or [mainnet](/networks/mainnet)). See the [Wallets](/tooling/wallets) guide for setup instructions.
 
 ### RPC endpoint issues
+
 If you get connection errors, try different RPC endpoints from the [RPC list](/networks/testnet#rpcs) (testnet or mainnet).
 
 ### Insufficient funds
+
 Make sure you have TIA tokens to pay for gas fees. If you're on testnet, get them from the [Eden faucet](/networks/testnet#faucet).
 
 ### Compilation errors
+
 - Check that your compiler version matches your contract's pragma version
 - Ensure all brackets and semicolons are properly placed
 - Look for error messages in the compiler console
