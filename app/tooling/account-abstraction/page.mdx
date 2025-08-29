@@ -28,7 +28,7 @@ Before writing code, you need to configure your Privy and ZeroDev accounts prope
 
 <Steps>
 
-#### 1. Create a new app
+#### Create a new app
 
 1. Go to the [Privy Dashboard](https://dashboard.privy.io)
 2. Create a development account with your email
@@ -37,7 +37,7 @@ Before writing code, you need to configure your Privy and ZeroDev accounts prope
 5. Save your App Secret and copy your **App ID** - you'll need this for your `.env.local` file
 6. Follow their "Get started" guide to configure your app (default options work for this tutorial)
 
-#### 2. Configure login methods and enable embedded wallets
+#### Configure login methods and enable embedded wallets
 
 1. In your app dashboard, go to **"Configure user login methods"**
 2. Enable **"Automatically create embedded wallets on login"**
@@ -50,7 +50,7 @@ Before writing code, you need to configure your Privy and ZeroDev accounts prope
 
 <Steps>
 
-#### 1. Create a new project
+#### Create a new project
 
 1. Go to the [ZeroDev Dashboard](https://dashboard.zerodev.app)
 2. Sign up or log in with your existing account
@@ -58,7 +58,7 @@ Before writing code, you need to configure your Privy and ZeroDev accounts prope
 4. Choose **"Kernel v3"** (latest version)
 5. Select **"Eden Testnet"** as the network
 
-#### 2. Configure gas policies
+#### Configure gas policies
 
 1. In your project dashboard, go to **"Gas Policies"**
 2. Click **"Create Policy"**
@@ -71,7 +71,7 @@ Before writing code, you need to configure your Privy and ZeroDev accounts prope
   For development, selecting "Sponsor all transactions" is the recommended policy for simplicity.
 </Callout>
 
-#### 3. Create and fund your paymaster
+#### Create and fund your paymaster
 
 1. In your project dashboard, go to **"Self Funded Paymasters"**
 2. Connect your wallet
@@ -79,7 +79,7 @@ Before writing code, you need to configure your Privy and ZeroDev accounts prope
 4. Copy the paymaster **RPC URL** from the dashboard - you'll need it in your `.env.local` file
 5. Fund your paymaster with some Eden Testnet tokens
 
-#### 4. Get your RPC URLs
+#### Get your RPC URLs
 
 1. Go to **"General"** in your project dashboard
 2. Copy the **Bundler RPC URL** (e.g., `https://rpc.zerodev.app/api/v3/%AppId%/chain/11155111`)
@@ -97,7 +97,7 @@ Before writing code, you need to configure your Privy and ZeroDev accounts prope
 
 <Steps>
 
-### 1. Set up your Next.js project
+### Set up your Next.js project
 
 First, create a new Next.js application and install the required dependencies.
 
@@ -109,7 +109,7 @@ npm install @privy-io/react-auth @zerodev/sdk @zerodev/ecdsa-validator viem
 
 This sets up a new Next.js project with TypeScript and Tailwind CSS and installs the necessary libraries for authentication and account abstraction.
 
-### 2. Configure environment variables
+### Configure environment variables
 
 Create a `.env.local` file in the root of your project to store your secret keys and project IDs.
 
@@ -130,7 +130,7 @@ NEXT_PUBLIC_NFT_CONTRACT_ADDRESS=YOUR_NFT_CONTRACT_ADDRESS
   dashboards.
 </Callout>
 
-### 3. Set up the Privy Provider
+### Set up the Privy Provider
 
 Privy provides a React hook to manage user authentication. Wrap your application with `PrivyProvider` to make these hooks available everywhere.
 
@@ -180,7 +180,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-### 4. Build the minting component
+### Build the minting component
 
 This is where the core logic resides. Create a component at `src/components/MagicMint.tsx`. This component will handle:
 
@@ -297,7 +297,7 @@ export default function MagicMint() {
   for **Eden Testnet**.
 </Callout>
 
-### 5. Configure contract and finalize UI
+### Configure contract and finalize UI
 
 Create a file at `src/lib/contract.ts` to hold your NFT contract's address and ABI.
 
