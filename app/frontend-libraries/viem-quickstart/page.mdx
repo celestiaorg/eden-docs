@@ -35,10 +35,10 @@ export default defineConfig({
       '/rpc': {
         target: 'http://116.203.189.103:8545',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/rpc/, ''),
-      },
-    },
-  },
+        rewrite: path => path.replace(/^\/rpc/, '')
+      }
+    }
+  }
 })
 ```
 
@@ -56,18 +56,18 @@ export const eden = defineChain({
   nativeCurrency: {
     decimals: 18,
     name: 'Eden',
-    symbol: 'TIA',
+    symbol: 'TIA'
   },
   rpcUrls: {
     default: {
-      http: ['http://localhost:5173/rpc'],  // Use proxied URL in development
-    },
-  },
+      http: ['http://localhost:5173/rpc'] // Use proxied URL in development
+    }
+  }
 })
 
 export const publicClient = createPublicClient({
   chain: eden,
-  transport: http(),
+  transport: http()
 })
 ```
 
@@ -77,57 +77,58 @@ Replace `src/App.tsx`:
 
 ```tsx copy
 // src/App.tsx
-import { useEffect, useState } from "react";
-import { formatEther } from "viem";
-import { publicClient, eden } from "./config";
-import "./App.css";
+import { useEffect, useState } from 'react'
+import { formatEther } from 'viem'
+import { publicClient, eden } from './config'
+import './App.css'
 
 function App() {
-  const [blockNumber, setBlockNumber] = useState<bigint>();
-  const [gasPrice, setGasPrice] = useState<bigint>();
-  const [loading, setLoading] = useState(true);
+  const [blockNumber, setBlockNumber] = useState<bigint>()
+  const [gasPrice, setGasPrice] = useState<bigint>()
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchData() {
       try {
         const [block, gas] = await Promise.all([
           publicClient.getBlockNumber(),
-          publicClient.getGasPrice(),
-        ]);
-        setBlockNumber(block);
-        setGasPrice(gas);
+          publicClient.getGasPrice()
+        ])
+        setBlockNumber(block)
+        setGasPrice(gas)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
     }
-    fetchData();
-    const interval = setInterval(fetchData, 12000);
-    return () => clearInterval(interval);
-  }, []);
+    fetchData()
+    const interval = setInterval(fetchData, 12000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="page">
       <h1>Eden Network Status</h1>
       <div>
         <h3>Chain</h3>
-        <p>{eden.name} (ID: {eden.id})</p>
+        <p>
+          {eden.name} (ID: {eden.id})
+        </p>
       </div>
       <div>
         <h3>Latest Block</h3>
-        <p>{loading ? "…" : blockNumber?.toString()}</p>
+        <p>{loading ? '…' : blockNumber?.toString()}</p>
       </div>
       <div>
         <h3>Gas Price</h3>
         <p>
-          {loading ? "…" : gasPrice ? formatEther(gasPrice) : "0"}{" "}
-          {eden.nativeCurrency.symbol}
+          {loading ? '…' : gasPrice ? formatEther(gasPrice) : '0'} {eden.nativeCurrency.symbol}
         </p>
       </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
 ```
 
 ### Add some basic styles
@@ -157,6 +158,7 @@ npm run dev
 If you see CORS errors in the browser console, this means the RPC endpoint doesn't allow requests from browser origins. The Vite proxy configuration above handles this by routing requests through your development server.
 
 For production deployments, you'll need to:
+
 - Use an RPC provider that supports CORS
 - Set up your own proxy server
 - Use a service like [Cloudflare Workers](https://workers.cloudflare.com/) to proxy requests
