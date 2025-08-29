@@ -20,10 +20,14 @@ const navbar = (
   <Navbar
     logoLink="/"
     logo={
-      <>
-        <Image src="/favicon.svg" alt="Eden cherry blossom" width={24} height={24} priority />
-        <span style={{ marginLeft: '.4em', fontWeight: 800 }}>Eden</span>
-      </>
+      <Image
+        src="/celestia-eden-logo.svg"
+        alt="Celestia Eden"
+        width={140}
+        height={32}
+        priority
+        style={{ height: 'auto' }}
+      />
     }
     projectLink="https://github.com/celestiaorg/eden-docs"
     // TODO: add public link for telegram chat
@@ -38,7 +42,22 @@ const navbar = (
     // }
   />
 )
-const footer = <Footer>Built with 🌸</Footer>
+const footer = (
+  <Footer>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+      <Link
+        href="https://eden.celestia.org"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ display: 'flex', alignItems: 'center' }}
+      >
+        <Image src="/eden-logo.svg" alt="Eden" width={60} height={20} style={{ height: 'auto' }} />
+      </Link>
+      <span style={{ color: '#35A35A', fontWeight: '500' }}>•</span>
+      <span>Infinity starts here</span>
+    </div>
+  </Footer>
+)
 
 export default async function RootLayout({ children }) {
   return (
