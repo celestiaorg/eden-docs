@@ -7,7 +7,8 @@ Account Abstraction (AA) transforms user accounts into smart contracts, unlockin
 This guide will walk you through building a simple Next.js application on Eden that uses [Privy](https://privy.io) for email-based social logins and [ZeroDev](https://zerodev.app) to sponsor gas fees, allowing users to mint an NFT for free.
 
 <Callout type="info">
-  This guide is based on the [`zerodev-privy-demo`](https://github.com/gbarros/zerodev-privy-demo) project in this repository. You can explore the full source code for a complete reference.
+  This guide is based on the [`zerodev-privy-demo`](https://github.com/gbarros/zerodev-privy-demo)
+  project in this repository. You can explore the full source code for a complete reference.
 </Callout>
 
 ## Prerequisites
@@ -42,7 +43,6 @@ Before writing code, you need to configure your Privy and ZeroDev accounts prope
 2. Enable **"Automatically create embedded wallets on login"**
 3. Disable other login methods if you only want email authentication
 4. Save your changes
-
 
 </Steps>
 
@@ -87,7 +87,8 @@ Before writing code, you need to configure your Privy and ZeroDev accounts prope
 4. These URLs will be used in your `.env.local` file
 
 <Callout type="warning">
-  Keep your RPC URLs secure and never commit them to public repositories. They provide access to your gas sponsorship budget.
+  Keep your RPC URLs secure and never commit them to public repositories. They provide access to
+  your gas sponsorship budget.
 </Callout>
 
 </Steps>
@@ -125,7 +126,8 @@ NEXT_PUBLIC_NFT_CONTRACT_ADDRESS=YOUR_NFT_CONTRACT_ADDRESS
 ```
 
 <Callout type="warning">
-  Remember to replace the placeholder values with your actual credentials from the Privy and ZeroDev dashboards.
+  Remember to replace the placeholder values with your actual credentials from the Privy and ZeroDev
+  dashboards.
 </Callout>
 
 ### 3. Set up the Privy Provider
@@ -135,10 +137,10 @@ Privy provides a React hook to manage user authentication. Wrap your application
 Create a new file at `src/app/providers.tsx`:
 
 ```tsx filename="src/app/providers.tsx"
-'use client';
+'use client'
 
-import { PrivyProvider } from '@privy-io/react-auth';
-import React from 'react';
+import { PrivyProvider } from '@privy-io/react-auth'
+import React from 'react'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -148,24 +150,24 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         loginMethods: ['email'],
         appearance: {
           theme: 'light',
-          accentColor: '#676FFF',
+          accentColor: '#676FFF'
         },
         embeddedWallets: {
-          createOnLogin: 'users-without-wallets',
-        },
+          createOnLogin: 'users-without-wallets'
+        }
       }}
     >
       {children}
     </PrivyProvider>
-  );
+  )
 }
 ```
 
 Now, apply this provider in your root layout file, `src/app/layout.tsx`:
 
 ```tsx filename="src/app/layout.tsx"
-import './globals.css';
-import Providers from './providers';
+import './globals.css'
+import Providers from './providers'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -174,13 +176,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>{children}</Providers>
       </body>
     </html>
-  );
+  )
 }
 ```
 
 ### 4. Build the minting component
 
 This is where the core logic resides. Create a component at `src/components/MagicMint.tsx`. This component will handle:
+
 - Logging the user in via Privy.
 - Creating a ZeroDev smart account client using the user's Privy wallet as a signer.
 - Sending a gas-sponsored transaction to mint an NFT.
@@ -188,101 +191,110 @@ This is where the core logic resides. Create a component at `src/components/Magi
 Here is the full implementation:
 
 ```tsx filename="src/components/MagicMint.tsx"
-'use client';
+'use client'
 
-import { useCallback, useEffect, useState } from 'react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { createKernelAccount, createKernelAccountClient, createZeroDevPaymasterClient, constants } from '@zerodev/sdk';
-import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
-import { http, createPublicClient, EIP1193Provider } from 'viem';
-import { sepolia } from 'viem/chains'; // Replace with Eden chain if available
-import { nftContractAbi, nftContractAddress } from '@/lib/contract'; // We'll create this next
+import { useCallback, useEffect, useState } from 'react'
+import { usePrivy, useWallets } from '@privy-io/react-auth'
+import {
+  createKernelAccount,
+  createKernelAccountClient,
+  createZeroDevPaymasterClient,
+  constants
+} from '@zerodev/sdk'
+import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator'
+import { http, createPublicClient, EIP1193Provider } from 'viem'
+import { sepolia } from 'viem/chains' // Replace with Eden chain if available
+import { nftContractAbi, nftContractAddress } from '@/lib/contract' // We'll create this next
 
 export default function MagicMint() {
-    const { login, ready, authenticated, logout } = usePrivy();
-    const { wallets } = useWallets();
-    const [kernelClient, setKernelClient] = useState<any>(null);
-    const [saAddress, setSaAddress] = useState<string | null>(null);
-    const [txHash, setTxHash] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+  const { login, ready, authenticated, logout } = usePrivy()
+  const { wallets } = useWallets()
+  const [kernelClient, setKernelClient] = useState<any>(null)
+  const [saAddress, setSaAddress] = useState<string | null>(null)
+  const [txHash, setTxHash] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-    const setupSmartAccount = useCallback(async () => {
-        const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
-        if (!embeddedWallet) return;
+  const setupSmartAccount = useCallback(async () => {
+    const embeddedWallet = wallets.find(w => w.walletClientType === 'privy')
+    if (!embeddedWallet) return
 
-        const provider = await embeddedWallet.getEthereumProvider() as EIP1193Provider;
-        const publicClient = createPublicClient({ chain: sepolia, transport: http() });
+    const provider = (await embeddedWallet.getEthereumProvider()) as EIP1193Provider
+    const publicClient = createPublicClient({ chain: sepolia, transport: http() })
 
-        // Create ZeroDev validator & account
-        const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
-            signer: provider,
-            entryPoint: constants.getEntryPoint('0.7'),
-            kernelVersion: constants.KERNEL_V3_3,
-        });
+    // Create ZeroDev validator & account
+    const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
+      signer: provider,
+      entryPoint: constants.getEntryPoint('0.7'),
+      kernelVersion: constants.KERNEL_V3_3
+    })
 
-        const account = await createKernelAccount(publicClient, {
-            plugins: { sudo: ecdsaValidator },
-            entryPoint: constants.getEntryPoint('0.7'),
-            kernelVersion: constants.KERNEL_V3_3,
-        });
+    const account = await createKernelAccount(publicClient, {
+      plugins: { sudo: ecdsaValidator },
+      entryPoint: constants.getEntryPoint('0.7'),
+      kernelVersion: constants.KERNEL_V3_3
+    })
 
-        // Configure ZeroDev Paymaster client and wire into Kernel client
-        const paymaster = createZeroDevPaymasterClient({
-            chain: sepolia,
-            transport: http(process.env.NEXT_PUBLIC_ZERODEV_PAYMASTER_RPC!),
-        });
+    // Configure ZeroDev Paymaster client and wire into Kernel client
+    const paymaster = createZeroDevPaymasterClient({
+      chain: sepolia,
+      transport: http(process.env.NEXT_PUBLIC_ZERODEV_PAYMASTER_RPC!)
+    })
 
-        const client = createKernelAccountClient({
-            account,
-            chain: sepolia,
-            bundlerTransport: http(process.env.NEXT_PUBLIC_ZERODEV_BUNDLER_RPC!),
-            paymaster,
-        });
+    const client = createKernelAccountClient({
+      account,
+      chain: sepolia,
+      bundlerTransport: http(process.env.NEXT_PUBLIC_ZERODEV_BUNDLER_RPC!),
+      paymaster
+    })
 
+    setKernelClient(client)
+    setSaAddress(client.account.address)
+  }, [wallets])
 
-        setKernelClient(client);
-        setSaAddress(client.account.address);
-    }, [wallets]);
-
-    useEffect(() => {
-        if (authenticated && wallets.length > 0) {
-            setupSmartAccount();
-        }
-    }, [authenticated, wallets, setupSmartAccount]);
-
-    const handleMint = async () => {
-        setLoading(true);
-        const hash = await kernelClient.writeContract({
-            address: nftContractAddress,
-            abi: nftContractAbi,
-            functionName: 'mint',
-            args: [],
-        });
-        setTxHash(hash);
-        setLoading(false);
-    };
-
-    if (!ready) return <p>Loading...</p>;
-
-    if (!authenticated) {
-        return <button onClick={login}>Log In</button>;
+  useEffect(() => {
+    if (authenticated && wallets.length > 0) {
+      setupSmartAccount()
     }
+  }, [authenticated, wallets, setupSmartAccount])
 
-    return (
-        <div>
-            <button onClick={logout}>Log Out</button>
-            {saAddress && <p>Smart Account: {saAddress}</p>}
-            <button onClick={handleMint} disabled={loading || !saAddress}>
-                {loading ? 'Minting...' : 'Claim Free NFT'}
-            </button>
-            {txHash && <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank">View Transaction</a>}
-        </div>
-    );
+  const handleMint = async () => {
+    setLoading(true)
+    const hash = await kernelClient.writeContract({
+      address: nftContractAddress,
+      abi: nftContractAbi,
+      functionName: 'mint',
+      args: []
+    })
+    setTxHash(hash)
+    setLoading(false)
+  }
+
+  if (!ready) return <p>Loading...</p>
+
+  if (!authenticated) {
+    return <button onClick={login}>Log In</button>
+  }
+
+  return (
+    <div>
+      <button onClick={logout}>Log Out</button>
+      {saAddress && <p>Smart Account: {saAddress}</p>}
+      <button onClick={handleMint} disabled={loading || !saAddress}>
+        {loading ? 'Minting...' : 'Claim Free NFT'}
+      </button>
+      {txHash && (
+        <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank">
+          View Transaction
+        </a>
+      )}
+    </div>
+  )
 }
 ```
 
 <Callout>
-  The code above uses `sepolia` from `viem/chains`. You should replace this with the configuration for **Eden Testnet**.
+  The code above uses `sepolia` from `viem/chains`. You should replace this with the configuration
+  for **Eden Testnet**.
 </Callout>
 
 ### 5. Configure contract and finalize UI
@@ -290,23 +302,23 @@ export default function MagicMint() {
 Create a file at `src/lib/contract.ts` to hold your NFT contract's address and ABI.
 
 ```ts filename="src/lib/contract.ts"
-export const nftContractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS as `0x${string}`;
+export const nftContractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS as `0x${string}`
 
 export const nftContractAbi = [
   {
-    "type": "function",
-    "name": "mint",
-    "stateMutability": "nonpayable",
-    "inputs": [],
-    "outputs": [],
-  },
-] as const;
+    type: 'function',
+    name: 'mint',
+    stateMutability: 'nonpayable',
+    inputs: [],
+    outputs: []
+  }
+] as const
 ```
 
 Finally, update your main page at `src/app/page.tsx` to render the component.
 
 ```tsx filename="src/app/page.tsx"
-import MagicMint from '@/components/MagicMint';
+import MagicMint from '@/components/MagicMint'
 
 export default function Home() {
   return (
@@ -314,7 +326,7 @@ export default function Home() {
       <h1 className="text-4xl font-bold mb-8">Account Abstraction Demo</h1>
       <MagicMint />
     </main>
-  );
+  )
 }
 ```
 
