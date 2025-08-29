@@ -77,62 +77,57 @@ Replace `src/App.tsx`:
 
 ```tsx copy
 // src/App.tsx
-import { useEffect, useState } from 'react'
-import { formatEther } from 'viem'
-import { publicClient, eden } from './config'
-import './App.css'
+import { useEffect, useState } from "react";
+import { formatEther } from "viem";
+import { publicClient, eden } from "./config";
+import "./App.css";
 
 function App() {
-  const [blockNumber, setBlockNumber] = useState<bigint>()
-  const [gasPrice, setGasPrice] = useState<bigint>()
-  const [loading, setLoading] = useState(true)
+  const [blockNumber, setBlockNumber] = useState<bigint>();
+  const [gasPrice, setGasPrice] = useState<bigint>();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
         const [block, gas] = await Promise.all([
           publicClient.getBlockNumber(),
-          publicClient.getGasPrice()
-        ])
-        setBlockNumber(block)
-        setGasPrice(gas)
-      } catch (error) {
-        console.error('Error fetching data:', error)
+          publicClient.getGasPrice(),
+        ]);
+        setBlockNumber(block);
+        setGasPrice(gas);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-
-    fetchData()
-    const interval = setInterval(fetchData, 12000) // Update every 12 seconds
-
-    return () => clearInterval(interval)
-  }, [])
-
-  if (loading) return <div>Loading...</div>
+    fetchData();
+    const interval = setInterval(fetchData, 12000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="App">
+    <div className="page">
       <h1>Eden Network Status</h1>
-      <div className="stats">
-        <div className="stat-card">
-          <h3>Chain</h3>
-          <p>{eden.name} (ID: {eden.id})</p>
-        </div>
-        <div className="stat-card">
-          <h3>Latest Block</h3>
-          <p>{blockNumber?.toString()}</p>
-        </div>
-        <div className="stat-card">
-          <h3>Gas Price</h3>
-          <p>{gasPrice ? formatEther(gasPrice) : '0'} {eden.nativeCurrency.symbol}</p>
-        </div>
+      <div>
+        <h3>Chain</h3>
+        <p>{eden.name} (ID: {eden.id})</p>
+      </div>
+      <div>
+        <h3>Latest Block</h3>
+        <p>{loading ? "…" : blockNumber?.toString()}</p>
+      </div>
+      <div>
+        <h3>Gas Price</h3>
+        <p>
+          {loading ? "…" : gasPrice ? formatEther(gasPrice) : "0"}{" "}
+          {eden.nativeCurrency.symbol}
+        </p>
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
 ```
 
 ### Add some basic styles
@@ -141,41 +136,9 @@ Update `src/App.css`:
 
 ```css copy
 /* src/App.css */
-.App {
-    text-align: center;
-    padding: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-top: 2rem;
-}
-
-.stat-card {
-    background: #f4f4f4;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-
-.stat-card h3 {
-    margin: 0 0 0.5rem 0;
-    color: #333;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.stat-card p {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #1a1a1a;
+.page {
+  padding-left: 2rem;
+  padding-top: 1rem;
 }
 ```
 
