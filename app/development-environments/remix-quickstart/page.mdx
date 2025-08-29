@@ -1,1 +1,127 @@
-# Remix quickstart
+# Eden Remix quickstart
+
+import { Callout } from 'nextra/components'
+
+A minimal guide to deploying and interacting with smart contracts on **Celestia Eden** using [Remix IDE](https://remix.ethereum.org/).
+
+## Prerequisites
+
+- [Remix IDE](https://remix.ethereum.org/) (web-based, no installation required)
+- A funded Eden address (use the [Eden faucet](/networks/testnet#faucet) if you're on testnet)
+- Eden network configured in your wallet (see [Wallets](/tooling/wallets) guide)
+
+<Callout type="warning" emoji="🔐">
+  Before starting, make sure you've added Eden to your wallet following the [Wallets](/tooling/wallets) guide. 
+</Callout>
+
+import { Steps } from 'nextra/components'
+
+<Steps>
+## Open Remix IDE
+
+Navigate to [remix.ethereum.org](https://remix.ethereum.org/) in your browser. No installation required.
+
+## Create a new file
+
+In the file explorer (left sidebar), in the `Contracts` folder, right-click and select "New File". Name it `TreeOfKnowledge.sol`.
+
+## Write the contract
+
+Copy this ERC20 token contract into your file:
+
+```solidity copy
+// SPDX-License-Identifier: MIT
+// Compatible with OpenZeppelin Contracts ^5.4.0
+pragma solidity ^0.8.27;
+
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
+contract TreeOfKnowledge is ERC20, Ownable, ERC20Permit {
+    constructor(address initialOwner)
+        ERC20("TreeOfKnowledge", "MTK")
+        Ownable(initialOwner)
+        ERC20Permit("TreeOfKnowledge")
+    {}
+
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount);
+    }
+}
+```
+
+<Callout type="info">
+  This contract was created using the [OpenZeppelin Wizard](https://wizard.openzeppelin.com/). You can generate other contract types like ERC721 (NFTs), ERC1155 (Multi-tokens), Stablecoins, RWAs, and more from the wizard.
+</Callout>
+
+## Compile the contract
+
+1. Go to the "Solidity Compiler" tab (left sidebar)
+2. Set the compiler version to match your contract's pragma version (0.8.27 if you're using the code above)
+3. Click "Compile TreeOfKnowledge.sol"
+4. Check for any compilation errors in the console
+
+## Configure deployment
+
+1. Go to the "Deploy & Run Transactions" tab
+2. Set "Environment" to "Injected Provider - MetaMask"
+3. Ensure your wallet is connected and switched to Eden ([testnet](/networks/testnet) or [mainnet](/networks/mainnet))
+4. Set "Account" to your Eden address
+
+<Callout type="info">
+  Make sure your wallet is connected to Eden ([testnet](/networks/testnet) or [mainnet](/networks/mainnet)). If you haven't added Eden yet, follow the [Wallets](/tooling/wallets) guide first.
+</Callout>
+
+## Deploy the contract
+
+1. Click "Deploy" button
+2. Enter your wallet address as the `initialOwner` parameter
+3. Confirm the transaction in your wallet
+4. Wait for confirmation on the blockchain
+5. Your contract will appear under "Deployed Contracts"
+
+## Interact with the contract
+
+Once deployed, you can interact with your ERC20 token:
+
+- **Read state**: Click "name", "symbol", "decimals", or "totalSupply" to see token details
+- **Check balance**: Enter an address in the "balanceOf" field and click the button
+- **Mint tokens**: As the owner, use "mint" to create new tokens (enter recipient address and amount)
+- **Transfer tokens**: Use "transfer" to send tokens to another address
+
+<Callout type="info">
+  Each interaction requires a transaction confirmation in your wallet and will cost gas in TIA tokens. Only the owner can mint new tokens.
+</Callout>
+</Steps>
+
+## Explorer
+
+Check your deployed contract and transactions at the [Eden explorer](/networks/testnet#explorer) (testnet or mainnet).
+
+## Contract verification
+
+Contract verification is currently under development for Eden. The standard Remix verification methods do not yet support Eden's chain IDs.
+
+For now, you can:
+- View your deployed contracts on the [explorer](/networks/testnet#explorer) (testnet) or [explorer](/networks/mainnet#explorer) (mainnet)
+- Interact with contracts using Remix's built-in interface
+- Monitor the Eden network status for verification feature updates
+
+## Troubleshooting
+
+### Wallet not connected
+Ensure your wallet is connected to Remix and switched to Eden ([testnet](/networks/testnet) or [mainnet](/networks/mainnet)). See the [Wallets](/tooling/wallets) guide for setup instructions.
+
+### RPC endpoint issues
+If you get connection errors, try different RPC endpoints from the [RPC list](/networks/testnet#rpcs) (testnet or mainnet).
+
+### Insufficient funds
+Make sure you have TIA tokens to pay for gas fees. If you're on testnet, get them from the [Eden faucet](/networks/testnet#faucet).
+
+### Compilation errors
+- Check that your compiler version matches your contract's pragma version
+- Ensure all brackets and semicolons are properly placed
+- Look for error messages in the compiler console
+
+That's it, you're live on Eden with Remix!
