@@ -18,7 +18,7 @@ Before you begin, make sure you have the following:
 - **Node.js**: Ensure you have a recent version of Node.js (v18+) installed.
 - **Privy Account**: Sign up for a free account at [Privy](https://privy.io) and create a new app. You will need the **App ID**.
 - **ZeroDev Account**: Sign up at [ZeroDev](https://zerodev.app) and create a new **v3 Project**. You will need the **Project ID**, which gives you access to the Bundler and Paymaster RPC URLs.
-- **NFT Contract**: A deployed NFT smart contract on the Eden Testnet. The contract should have a public `mint()` or `safeMint(address to)` function. You will need its **contract address**.
+- **NFT Contract**: A deployed NFT smart contract on the Eden testnet. The contract should have a public `mint()` or `safeMint(address to)` function. You will need its **contract address**.
 
 ## Dashboard setup
 
@@ -56,7 +56,7 @@ Before writing code, you need to configure your Privy and ZeroDev accounts prope
 2. Sign up or log in with your existing account
 3. Click **"Create Project"**
 4. Choose **"Kernel v3"** (latest version)
-5. Select **"Eden Testnet"** as the network
+5. Select **"Eden testnet"** as the network
 
 #### Configure gas policies
 
@@ -77,7 +77,7 @@ Before writing code, you need to configure your Privy and ZeroDev accounts prope
 2. Connect your wallet
 3. Under "Verifying Paymaster", click **"Deploy"** to create your paymaster
 4. Copy the paymaster **RPC URL** from the dashboard - you'll need it in your `.env.local` file
-5. Fund your paymaster with some Eden Testnet tokens
+5. Fund your paymaster with some Eden testnet tokens
 
 #### Get your RPC URLs
 
@@ -121,7 +121,7 @@ NEXT_PUBLIC_PRIVY_APP_ID=YOUR_PRIVY_APP_ID
 NEXT_PUBLIC_ZERODEV_BUNDLER_RPC=YOUR_ZERODEV_BUNDLER_RPC_URL
 NEXT_PUBLIC_ZERODEV_PAYMASTER_RPC=YOUR_ZERODEV_PAYMASTER_RPC_URL
 
-# The address of your deployed NFT contract on Eden Testnet
+# The address of your deployed NFT contract on Eden testnet
 NEXT_PUBLIC_NFT_CONTRACT_ADDRESS=YOUR_NFT_CONTRACT_ADDRESS
 ```
 
@@ -294,7 +294,7 @@ export default function MagicMint() {
 
 <Callout>
   The code above uses `sepolia` from `viem/chains`. You should replace this with the configuration
-  for **Eden Testnet**.
+  for **Eden testnet**.
 </Callout>
 
 ### Configure contract and finalize UI

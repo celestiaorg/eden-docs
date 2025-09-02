@@ -1,5 +1,5 @@
 export default {
-  mainnet: 'Eden Mainnet',
-  testnet: 'Eden Testnet',
+  mainnet: 'Eden mainnet',
+  testnet: 'Eden testnet',
   'differences-from-ethereum': 'Differences from Ethereum'
 }

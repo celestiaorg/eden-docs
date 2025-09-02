@@ -2,13 +2,13 @@
 
 import { Steps } from 'nextra/components'
 
-Learn how to build a frontend application using [wagmi](https://wagmi.sh/), a popular React library for interacting with EVM networks and connecting your MetaMask wallet to Eden Testnet.
+Learn how to build a frontend application using [wagmi](https://wagmi.sh/), a popular React library for interacting with EVM networks and connecting your MetaMask wallet to Eden testnet.
 
 ## Prerequisites
 
 - Node.js 20.x LTS (recommended) or at least 18.18.0+
 - npm 9.x or 10.x (comes with Node)
-- [Eden Testnet added to MetaMask](/tooling/wallets)
+- [Eden testnet added to MetaMask](/tooling/wallets)
 
 <Steps>
 
@@ -29,7 +29,7 @@ import { metaMask } from 'wagmi/connectors'
 
 export const eden = {
   id: 1234,
-  name: 'Eden Testnet',
+  name: 'Eden testnet',
   nativeCurrency: { name: 'TIA', symbol: 'TIA', decimals: 18 },
   rpcUrls: { default: { http: ['http://116.203.189.103:8545'] } }
 } as const
