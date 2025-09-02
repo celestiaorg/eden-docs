@@ -34,43 +34,57 @@ export default function AddToWalletButton({ chainConfig = DEFAULT_CHAIN_CONFIG, 
       setMessage("No compatible wallet found");
       return;
     }
-    try {
-      await eth.request({
-        method: "wallet_addEthereumChain",
-        params: [chainConfig],
-      });
-      setStatus("success");
-      setMessage("Network added to wallet");
-    } catch (err) {
-      // If the error is 4001 (user rejected), show message and stop
-      if (err?.code === 4001) {
-        setStatus("idle");
-        setMessage("User rejected the request");
+      // 1. Try to switch first
+      try {
+        await eth.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: chainConfig.chainId }],
+        });
+        setStatus("success");
+        setMessage(`Switched to ${chainConfig.chainName}`);
         return;
-      }
-      // If the error is 4902 (unrecognized chain), try switch
-      if (err?.code === 4902) {
-        try {
-          await eth.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: chainConfig.chainId }],
-          });
-          setStatus("success");
-          setMessage("Switched to Eden testnet");
-        } catch (switchErr) {
-          if (switchErr?.code === 4001) {
-            setStatus("idle");
-            setMessage("User rejected the request");
-          } else {
-            setStatus("error");
-            setMessage(switchErr?.message || "Failed to switch network");
+      } catch (switchErr) {
+        // If error is 4902, chain not added, so try to add
+        if (switchErr?.code === 4902) {
+          try {
+            await eth.request({
+              method: "wallet_addEthereumChain",
+              params: [chainConfig],
+            });
+            // After adding, try switching again for best compatibility
+            try {
+              await eth.request({
+                method: "wallet_switchEthereumChain",
+                params: [{ chainId: chainConfig.chainId }],
+              });
+              setStatus("success");
+              setMessage(`Added and switched to ${chainConfig.chainName}`);
+            } catch (switchAfterAddErr) {
+              // If user rejects, show message, else show error
+              if (switchAfterAddErr?.code === 4001) {
+                setStatus("idle");
+                setMessage("User rejected the request");
+              } else {
+                setStatus("success");
+                setMessage(`Network added, but could not switch: ${switchAfterAddErr?.message || "Unknown error"}`);
+              }
+            }
+          } catch (addErr) {
+            if (addErr?.code === 4001) {
+              setStatus("idle");
+              setMessage("User rejected the request");
+            } else {
+              setStatus("error");
+              setMessage(addErr?.message || "Failed to add network");
+            }
           }
+        } else if (switchErr?.code === 4001) {
+          setStatus("idle");
+          setMessage("User rejected the request");
+        } else {
+          setStatus("error");
+          setMessage(switchErr?.message || "Failed to switch network");
         }
-        return;
-      }
-      // Other errors
-      setStatus("error");
-      setMessage(err?.message || "Failed to add network");
     }
   }, [chainConfig]);
 
