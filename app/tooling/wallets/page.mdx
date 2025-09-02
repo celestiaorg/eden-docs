@@ -18,9 +18,18 @@ Launch MetaMask in your browser and ensure you're logged in.
 
 Click the network dropdown (usually shows "Ethereum mainnet") and select "Add network".
 
-## Manual network addition
 
-Click **"Add a network manually"** in MetaMask and enter these details for the Eden testnet:
+## Add Eden testnet to your wallet
+
+import AddToWalletButton from '../../../components/AddToWalletButton.jsx';
+
+<AddToWalletButton label="Add Eden testnet to wallet" />
+
+You can add Eden testnet to any EVM-compatible wallet (MetaMask, Rainbow, etc) with the button above. This uses the standard EIP-3085/EIP-3326 methods supported by most browser wallets.
+
+---
+
+If you prefer to add the network manually, use these details:
 
 - **Network Name:** Eden testnet
 - **New RPC URL:** http://116.203.189.103:8545/
