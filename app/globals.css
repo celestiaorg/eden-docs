@@ -6,32 +6,40 @@
 
 /* Custom Font Faces */
 @font-face {
-  font-family: 'Creato Display';
-  src: url('/Creato/CreatoDisplay-Regular.otf') format('opentype');
+  font-family: 'League Spartan';
+  src: url('/League Spartan/LeagueSpartan-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Creato Display';
-  src: url('/Creato/CreatoDisplay-Medium.otf') format('opentype');
+  font-family: 'League Spartan';
+  src: url('/League Spartan/LeagueSpartan-Medium.ttf') format('truetype');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Creato Display';
-  src: url('/Creato/CreatoDisplay-Bold.otf') format('opentype');
+  font-family: 'League Spartan';
+  src: url('/League Spartan/LeagueSpartan-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'League Spartan';
+  src: url('/League Spartan/LeagueSpartan-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Creato Display';
-  src: url('/Creato/CreatoDisplay-ExtraBold.otf') format('opentype');
+  font-family: 'League Spartan';
+  src: url('/League Spartan/LeagueSpartan-ExtraBold.ttf') format('truetype');
   font-weight: 800;
   font-style: normal;
   font-display: swap;
@@ -56,7 +64,7 @@
 /* CSS Custom Properties for fonts - easy to change later */
 :root {
   --font-header:
-    'Creato Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    'League Spartan', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
     Arial, sans-serif;
   --font-subheading:
     'Aeonik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
@@ -71,7 +79,7 @@ body {
   font-family: var(--font-body);
 }
 
-/* Headers - h1 uses Creato Display, h2-h6 use Aeonik */
+/* Headers - h1 uses League Spartan, h2-h6 use Aeonik */
 h1 {
   font-family: var(--font-header);
 }
