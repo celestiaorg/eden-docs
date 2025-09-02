@@ -1,7 +1,7 @@
 export default {
   networks: 'Networks',
-  tooling: 'Tooling',
   'development-environments': 'Development environments',
+  tooling: 'Tooling',
   'frontend-libraries': 'Frontend libraries',
   guides: 'Guides'
 }
