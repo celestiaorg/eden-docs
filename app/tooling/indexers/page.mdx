@@ -1,7 +1,134 @@
 # Indexers
 
-import { Callout } from 'nextra/components'
+import { Callout, Steps } from 'nextra/components'
 
 <Callout type="info" emoji="🚧">
-  This page is under construction.
+  This page is under construction. It currently uses Ethereum Sepolia testnet.
 </Callout>
+
+Indexers are tools that allow you to turn raw onchain data into queryable databases so apps can make queries without scanning the whole chain. They pre-process events into indexed tables and expose them via fast APIs (GraphQL/SQL), eliminating the need to run your own archive node.
+
+---
+
+# Indexing with Goldsky on Eden
+
+## What is Goldsky?
+
+Goldsky turns onchain data into **GraphQL** APIs (subgraphs) and can stream that data to your databases with Mirror for SQL analytics. Subraphs are The Graph-compatible; endpoints open in a GraphiQL explorer.
+
+## Subgraphs
+
+- **What**: GraphQL API over events/logs (optionally call data).
+- **When**: Dashboards & dapps needing fast, filtered reads.
+- **How**: Provide **contract address, ABI, network, start block** → Goldsky indexes and hosts a **The Graph–compatible** endpoint.
+
+### Instant subgraphs
+
+No‑code start: give **address + ABI + network + start block** and deploy with the CLI's `--from-abi` flag. Goldsky generates/hosts the subgraph, you can extend with enrichments.
+
+## Mirror
+
+Stream **subgraph or chain data** into your DB for **SQL** via a small **YAML** file (source → sink). Goldsky keeps tables in near‑real‑time.
+_Examples_: Postgres / ClickHouse / MySQL (sinks); S3 / SQS / Kafka (channels).
+
+## Quickstart (Sepolia → swap to Eden later)
+
+<Steps>
+
+### Install & log in
+
+[Install the CLI](https://docs.goldsky.com/introduction) and log in:
+
+```bash copy
+goldsky login
+```
+
+### Create the instant subgraph config
+
+Save this as `weth-sepolia.json`:
+
+```json copy filename="weth-sepolia.json"
+{
+  "version": "1",
+  "name": "weth-sepolia",
+  "abis": {
+    "weth": [
+      {
+        "anonymous": false,
+        "inputs": [
+          { "indexed": true, "internalType": "address", "name": "src", "type": "address" },
+          { "indexed": true, "internalType": "address", "name": "dst", "type": "address" },
+          { "indexed": false, "internalType": "uint256", "name": "wad", "type": "uint256" }
+        ],
+        "name": "Transfer",
+        "type": "event"
+      }
+    ]
+  },
+  "instances": [
+    {
+      "abi": "weth",
+      "address": "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",
+      "startBlock": 9126600,
+      "chain": "sepolia"
+    }
+  ]
+}
+```
+
+### Deploy the instant subgraph
+
+```bash copy
+goldsky subgraph deploy eden-weth/1.0 --from-abi weth-sepolia.json
+```
+
+Check sync in the dashboard or list subgraphs via CLI:
+
+```bash copy
+goldsky subgraph list
+```
+
+### Test a query (in the endpoint’s GraphiQL)
+
+Using the GraphQL endpoint, you can query the subgraph for data. For example, to get all transfers from WETH on Sepolia:
+
+```graphql copy filename="GraphQL"
+{
+  transfers(first: 5, orderBy: block_number, orderDirection: desc) {
+    id
+    src
+    dst
+    wad
+    block_number
+    transactionHash_
+    timestamp_
+  }
+}
+```
+
+Here is a demo GraphiQL [subgraph](https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/eden-weth-sepolia/2.0/gn)
+
+### Query an exact height
+
+```graphql copy filename="GraphQL"
+{
+  transfers( # The entity/table being queried (Transfer events)
+    where: {
+      block_number: "9126654" # Filter: Only get transfers from this specific block
+    }
+    orderBy: transactionHash_ # Sort results by transaction hash
+    orderDirection: asc # Sort in ascending order (A→Z, 0→9)
+  ) {
+    # Fields to return for each transfer:
+    id # Unique identifier (usually txHash-logIndex)
+    src # Source address (who sent the USDC)
+    dst # Destination address (who received the USDC)
+    wad # Amount transferred (in smallest units)
+    block_number # Block number where this transfer happened
+    transactionHash_ # Transaction hash (with underscore suffix)
+    timestamp_ # Unix timestamp when block was mined
+  }
+}
+```
+
+</Steps>
