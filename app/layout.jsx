@@ -8,11 +8,30 @@ import Image from 'next/image' // eslint-disable-line no-unused-vars
 
 export const metadata = {
   title: 'Eden docs',
-  description: 'Documentation for Eden'
+  description: 'Documentation for Eden',
+  openGraph: {
+    title: 'Eden docs',
+    description: 'Documentation for Eden',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Eden Documentation'
+      }
+    ],
+    type: 'website'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Eden docs',
+    description: 'Documentation for Eden',
+    images: ['/og-image.png']
+  }
 }
 
 const banner = (
-  <Link href="https://mammothon.celestia.org" style={{ textDecoration: 'none', color: 'inherit' }}>
+  <Link href="https://return.celestia.org" style={{ textDecoration: 'none', color: 'inherit' }}>
     <Banner storageKey="eden-banner">Return to Eden hackathon starts today! 🎉</Banner>
   </Link>
 )

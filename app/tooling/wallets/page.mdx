@@ -2,7 +2,19 @@
 
 import { Callout } from 'nextra/components'
 
-Eden is an EVM-compatible chain. You can use MetaMask, WalletConnect, Rainbow, or any other EVM wallet to interact with Eden.
+Eden is an EVM-compatible chain. You can use MetaMask, WalletConnect, Rabby, or any other EVM wallet to interact with Eden.
+
+## Types of wallets
+
+There are generally two ways to interact with Eden:
+
+- **External wallets**: Wallets you already control, such as MetaMask, WalletConnect, or Rabby.
+  - These give you full custody of your keys.
+  - See the [MetaMask example](#adding-eden-to-metamask) below for how to connect.
+
+- **Embedded wallets**: Wallets that are created and managed inside an app.
+  - These can be self-custodial (keys stored with the user) or managed (policies/automation built in).
+  - See the [Porto example](#setting-up-eden-with-porto) below for how developers can integrate this flow.
 
 ## Adding Eden to MetaMask
 
@@ -10,15 +22,15 @@ import { Steps } from 'nextra/components'
 
 <Steps>
 
-## Open MetaMask
+### Open MetaMask
 
 Launch MetaMask in your browser and ensure you're logged in.
 
-## Add network
+### Add network
 
 Click the network dropdown (usually shows "Ethereum mainnet") and select "Add network".
 
-## Add Eden testnet to your wallet
+### Add Eden testnet to your wallet
 
 import AddToWalletButton from '../../../components/AddToWalletButton.jsx'
 
@@ -50,13 +62,162 @@ Or these for mainnet:
   try another from the list.
 </Callout>
 
-## Save and switch
+### Save and switch
 
 Click "Save" and MetaMask will automatically switch to Eden testnet.
 
-## Get testnet TIA
+### Get testnet TIA
 
 If you're using the testnet, visit the [Eden faucet](/networks/testnet#faucet) to get testnet TIA for transactions.
+
+</Steps>
+
+## Setting up Eden with Porto
+
+[Porto](https://porto.sh/) is a way for developers to build apps with passkeys instead of passwords and wallets. This section walks through building an app with a wallet component from Porto.
+
+<Steps>
+
+### Create the app
+
+```bash copy
+npm create vite@latest eden-porto -- --template react-ts
+cd eden-porto
+```
+
+### Define Eden (custom chain for now)
+
+```ts copy filename="src/chains.ts"
+import { defineChain } from 'viem'
+
+export const eden = defineChain({
+  id: 1234,
+  name: 'Eden testnet',
+  network: 'eden-testnet',
+  nativeCurrency: { name: 'TIA', symbol: 'TIA', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['http://116.203.189.103:8545/'] }
+  },
+  blockExplorers: {
+    default: {
+      name: 'Eden Explorer',
+      url: 'https://explorer-edennet-1-testnet.binary.builders:8443/'
+    }
+  },
+  testnet: true
+})
+
+/**
+ * TODO (when Eden is live on Chainlist / viem):
+ *   - Replace the above with:
+ *       import { eden } from 'wagmi/chains'
+ *     (or 'viem/chains', depending on where it lands)
+ *   - Everything else can stay the same.
+ */
+```
+
+### Configure wagmi + porto (works now for login)
+
+```ts copy filename="src/wagmi.ts"
+// src/wagmi.ts
+import { createConfig, createStorage, http } from 'wagmi'
+import { porto } from 'porto/wagmi'
+import { baseSepolia } from 'wagmi/chains'
+import { eden } from './chains'
+
+// ✅ Porto needs at least one Porto-supported chain *today*.
+// We use Base Sepolia now. When Eden is supported, flip this constant to `eden`.
+export const PORTO_LOGIN_CHAIN = baseSepolia
+// TODO (when Eden is supported by Porto): export const PORTO_LOGIN_CHAIN = eden
+
+export const config = createConfig({
+  // Keep both chains so you can hit Eden’s RPC for reads even before Porto supports it.
+  chains: [eden, baseSepolia],
+  connectors: [porto()],
+  storage: createStorage({ storage: localStorage }),
+  transports: {
+    [eden.id]: http('http://116.203.189.103:8545/'),
+    [baseSepolia.id]: http() // or pass your own Base Sepolia RPC
+  }
+})
+```
+
+### Providers
+
+Edit `src/main.tsx`:
+
+```tsx copy filename="src/main.tsx"
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { WagmiProvider } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { config } from './wagmi'
+import App from './App'
+import './index.css'
+
+const queryClient = new QueryClient()
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </WagmiProvider>
+  </React.StrictMode>
+)
+```
+
+### Set up minimal UI
+
+```tsx copy filename="srx/App.tsx"
+import { useAccount, useConnect } from 'wagmi'
+import { PORTO_LOGIN_CHAIN } from './wagmi'
+
+export default function App() {
+  const { address, isConnected } = useAccount()
+  const { connect, connectors, status, error } = useConnect()
+
+  if (isConnected) {
+    return (
+      <div style={{ padding: 16 }}>
+        <div>Connected: {address}</div>
+      </div>
+    )
+  }
+
+  const portoConnector = connectors.find(c => c.id === 'xyz.ithaca.porto') ?? connectors[0]
+
+  return (
+    <div style={{ padding: 16 }}>
+      <button
+        onClick={() =>
+          connect({
+            connector: portoConnector,
+            chainId: PORTO_LOGIN_CHAIN.id
+          })
+        }
+        disabled={status === 'pending'}
+      >
+        {status === 'pending' ? 'Connecting…' : 'Sign in with Porto'}
+      </button>
+
+      {error && <div style={{ color: 'crimson', marginTop: 12 }}>{error.message}</div>}
+
+      <div style={{ marginTop: 12, fontSize: 12, opacity: 0.8 }}>
+        {/* TODO (when Eden is supported): set PORTO_LOGIN_CHAIN = eden in src/wagmi.ts */}
+        Currently targeting: {PORTO_LOGIN_CHAIN.name} (chainId {PORTO_LOGIN_CHAIN.id})
+      </div>
+    </div>
+  )
+}
+```
+
+### Run it
+
+```bash copy
+npm run dev
+```
 
 </Steps>
 
