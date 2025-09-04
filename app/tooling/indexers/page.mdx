@@ -6,27 +6,30 @@ import { Callout, Steps } from 'nextra/components'
   This page is under construction. It currently uses Ethereum Sepolia testnet.
 </Callout>
 
+Indexers are tools that allow you to turn raw onchain data into queryable databases so apps can make queries without scanning the whole chain. They pre-process events into indexed tables and expose them via fast APIs (GraphQL/SQL), eliminating the need to run your own archive node.
+
+___
+
 # Indexing with Goldsky on Eden
 
 ## What is Goldsky?
 
-Goldsky turns on‑chain data into **GraphQL** APIs (subgraphs) and can stream that data to your database (Mirror) for SQL analytics.
+Goldsky turns onchain data into **GraphQL** APIs (subgraphs) and can stream that data to your databases with Mirror for SQL analytics. Subraphs are The Graph-compatible; endpoints open in a GraphiQL explorer.
 
 ## Subgraphs
 
-- **What**: GraphQL API over events/logs (optional call data).
+- **What**: GraphQL API over events/logs (optionally call data).
 - **When**: Dashboards & dapps needing fast, filtered reads.
 - **How**: Provide **contract address, ABI, network, start block** → Goldsky indexes and hosts a **The Graph–compatible** endpoint.
 
 ### Instant subgraphs
 
-No‑code start: give **address + ABI + network + start block**. Goldsky generates/hosts the subgraph. You can extend later with custom mappings/entities.
+No‑code start: give **address + ABI + network + start block** and deploy with the CLI's `--from-abi` flag. Goldsky generates/hosts the subgraph, you can extend with enrichments.
 
 ## Mirror
 
-Stream **subgraph or direct chain data** into your DB for **SQL**.
-Define a small **YAML** (source → sink). Goldsky keeps tables in near real time.
-_Examples:_ Postgres / ClickHouse / MySQL (sinks), S3 / SQS / Kafka (channels).
+Stream **subgraph or chain data** into your DB for **SQL** via a small **YAML** file (source → sink). Goldsky keeps tables in near‑real‑time.
+_Examples_: Postgres / ClickHouse / MySQL (sinks); S3 / SQS / Kafka (channels).
 
 ## Quickstart (Sepolia → swap to Eden later)
 
@@ -73,15 +76,15 @@ Save this as `weth-sepolia.json`:
 }
 ```
 
+
+
 ### Deploy the instant subgraph
 
 ```bash copy
 goldsky subgraph deploy eden-weth/1.0 --from-abi weth-sepolia.json
 ```
 
-Check your subgraph's syncing status on your Goldsky dashboard.
-
-You can also query the status using the CLI:
+Check sync in the dashboard or list subgraphs via CLI:
 
 ```bash copy
 goldsky subgraph list
