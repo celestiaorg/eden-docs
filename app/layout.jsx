@@ -5,6 +5,7 @@ import './globals.css'
 import Link from 'next/link' // eslint-disable-line no-unused-vars
 
 import Image from 'next/image' // eslint-disable-line no-unused-vars
+import FixCopyButton from './components/FixCopyButton'
 
 export const metadata = {
   title: 'Eden docs',
@@ -101,6 +102,7 @@ export default async function RootLayout({ children }) {
             defaultMenuCollapseLevel: 1
           }}
         >
+          <FixCopyButton />
           {children}
         </Layout>
       </body>
