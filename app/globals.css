@@ -109,3 +109,20 @@ h6 {
 nav {
   font-family: var(--font-subheading) !important;
 }
+
+/* Hide the Copy page dropdown - target multiple possible selectors */
+div.nextra-border[class*="float-end"],
+div[class*="inline-flex"][class*="rounded-md"][class*="nextra-border"],
+div[class*="x:float-end"],
+div[class*="x:inline-flex"][class*="x:rounded-md"],
+/* Target by button content */
+button:has(+ select),
+/* Target the parent container that has both button and select */
+div:has(> button:first-child + select) {
+  display: none !important;
+}
+
+/* Additional selector to catch the Copy page button */
+article > div[class*="border"][class*="inline-flex"][class*="rounded"] {
+  display: none !important;
+}
