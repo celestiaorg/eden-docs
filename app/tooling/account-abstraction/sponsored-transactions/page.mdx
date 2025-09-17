@@ -1,0 +1,61 @@
+# Sponsored transactions (gas sponsorship)
+
+import { Callout } from 'nextra/components'
+
+“Gasless” doesn’t mean *free*, it means your user doesn't have to figure out how to have TIA before they even understand they should have a wallet. With smart account (ERC-4337), a **paymaster** can sponsor a user’s gas so the flow feels like a Web2 checkout with “free shipping.” This is how you turn “I don’t have tokens” into “One click sign up.”
+
+## Why sponsor gas?
+
+- Remove the “go buy native tokens first” blocker when onboarding new users.
+- Let long flows (mints, swaps, quests) execute in one confirmation instead of prompting for each step.
+- Communicate clear pricing: “Free”, “0.50 USDC”, or “covered by Eden” instead of fluctuating base fees.
+
+## How ERC-4337 sponsorship works
+
+1. User signs a **UserOperation** (no native tokens required).
+2. The application includes **paymaster data** proving that someone will cover the gas.
+3. Bundler submits the operation to EntryPoint.
+4. During `validatePaymasterUserOp` and `postOp`, the paymaster proves eligibility and settles the gas cost (either from its deposit or by collecting a token reimbursement).
+
+Think of a paymaster as the smart account’s “company card.” You set the rules; the bundler deducts from your balance when ops go through.
+
+## Paymaster options you’ll see today
+
+- **Verifying paymaster (a.k.a. sponsored gas)**  
+  Your backend or policy decides *which* calls you’ll pay for (e.g., free mint, first swap, weekly cap). Users sign a UserOperation; the paymaster validates it and the bundler pulls fees from the paymaster’s deposit.
+
+- **Token paymaster (“stablecoin gas”)**  
+  Users pay fees in a token they already hold (USDC, in-game token). The paymaster fronts the native gas, then collects reimbursement in that token during `postOp`. UX: show the token fee, not the network coin.
+
+Both models are available through ZeroDev today: you configure policies in the dashboard, and the SDK handles the UserOperation wiring for you.
+
+## Patterns for a great UX
+
+- **No prerequisite funding:** users don’t need the native coin to start.
+- **Predictable costs:** show “Free” or a fixed token price up front; hide volatile base fees.
+- **Fewer prompts:** batch the flow, sponsor once, and let the operation run end-to-end.
+- **Graceful fallback:** if sponsorship is unavailable, surface a helpful prompt (“pay 0.02 EDEN” or “try again later”).
+
+## Designing your sponsorship policy
+
+- **Eligibility:** which contracts/functions qualify? Are there per-user or per-app quotas? ZeroDev policies let you filter by target address, calldata, and more.
+- **Risk controls:** rate limits, allowlists/deny lists, daily budget caps. Combine on-chain policy checks with backend analytics.
+- **Funding plan:** keep the verifying paymaster deposit topped up; simulate expected burn before launch.
+- **Observability:** track pending/included statuses, alert on stuck ops, and log every sponsored action for audits.
+
+### Quick checklist (prod-minded)
+
+- Define **eligibility**: which contracts/functions are sponsored, and when.
+- Add **caps & rate limits**: per user, per day, per action.
+- Provide a **fallback**: if sponsorship is exhausted, switch to token gas or prompt for native.
+- **Observe** the lifecycle: surface “submitted → included” statuses; alert on stuck ops.
+- **Fund & monitor** the paymaster deposit; set alerts for low balance.
+- Document the user-facing messaging (“Gas covered by Eden” vs. “You’ll pay 0.25 USDC”).
+
+<Callout type="warning">
+  Avoid “Sponsor all transactions” in production. Scope sponsorship to specific actions and add per-user limits to prevent abuse.
+</Callout>
+
+<Callout type="info">
+  In this section, we’ll surface design patterns and Eden-specific guardrails. For SDK integration (ZeroDev paymaster client, Privy setup), we’ll link to vendor docs from each guide. A walkthrough of the ZeroDev dashboard will be added soon so you can see where each policy lives.
+</Callout>

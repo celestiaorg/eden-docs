@@ -1,10 +1,10 @@
-# Session Keys
+# Session Keys (permissioned validators)
 
 import { Callout } from 'nextra/components'
 
 **Goal:** Design flows that feel instant, no repeat sign pop-ups, while keeping users inside safe guardrails.
 
-- **Session keys** let a smart account give permission for certain actions ahead of time, so the app can keep going without bothering the user. You set the rules for what is allowed (where, how often, how much), and for how long. This keeps the user experience smooth and the risk low.
+- **Session keys** are additional validators (“permissioned signers”) that a smart account installs with scoped policies. They aren’t a special account type—think of them as temporary agents that can sign only within the limits you configure (what, how often, how much, and for how long).
 
 ## A look at the architecture
 
