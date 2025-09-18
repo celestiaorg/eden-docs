@@ -2,7 +2,7 @@
 
 import { Callout } from 'nextra/components'
 
-“Gasless” doesn’t mean *free*, it means your user doesn't have to figure out how to have TIA before they even understand they should have a wallet. With smart account (ERC-4337), a **paymaster** can sponsor a user’s gas so the flow feels like a Web2 checkout with “free shipping.” This is how you turn “I don’t have tokens” into “One click sign up.”
+“Gasless” doesn’t mean _free_, it means your user doesn't have to figure out how to have TIA before they even understand they should have a wallet. With smart account (ERC-4337), a **paymaster** can sponsor a user’s gas so the flow feels like a Web2 checkout with “free shipping.” This is how you turn “I don’t have tokens” into “One click sign up.”
 
 ## Why sponsor gas?
 
@@ -21,10 +21,10 @@ Think of a paymaster as the smart account’s “company card.” You set the ru
 
 ## Paymaster options you’ll see today
 
-- **Verifying paymaster (a.k.a. sponsored gas)**  
-  Your backend or policy decides *which* calls you’ll pay for (e.g., free mint, first swap, weekly cap). Users sign a UserOperation; the paymaster validates it and the bundler pulls fees from the paymaster’s deposit.
+- **Verifying paymaster (a.k.a. sponsored gas)**
+  Your backend or policy decides _which_ calls you’ll pay for (e.g., free mint, first swap, weekly cap). Users sign a UserOperation; the paymaster validates it and the bundler pulls fees from the paymaster’s deposit.
 
-- **Token paymaster (“stablecoin gas”)**  
+- **Token paymaster (“stablecoin gas”)**
   Users pay fees in a token they already hold (USDC, in-game token). The paymaster fronts the native gas, then collects reimbursement in that token during `postOp`. UX: show the token fee, not the network coin.
 
 Both models are available through ZeroDev today: you configure policies in the dashboard, and the SDK handles the UserOperation wiring for you.
@@ -53,9 +53,12 @@ Both models are available through ZeroDev today: you configure policies in the d
 - Document the user-facing messaging (“Gas covered by Eden” vs. “You’ll pay 0.25 USDC”).
 
 <Callout type="warning">
-  Avoid “Sponsor all transactions” in production. Scope sponsorship to specific actions and add per-user limits to prevent abuse.
+  Avoid “Sponsor all transactions” in production. Scope sponsorship to specific actions and add
+  per-user limits to prevent abuse.
 </Callout>
 
 <Callout type="info">
-  In this section, we’ll surface design patterns and Eden-specific guardrails. For SDK integration (ZeroDev paymaster client, Privy setup), we’ll link to vendor docs from each guide. A walkthrough of the ZeroDev dashboard will be added soon so you can see where each policy lives.
+  In this section, we’ll surface design patterns and Eden-specific guardrails. For SDK integration
+  (ZeroDev paymaster client, Privy setup), we’ll link to vendor docs from each guide. A walkthrough
+  of the ZeroDev dashboard will be added soon so you can see where each policy lives.
 </Callout>

@@ -35,7 +35,7 @@ import { Callout } from 'nextra/components'
 
 ## The lifecycle and UI
 
-Grant → Use → Monitor → Revoke/Expire → Audit  
+Grant → Use → Monitor → Revoke/Expire → Audit
 
 Show the last activity, the active sessions, and the budget left. Give users the option to **Revoke** (sudo uninstall) and **Extend** (reissue approval) with just one click.<br/> For automations that run on servers, show webhooks or notifications when usage gets close to its limits.
 
@@ -50,9 +50,11 @@ Show the last activity, the active sessions, and the budget left. Give users the
 - Support "off-chain checks": allow EIP-1271 signatures so that backend/API calls can check through the smart account.
 
 <Callout type="warning">
-  Avoid blanket “*can call anything*” grants. If you must, limit by time and budget, and require an additional confirmation for dangerous functions (e.g., upgrades, ownership transfers).
+  Avoid blanket “*can call anything*” grants. If you must, limit by time and budget, and require an
+  additional confirmation for dangerous functions (e.g., upgrades, ownership transfers).
 </Callout>
 
 <Callout type="info">
-  Put approvals and session keys in different areas of trust. If a frontend needs to store data, it should encrypt it in memory and delete it when the user logs out or the time runs out.
+  Put approvals and session keys in different areas of trust. If a frontend needs to store data, it
+  should encrypt it in memory and delete it when the user logs out or the time runs out.
 </Callout>
