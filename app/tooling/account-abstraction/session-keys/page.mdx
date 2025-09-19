@@ -1,0 +1,60 @@
+# Session Keys (permissioned validators)
+
+import { Callout } from 'nextra/components'
+
+**Goal:** Design flows that feel instant, no repeat sign pop-ups, while keeping users inside safe guardrails.
+
+- **Session keys** are additional validators (“permissioned signers”) that a smart account installs with scoped policies. They aren’t a special account type—think of them as temporary agents that can sign only within the limits you configure (what, how often, how much, and for how long).
+
+## A look at the architecture
+
+- **Owner vs. agent:** Kernel accounts (EntryPoint 0.7 / Kernel v3+) expose a “sudo” validator (owner) and any number of “regular” validators (agents). A session key is an agent that can act only inside the constraints approved by the owner.
+- **Installation flow:**
+  1. Agent creates a key pair (or remote signer) and shares the **session key address** with the owner.
+  2. Owner composes policies (timestamp, call target, spend/rate caps, etc.), installs the permission plugin, and signs the approval.
+  3. Agent receives the serialized approval (`serializePermissionAccount`) and combines it with the key to execute operations via `deserializePermissionAccount`.
+- **Revocation:** The owner (sudo validator) _uninstalls_ the plugin. Keep the serialized approval retrievable; you need it to uninstall the exact validator instance.
+
+## When to use session keys
+
+- **Use session keys** for: gameplay sessions, one-click claims, checkout flows, background actions while a tab is open, mobile device sessions.
+
+## UX wins
+
+- **Fewer prompts:** Gameplay loops, claims, or checkout steps advance programatically after the initial approval.
+- **Predictable progress:** Long-running or automated actions can finish in the background while the user keeps interacting.
+- **Confidence & control:** Scoped permissions (contract + function + value caps) lower the fear of "signing everything," and users can pause or revoke without having to touch their main key
+
+## Designing the grant (owner approval)
+
+- **Scope:** target contracts and function selectors; optional calldata guards via policies such as `toCallPolicy` with ABI filters.
+- **Limits:** set limits on the value of each call and the total value of all calls, and use `toRateLimitPolicy` (e.g., 3 calls/hour) to stop runaway loops.
+- **Lifetime:** timestamp policies limit the start and end window; combine this with a frontend UX that makes expiry stand out.
+- **Replay protection:** the permissions plugin keeps an isolated nonce space, so each session key uses its own counter to avoid replay.
+- **Surface area:** show a preview that people can read, like "Can call `mint()` on MagicBadge(0xA1B2C3...beef) up to 3 times today; gas paid for by Eden."
+
+## The lifecycle and UI
+
+Grant → Use → Monitor → Revoke/Expire → Audit
+
+Show the last activity, the active sessions, and the budget left. Give users the option to **Revoke** (sudo uninstall) and **Extend** (reissue approval) with just one click.<br/> For automations that run on servers, show webhooks or notifications when usage gets close to its limits.
+
+## Quick checklist
+
+- Set short TTLs (less than 24 hours) and small scopes by default.
+- Use policies and backend monitoring to enforce "caps and rate limits" for each session.
+- Keep each session's "nonces" separate so they can't be replayed.
+- Keep the **serialized approval** safe, just like you would a capability token. Do not leave it (or the session private key) unencrypted in localStorage.
+- Think about using "remote signers" or a trusted backend to store session keys. Before giving someone signing rights, they should have to enter a passkey or two-factor authentication.
+- Keep a record of **who/what/when** for every use and make an audit view available.
+- Support "off-chain checks": allow EIP-1271 signatures so that backend/API calls can check through the smart account.
+
+<Callout type="warning">
+  Avoid blanket “*can call anything*” grants. If you must, limit by time and budget, and require an
+  additional confirmation for dangerous functions (e.g., upgrades, ownership transfers).
+</Callout>
+
+<Callout type="info">
+  Put approvals and session keys in different areas of trust. If a frontend needs to store data, it
+  should encrypt it in memory and delete it when the user logs out or the time runs out.
+</Callout>

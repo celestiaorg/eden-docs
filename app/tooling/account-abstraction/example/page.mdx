@@ -1,0 +1,31 @@
+# Example with ZeroDev & Privy
+
+import { Callout, Steps } from 'nextra/components'
+
+<Callout type="info" emoji="🚧">
+  This page is under construction. It currently uses Ethereum Sepolia testnet.
+</Callout>
+
+The quickstart guide showed how to build an NFT mint account abstraction example, allowing users to mint NFTs for free with just their email. This example is a forkable repository that you can use as a starting point for your own projects, with a batch operation, and session key demo in addition to the email-based minting.
+
+<Steps>
+
+## Getting started
+
+First, try out the [demo](https://zerodev-privy-demo.vercel.app/)! Then [follow the instructions in the repo](https://github.com/gbarros/zerodev-privy-demo?tab=readme-ov-file#-quick-start) to clone the project.
+
+You'll notice some similarities between this example and the quickstart guide. Follow the instructions in [the dashboard setup section](/tooling/account-abstraction/quickstart#dashboard-setup) to create an app and project for Privy and ZeroDev to use in your `.env.local`.
+
+## Run the app
+
+After you've set up your environment variables, you can run the app using:
+
+```bash copy
+npm run dev
+```
+
+</ Steps>
+
+Curious about how it works? Check out the [readme for the frontend](https://github.com/gbarros/zerodev-privy-demo/tree/main/zerodev-privy-demo#readme) and [readme for the contracts](https://github.com/gbarros/zerodev-privy-demo/tree/main/foundry-contracts).
+
+Congratulations! You've now set up your own instance of the ZeroDev and Privy example. Now you can start building your own projects using these building blocks as a basis.

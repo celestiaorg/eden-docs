@@ -1,0 +1,74 @@
+# Less transactions and more operations
+
+import { Callout, Steps } from 'nextra/components'
+
+<Callout type="warning" emoji="🚧">
+  This page is under construction.
+</Callout>
+
+Instead of designing for raw transactions, design for **operations** (what the user intends). In order for users to confirm **once** and proceed, an operation can conceal fees through sponsorship or token gas, bundle several steps, and use a session key to prevent repeated prompts. Operations are the heart of the UX improvements Account Abstraction brings.
+
+<Callout type="info">
+  Under the hood, operations are powered by Account Abstraction (ERC-4337). Your app creates a
+  signed request, a bundler submits it to the EntryPoint contract, and the smart account executes
+  your batched calls. We’ll keep those details out of the UI.
+</Callout>
+
+## What makes an operation?
+
+**One confirmation, many steps:** such as _approve + swap_, _mint + list_, and _wrap + stake_.
+
+- **Optional sponsorship:** pay token-denominated fees or network fees.
+  To prevent users from signing each click, use a **session key**.
+  **First-touch deploy:** If the smart account hasn't been deployed yet, deploy it and follow the same procedure.
+  **Deterministic preview:** displays the smart account address _prior to_ its on-chain existence.
+
+## UX flow (recommended)
+
+<Steps>
+### Compose the action
+
+- Collect inputs (amounts, recipient, slippage).
+- If the account is counterfactual, **preview the address**.
+
+### Human-readable preview
+
+- Show _what will happen_ (tokens in/out, contract names, recipients).
+- Flag risks (large approvals, high slippage, unknown recipients).
+
+### Confirm once
+
+- Optional: let users **“remember this session”** (create a short-lived session key).
+
+### Submit & track
+
+- Show states: **Submitted → Processing → Included**.
+- Provide a single status component with retry/cancel when appropriate.
+
+### Receipt & next step
+
+- Link to explorer when included.
+- Suggest the next action (e.g., “List now”, “Share”, “Stake more”).
+
+</Steps>
+
+## Reusable patterns
+
+- **Approve + Action in one go**
+  Replace two prompts with one batched call; cap approval to the needed amount.
+- **Mint + List**
+  Create, then immediately list on a marketplace in one operation.
+- **Wrap + Stake**
+  Wrap native → stake contract; show a single preview of the final position.
+- **First-touch deploy**
+  Deploy the smart account and perform the action together; don’t make “create wallet” a separate step.
+
+## Status & errors (what to surface)
+
+- **Submitted**: we’ve sent your operation to the network.
+- **Processing**: simulation and bundling in progress (can take a few seconds).
+- **Included**: on-chain; show explorer link.
+- **Couldn’t process**: explain plainly:
+  - Budget not sponsored (try again with token gas or native fee).
+  - Invalid inputs / simulation failed (adjust amounts/slippage).
+  - Rate/budget limits reached (try later or reduce size).
