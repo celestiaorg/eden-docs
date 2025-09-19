@@ -28,12 +28,7 @@ npm install react react-dom @privy-io/react-auth @zerodev/waas wagmi viem
 import { WalletPanel } from '@wallet-panel/react'
 
 function App() {
-  return (
-    <WalletPanel
-      privyClient={privyClient}
-      onRequestLogin={() => openPrivyLogin()}
-    />
-  )
+  return <WalletPanel privyClient={privyClient} onRequestLogin={() => openPrivyLogin()} />
 }
 ```
 
@@ -49,7 +44,7 @@ function App() {
       zerodev={zerodevContext}
       enableSponsoredTx={true}
       onRequestLogin={() => openPrivyLogin()}
-      onTxSubmitted={(hash) => console.log('Transaction:', hash)}
+      onTxSubmitted={hash => console.log('Transaction:', hash)}
     />
   )
 }
@@ -63,4 +58,4 @@ TODO: add note about "make sure to fill in the .env.local"
 
 ## Learn more
 
-See [the repository](https://github.com/gbarros/react-wallet-UI) to learn more about how to use react wallet panel with just Privy or ZeroDev,  customize chains, tokens, and localization.
+See [the repository](https://github.com/gbarros/react-wallet-UI) to learn more about how to use react wallet panel with just Privy or ZeroDev, customize chains, tokens, and localization.
