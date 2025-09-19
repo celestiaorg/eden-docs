@@ -2,6 +2,10 @@
 
 import { Callout, Steps } from 'nextra/components'
 
+<Callout type="warning" emoji="🚧">
+  This page is under construction.
+</Callout>
+
 Instead of designing for raw transactions, design for **operations** (what the user intends). In order for users to confirm **once** and proceed, an operation can conceal fees through sponsorship or token gas, bundle several steps, and use a session key to prevent repeated prompts. Operations are the heart of the UX improvements Account Abstraction brings.
 
 <Callout type="info">
@@ -22,29 +26,31 @@ Instead of designing for raw transactions, design for **operations** (what the u
 ## UX flow (recommended)
 
 <Steps>
-### 1) Compose the action
+### Compose the action
+
 - Collect inputs (amounts, recipient, slippage).
 - If the account is counterfactual, **preview the address**.
 
-### 2) Human-readable preview
+### Human-readable preview
 
 - Show _what will happen_ (tokens in/out, contract names, recipients).
 - Flag risks (large approvals, high slippage, unknown recipients).
 
-### 3) Confirm once
+### Confirm once
 
 - Optional: let users **“remember this session”** (create a short-lived session key).
 
-### 4) Submit & track
+### Submit & track
 
 - Show states: **Submitted → Processing → Included**.
 - Provide a single status component with retry/cancel when appropriate.
 
-### 5) Receipt & next step
+### Receipt & next step
 
 - Link to explorer when included.
 - Suggest the next action (e.g., “List now”, “Share”, “Stake more”).
-  </Steps>
+
+</Steps>
 
 ## Reusable patterns
 
