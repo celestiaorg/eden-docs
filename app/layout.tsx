@@ -1,9 +1,9 @@
-import { Footer, Layout, Navbar } from 'nextra-theme-docs' // eslint-disable-line no-unused-vars
-import { Banner, Head } from 'nextra/components' // eslint-disable-line no-unused-vars
+import { Footer, Layout, Navbar } from 'nextra-theme-docs'
+import { Banner, Head } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
 import './globals.css'
-import Link from 'next/link' // eslint-disable-line no-unused-vars
-import Image from 'next/image' // eslint-disable-line no-unused-vars
+import Link from 'next/link'
+import Image from 'next/image'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
