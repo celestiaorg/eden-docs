@@ -3,10 +3,10 @@ import { Banner, Head } from 'nextra/components' // eslint-disable-line no-unuse
 import { getPageMap } from 'nextra/page-map'
 import './globals.css'
 import Link from 'next/link' // eslint-disable-line no-unused-vars
-
 import Image from 'next/image' // eslint-disable-line no-unused-vars
+import { Metadata } from 'next'
 
-export const metadata = {
+export const metadata: Metadata = {
   metadataBase: new URL('https://crispy-eureka-2nvnerv.pages.github.io/'),
   title: 'Eden docs',
   description: 'Documentation for Eden',
