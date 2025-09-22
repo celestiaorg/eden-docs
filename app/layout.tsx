@@ -101,7 +101,6 @@ export default async function RootLayout({ children }) {
             autoCollapse: true, // collapse inactive folders
             defaultMenuCollapseLevel: 1
           }}
-          copyPageButton={false}
         >
           {children}
         </Layout>
