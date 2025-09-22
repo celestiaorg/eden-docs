@@ -6,15 +6,15 @@ import { useState, useCallback } from 'react'
 // that implements EIP-3085 (wallet_addEthereumChain) and EIP-3326 (wallet_switchEthereumChain).
 // NOTE: Update the placeholder chainId and token symbol/details before production usage.
 const DEFAULT_CHAIN_CONFIG = {
-  chainId: '0x4D2', // 1234 in hex
+  chainId: '0xDEADBFEE', // 3735928814 in hex
   chainName: 'Eden testnet',
   nativeCurrency: {
     name: 'Testnet TIA',
     symbol: 'TIA',
     decimals: 18
   },
-  rpcUrls: ['http://116.203.189.103:8545/'],
-  blockExplorerUrls: ['https://explorer-edennet-1-testnet.binary.builders:8443/']
+  rpcUrls: ['https://ev-reth-eden-testnet.binarybuilders.services:8545/'],
+  blockExplorerUrls: ['https://explorer-eden-testnet.binarybuilders.services']
 }
 
 export default function AddToWalletButton({ chainConfig = DEFAULT_CHAIN_CONFIG, label }) {

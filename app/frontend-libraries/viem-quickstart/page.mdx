@@ -33,7 +33,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/rpc': {
-        target: 'http://116.203.189.103:8545',
+        target: 'https://ev-reth-eden-testnet.binarybuilders.services:8545',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/rpc/, '')
       }
@@ -51,7 +51,7 @@ Create a new file `src/config.ts`:
 import { createPublicClient, http, defineChain } from 'viem'
 
 export const eden = defineChain({
-  id: 1234,
+  id: 3735928814,
   name: 'Eden',
   nativeCurrency: {
     decimals: 18,
@@ -160,7 +160,7 @@ If you see CORS errors in the browser console, this means the RPC endpoint doesn
 For production deployments, you'll need to:
 
 - Use an RPC provider that supports CORS
-- Set up your own proxy server
+- Set up your own proxy server like we did in this guide
 - Use a service like [Cloudflare Workers](https://workers.cloudflare.com/) to proxy requests
 
 ## Next steps

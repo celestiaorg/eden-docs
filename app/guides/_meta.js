@@ -1,4 +1,4 @@
 export default {
-  web2toweb3: 'Onchain primer for web2 devs',
-  'build-a-frontend': 'Build a frontend'
+  'build-a-frontend': 'Build a frontend',
+  web2toweb3: 'Onchain primer for web2 devs'
 }

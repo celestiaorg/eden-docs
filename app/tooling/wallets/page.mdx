@@ -44,10 +44,10 @@ You can add Eden testnet to any EVM-compatible wallet (MetaMask, Rainbow, etc) w
 If you prefer to add the network manually, use these details:
 
 - **Network Name:** Eden testnet
-- **New RPC URL:** http://116.203.189.103:8545/
-- **Chain ID:** 1234
+- **New RPC URL:** https://ev-reth-eden-testnet.binarybuilders.services:8545/
+- **Chain ID:** 3735928814
 - **Currency Symbol:** TIA
-- **Block Explorer URL:** https://explorer-edennet-1-testnet.binary.builders:8443/
+- **Block Explorer URL:** https://explorer-eden-testnet.binarybuilders.services
 
 Or these for mainnet:
 
@@ -96,17 +96,17 @@ cd eden-porto
 import { defineChain } from 'viem'
 
 export const eden = defineChain({
-  id: 1234,
+  id: 3735928814,
   name: 'Eden testnet',
   network: 'eden-testnet',
   nativeCurrency: { name: 'TIA', symbol: 'TIA', decimals: 18 },
   rpcUrls: {
-    default: { http: ['http://116.203.189.103:8545/'] }
+    default: { http: ['https://ev-reth-eden-testnet.binarybuilders.services:8545/'] }
   },
   blockExplorers: {
     default: {
       name: 'Eden Explorer',
-      url: 'https://explorer-edennet-1-testnet.binary.builders:8443/'
+      url: 'https://explorer-eden-testnet.binarybuilders.services'
     }
   },
   testnet: true
@@ -141,7 +141,7 @@ export const config = createConfig({
   connectors: [porto()],
   storage: createStorage({ storage: localStorage }),
   transports: {
-    [eden.id]: http('http://116.203.189.103:8545/'),
+    [eden.id]: http('https://ev-reth-eden-testnet.binarybuilders.services:8545/'),
     [baseSepolia.id]: http() // or pass your own Base Sepolia RPC
   }
 })
@@ -248,6 +248,6 @@ If you get connection errors, try different RPC endpoints from the RPC list ([te
 
 ### Wrong chain ID
 
-Ensure you're using the correct chain ID: 1234 for testnet, 42420 for mainnet.
+Ensure you're using the correct chain ID: 3735928814 for testnet, 42420 for mainnet.
 
 That's it! You're ready to use Eden with your wallet.
