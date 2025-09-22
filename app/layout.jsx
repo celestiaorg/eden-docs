@@ -7,6 +7,7 @@ import Link from 'next/link' // eslint-disable-line no-unused-vars
 import Image from 'next/image' // eslint-disable-line no-unused-vars
 
 export const metadata = {
+  metadataBase: new URL('https://crispy-eureka-2nvnerv.pages.github.io/'),
   title: 'Eden docs',
   description: 'Documentation for Eden',
   openGraph: {
