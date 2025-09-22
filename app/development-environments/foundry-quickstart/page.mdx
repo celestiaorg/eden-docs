@@ -155,7 +155,7 @@ contract InteractCounter is Script {
 
 ## Explorer
 
-Check addresses and transactions at [https://explorer-edennet-1-testnet.binary.builders:8443/](https://explorer-edennet-1-testnet.binary.builders:8443/)
+Check addresses and transactions at [https://explorer-eden-testnet.binarybuilders.services](https://explorer-eden-testnet.binarybuilders.services)
 
 ## Contract verification
 
@@ -167,7 +167,7 @@ Use the `verify-contract` command to verify your contract. When using the code b
 forge verify-contract \
     --rpc-url http://116.203.189.103:8545 \
     --verifier blockscout \
-    --verifier-url 'https://explorer-edennet-1-testnet.binary.builders:8443/api/' \
+    --verifier-url 'https://explorer-eden-testnet.binarybuilders.services:443/api/' \
     --compiler-version 0.8.28 \
     $DEPLOYED_ADDRESS \
     src/Counter.sol:Counter
@@ -212,7 +212,7 @@ Then run the command with the correct version:
 forge verify-contract \
     --rpc-url http://116.203.189.103:8545 \
     --verifier blockscout \
-    --verifier-url 'https://explorer-edennet-1-testnet.binary.builders:8443/api/' \
+    --verifier-url 'https://explorer-eden-testnet.binarybuilders.services:443/api/' \
     --compiler-version 0.8.30 \ # Change this version
     $DEPLOYED_ADDRESS \
     src/Counter.sol:Counter
