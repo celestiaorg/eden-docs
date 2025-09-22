@@ -109,8 +109,3 @@ h6 {
 nav {
   font-family: var(--font-subheading) !important;
 }
-
-/* Hide the "Copy page" option from the dropdown */
-[role='option']:first-child {
-  display: none !important;
-}
