@@ -61,7 +61,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/rpc': {
-        target: 'http://116.203.189.103:8545', // Your Eden RPC endpoint
+        target: 'https://ev-reth-eden-testnet.binarybuilders.services:8545', // Your Eden RPC endpoint
         changeOrigin: true,
         rewrite: path => path.replace(/^\/rpc/, '')
       }
@@ -98,7 +98,7 @@ Create environment files for different environments:
 VITE_RPC_URL=http://localhost:5173/rpc
 
 # .env.production
-VITE_RPC_URL=http://116.203.189.103:8545
+VITE_RPC_URL=https://ev-reth-eden-testnet.binarybuilders.services:8545
 ```
 
 ## Create the Counter component

@@ -33,7 +33,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/rpc': {
-        target: 'http://116.203.189.103:8545',
+        target: 'https://ev-reth-eden-testnet.binarybuilders.services:8545',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/rpc/, '')
       }

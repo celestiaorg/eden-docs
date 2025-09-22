@@ -44,7 +44,7 @@ You can add Eden testnet to any EVM-compatible wallet (MetaMask, Rainbow, etc) w
 If you prefer to add the network manually, use these details:
 
 - **Network Name:** Eden testnet
-- **New RPC URL:** http://116.203.189.103:8545/
+- **New RPC URL:** https://ev-reth-eden-testnet.binarybuilders.services:8545/
 - **Chain ID:** 1234
 - **Currency Symbol:** TIA
 - **Block Explorer URL:** https://explorer-eden-testnet.binarybuilders.services
@@ -101,7 +101,7 @@ export const eden = defineChain({
   network: 'eden-testnet',
   nativeCurrency: { name: 'TIA', symbol: 'TIA', decimals: 18 },
   rpcUrls: {
-    default: { http: ['http://116.203.189.103:8545/'] }
+    default: { http: ['https://ev-reth-eden-testnet.binarybuilders.services:8545/'] }
   },
   blockExplorers: {
     default: {
@@ -141,7 +141,7 @@ export const config = createConfig({
   connectors: [porto()],
   storage: createStorage({ storage: localStorage }),
   transports: {
-    [eden.id]: http('http://116.203.189.103:8545/'),
+    [eden.id]: http('https://ev-reth-eden-testnet.binarybuilders.services:8545/'),
     [baseSepolia.id]: http() // or pass your own Base Sepolia RPC
   }
 })

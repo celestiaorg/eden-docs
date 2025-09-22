@@ -13,7 +13,7 @@ const DEFAULT_CHAIN_CONFIG = {
     symbol: 'TIA',
     decimals: 18
   },
-  rpcUrls: ['http://116.203.189.103:8545/'],
+  rpcUrls: ['https://ev-reth-eden-testnet.binarybuilders.services:8545/'],
   blockExplorerUrls: ['https://explorer-eden-testnet.binarybuilders.services']
 }
 
