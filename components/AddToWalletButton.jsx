@@ -6,7 +6,7 @@ import { useState, useCallback } from 'react'
 // that implements EIP-3085 (wallet_addEthereumChain) and EIP-3326 (wallet_switchEthereumChain).
 // NOTE: Update the placeholder chainId and token symbol/details before production usage.
 const DEFAULT_CHAIN_CONFIG = {
-  chainId: '0x4D2', // 1234 in hex
+  chainId: '0xDEADBFEE', // 3735928814 in hex
   chainName: 'Eden testnet',
   nativeCurrency: {
     name: 'Testnet TIA',
