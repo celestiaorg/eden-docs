@@ -21,7 +21,6 @@ Account abstraction (AA) makes onchain apps feel like web2: simple login, one-cl
 **Patterns:** sponsored txs (no pre-funding, clear costs), operations (intent-first, one confirm), session keys (scoped, short-lived signers).
 
 👉 Next: [Quickstart](/tooling/account-abstraction/quickstart) · [Forkable ZeroDev+Privy example](/tooling/account-abstraction/example) · [React wallet panel](/tooling/account-abstraction/react-wallet-panel)
-</Callout>
 
 ## How does AA improve UX?
 
@@ -73,7 +72,8 @@ Think of a paymaster as the smart account’s “company card.” You set the ru
   Users pay fees in a token they already hold (USDC, in-game token). The paymaster fronts the native gas, then collects reimbursement in that token during `postOp`. UX: show the token fee, not the network coin.
 
 <Callout>
-  **Both models are available through ZeroDev today**: you configure policies in the dashboard, and the SDK handles the UserOperation wiring for you.
+  **Both models are available through ZeroDev today**: you configure policies in the dashboard, and
+  the SDK handles the UserOperation wiring for you.
 </Callout>
 
 ### Designing your sponsorship policy
