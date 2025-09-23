@@ -11,7 +11,7 @@ Account abstraction (AA) makes your app easier to use by providing a familiar us
 ### How does AA improve UX?
 
 - **Smooth onboarding:** Sign in without a seed phrase using passkeys, email, or phone number instead. These wallets are instantly recoverable.
-- **Actions vs. transactions:** Put multiple calls into one "action" or "operation" with a clear purpose and one confirmation.
+- **Operations vs. transactions:** Put multiple calls into one "operation" with a clear purpose and one confirmation.
 - **Simplified fees:** Paymasters can either pay for gas or let users pay with other tokens. This helps show the exact costs up front.
 - **Safety rails:** Make rules for spending limits, allowlists, and session keys to cut down on repetitive prompts.
 
@@ -80,26 +80,25 @@ Think of a paymaster as the smart account’s “company card.” You set the ru
 - [ ] Document the user-facing messaging (“Gas covered by Eden” vs. “You’ll pay 0.25 USDC”).
 
 <Callout type="warning">
-  Avoid “Sponsor all transactions” in production. Scope sponsorship to specific actions and add
+  Avoid “sponsor all transactions” in production. Scope sponsorship to specific actions and add
   per-user limits to prevent abuse.
 </Callout>
 
 <Callout type="info">
-  In this section, we’ll surface design patterns and Eden-specific guardrails. For SDK integration
-  (ZeroDev paymaster client, Privy setup), we’ll link to vendor docs from each guide. A walkthrough
-  of the ZeroDev dashboard will be added soon so you can see where each policy lives.
+  In this section, we’ll surface design patterns and Eden-specific guardrails. For SDK integrations
+  (ZeroDev paymaster client, Privy setup), we’ll show examples of how to get set up.
 </Callout>
 
 ---
 
 ## 2. Fewer transactions, more operations
 
-Instead of designing for raw transactions, design for **operations** (what the user intends). In order for users to confirm **once** and proceed, an operation can conceal fees through sponsorship or token gas, bundle several steps, and use a session key to prevent repeated prompts. Operations are the heart of the UX improvements account abstraction brings.
+Instead of designing for raw transactions, design for **operations** (what the user intends). In order for users to confirm **once** and proceed, an operation can conceal fees through sponsorship or token gas, bundle several steps, and use a session key to prevent repeated prompts and save the user's time. Operations are the heart of the UX improvements account abstraction brings.
 
 <Callout type="info">
   Under the hood, operations are powered by account abstraction (ERC-4337). Your app creates a
   signed request, a bundler submits it to the EntryPoint contract, and the smart account executes
-  your batched calls. We’ll keep those details out of the UI.
+  your batched calls. We’ll keep those details out of the UI, though.
 </Callout>
 
 ### What makes an operation?
@@ -136,17 +135,17 @@ Instead of designing for raw transactions, design for **operations** (what the u
 #### Receipt & next step
 
 - Link to explorer when included.
-- Suggest the next action (e.g., “List now”, “Share”, “Stake more”).
+- Suggest the next action (e.g., “List now”, “Share”, “Deposit more”).
 
 </Steps>
 
 ### Reusable patterns
 
-- **Approve + Action in one go**
+- **Approve + operation in one go**
   Replace two prompts with one batched call; cap approval to the needed amount.
-- **Mint + List**
+- **Mint + list**
   Create, then immediately list on a marketplace in one operation.
-- **Wrap + Stake**
+- **Wrap + stake**
   Wrap native → stake contract; show a single preview of the final position.
 - **First-touch deploy**
   Deploy the smart account and perform the action together; don’t make “create wallet” a separate step.
