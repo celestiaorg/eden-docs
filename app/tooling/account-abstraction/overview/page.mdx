@@ -1,26 +1,241 @@
 # Account abstraction and user experience
 
-import { Callout } from 'nextra/components'
+import { Callout, Steps } from 'nextra/components'
 
 <Callout type="info" emoji="🚧">
-  This page is under construction.
+  This page is a work in progress.
 </Callout>
 
-Account Abstraction (AA) is about making your app easier to use. When you use on-chain contracts, you can use familiar web2 patterns with great toolkits.
+Account abstraction (AA) makes your app easier to use by providing a familiar user experience (UX) and simplifying complex interactions for users.
 
-### What does AA have to do with UX?
+## tl;dr
 
-- **Onboarding:** sign in without a seed (embedded wallets with passkeys/MPC) → wallets that are instantly recoverable and don't need any extra steps.
-- **Actions vs. transactions:** Put multiple calls into one "action" with a clear purpose and one confirmation.
-- **Fees:** paymasters can either pay for gas or let users pay with tokens. Make sure to show the exact costs up front.
-- **Safety rails:** make rules for spending limits, allowlists, and session keys to cut down on "sign everything" prompts.
-- **Recovery and devices:** linking devices and recovering accounts become features of the product instead of support tickets.
+Account abstraction (AA) makes onchain apps feel like web2: simple login, one-click actions, token fees, and safer flows.
 
-Let's take a look at the steps to making a great UX!
+- **Onboarding:** passkey/email login, easy recovery
+- **Actions:** bundle txs into one confirmation
+- **Fees:** gas covered or paid in tokens
+- **Safety:** limits, allowlists, session keys
+- **Recovery:** built-in device/account recovery
+
+**Patterns:** sponsored txs (no pre-funding, clear costs), operations (intent-first, one confirm), session keys (scoped, short-lived signers).
+
+👉 Next: [Quickstart](/tooling/account-abstraction/quickstart) · [Forkable ZeroDev+Privy example](/tooling/account-abstraction/example) · [React wallet panel](/tooling/account-abstraction/react-wallet-panel)
+
+## How does AA improve UX?
+
+- **Smooth onboarding:** Sign in without a seed phrase using passkeys, email, or phone number instead. These wallets are instantly recoverable.
+- **Operations vs. transactions:** Put multiple calls into one "operation" with a clear purpose and one confirmation.
+- **Simplified fees:** Paymasters can either pay for gas or let users pay with other tokens. This helps show the exact costs up front.
+- **Safety rails:** Make rules for spending limits, allowlists, and session keys to cut down on repetitive prompts.
+
+In the next section, let's take a look at the steps to making a great UX:
+
+1. [Setting up sponsored transactions so that interactions go smoothly](#1-sponsored-transactions-gas-sponsorship)
+1. [Fewer transaction, more operations: using bundled operations to cut down on wait time and latency](#2-fewer-transactions-more-operations)
+1. [Session keys to make using the app easier](#3-session-keys)
+
+After you've learned about the basics of AA, explore the demos:
 
 1. [Quickstart: setting up an embedded wallet to make it easy to get started](/tooling/account-abstraction/quickstart)
-2. [Setting up sponsored transactions so that interactions go smoothly](/tooling/account-abstraction/sponsored-transactions)
-3. [Actions, not transactions: using bundled operations to cut down on wait time and latency](/tooling/account-abstraction/operations)
-4. [Session keys to make using the app easier](/tooling/account-abstraction/session-keys)
-5. [Example with ZeroDev and Privy](/tooling/account-abstraction/example)
-6. [React wallet panel, a React/TypeScript component with Privy (auth + embedded wallets) and ZeroDev (AA smart accounts)](/tooling/account-abstraction/react-wallet-ui)
+1. [Example with ZeroDev and Privy](/tooling/account-abstraction/example)
+1. [React wallet panel, a React/TypeScript component with Privy (auth + embedded wallets) and ZeroDev (AA smart accounts)](/tooling/account-abstraction/react-wallet-panel)
+
+---
+
+## 1. Sponsored transactions (gas sponsorship)
+
+“Gasless” doesn’t mean _free_, it means your user doesn't have to figure out how to have TIA before they even understand they should have a wallet. With smart accounts ([ERC-4337](https://eips.ethereum.org/EIPS/eip-4337)), a **paymaster** can sponsor a user’s gas so the flow feels like a web2 checkout with “free shipping.” This is how you turn “I don’t have tokens” into “one click sign up.”
+
+### Why sponsor gas? (and how to do it well)
+
+- **No prerequisite funding:** remove the “buy native tokens first” blocker so users can start right away.
+- **Predictable costs:** communicate clear, stable pricing up front (“free”, fixed token amounts, or “covered by Eden”) instead of volatile base fees.
+- **Fewer prompts:** batch multi-step flows (mints, swaps, quests) into a single confirmation.
+- **Graceful fallback:** if sponsorship isn’t available, offer a clear alternative (“pay 0.01 TIA” or “try again later”).
+
+### How ERC-4337 sponsorship works
+
+1. User signs a **UserOperation** (no native tokens required).
+2. The application includes **paymaster data** proving that someone will cover the gas.
+3. Bundler submits the operation to EntryPoint.
+4. During `validatePaymasterUserOp` and `postOp`, the paymaster proves eligibility and settles the gas cost (either from its deposit or by collecting a token reimbursement).
+
+Think of a paymaster as the smart account’s “company card.” You set the rules; the bundler deducts from your balance when ops go through.
+
+### Paymaster options you’ll see today
+
+- **Verifying paymaster (a.k.a. sponsored gas)**
+  Your backend or policy decides _which_ calls you’ll pay for (e.g., free mint, first swap, weekly cap). Users sign a UserOperation; the paymaster validates it and the bundler pulls fees from the paymaster’s deposit.
+
+- **Token paymaster (“stablecoin gas”)**
+  Users pay fees in a token they already hold (USDC, in-game token). The paymaster fronts the native gas, then collects reimbursement in that token during `postOp`. UX: show the token fee, not the network coin.
+
+<Callout>
+  **Both models are available through ZeroDev today**: you configure policies in the dashboard, and
+  the SDK handles the UserOperation wiring for you.
+</Callout>
+
+### Designing your sponsorship policy
+
+- **Eligibility:** which contracts/functions qualify? Are there per-user or per-app quotas? ZeroDev policies let you filter by target address, calldata, and more.
+- **Risk controls:** rate limits, allowlists/deny lists, daily budget caps. Combine onchain policy checks with backend analytics.
+- **Funding plan:** keep the verifying paymaster deposit topped up; simulate expected burn before launch.
+- **Observability:** track pending/included statuses of operations, alert on stuck ops, and log every sponsored action for audits.
+
+#### Quick checklist (prod-minded)
+
+- [ ] Define **eligibility**: which contracts/functions are sponsored, and when.
+- [ ] Add **caps & rate limits**: per user, per day, per action.
+- [ ] Provide a **fallback**: if sponsorship is exhausted, switch to token gas or prompt for native.
+- [ ] **Observe** the lifecycle: surface “submitted → included” statuses; alert on stuck ops.
+- [ ] **Fund & monitor** the paymaster deposit; set alerts for low balance.
+- [ ] Document the user-facing messaging (“Gas covered by Eden” vs. “You’ll pay 0.25 USDC”).
+
+<Callout type="warning">
+  Avoid “sponsor all transactions” in production. Scope sponsorship to specific actions and add
+  per-user limits to prevent abuse.
+</Callout>
+
+<Callout type="info">
+  In this section, we’ll surface design patterns and Eden-specific guardrails. For SDK integrations
+  (ZeroDev paymaster client, Privy setup), we’ll show examples of how to get set up.
+</Callout>
+
+---
+
+## 2. Fewer transactions, more operations
+
+Instead of designing for raw transactions, design for **operations** (what the user intends). In order for users to confirm **once** and proceed, an operation can conceal fees through sponsorship or token gas, bundle several steps, and use a session key to prevent repeated prompts and save the user's time. Operations are the heart of the UX improvements account abstraction brings.
+
+<Callout type="info">
+  Under the hood, operations are powered by account abstraction (ERC-4337). Your app creates a
+  signed request, a bundler submits it to the EntryPoint contract, and the smart account executes
+  your batched calls. We’ll keep those details out of the UI, though.
+</Callout>
+
+### What makes an operation?
+
+**One confirmation, many steps:** such as _approve + swap_, _mint + list_, and _wrap + stake_.
+
+- **Optional sponsorship:** pay token-denominated fees or network fees.
+  To prevent users from signing each click, use a **session key**.
+  **First-touch deploy:** If the smart account hasn't been deployed yet, deploy it and follow the same procedure.
+  **Deterministic preview:** displays the smart account address _prior to_ its onchain existence.
+
+### UX flow (recommended)
+
+<Steps>
+### Compose the action
+
+- Collect inputs (amounts, recipient, slippage).
+- If the account is counterfactual, **preview the address**.
+
+#### Human-readable preview
+
+- Show _what will happen_ (tokens in/out, contract names, recipients).
+- Flag risks (large approvals, high slippage, unknown recipients).
+
+#### Confirm once
+
+- Optional: let users **“remember this session”** (create a short-lived session key).
+
+#### Submit & track
+
+- Show states: **Submitted → Processing → Included**.
+- Provide a single status component with retry/cancel when appropriate.
+
+#### Receipt & next step
+
+- Link to explorer when included.
+- Suggest the next action (e.g., “List now”, “Share”, “Deposit more”).
+
+</Steps>
+
+### Reusable patterns
+
+- **Approve + operation in one go**
+  Replace two prompts with one batched call; cap approval to the needed amount.
+- **Mint + list**
+  Create, then immediately list on a marketplace in one operation.
+- **Wrap + stake**
+  Wrap native → stake contract; show a single preview of the final position.
+- **First-touch deploy**
+  Deploy the smart account and perform the action together; don’t make “create wallet” a separate step.
+
+### Status & errors (what to surface)
+
+- **Submitted**: we’ve sent your operation to the network.
+- **Processing**: simulation and bundling in progress (can take a few seconds).
+- **Included**: onchain; show explorer link.
+- **Couldn’t process**: explain plainly:
+  - Budget not sponsored (try again with token gas or native fee).
+  - Invalid inputs / simulation failed (adjust amounts/slippage).
+  - Rate/budget limits reached (try later or reduce size).
+
+---
+
+## 3. Session keys
+
+**Goal:** Design flows that feel instant, no repeat sign pop-ups, while keeping users inside safe guardrails.
+
+- **Session keys** are additional validators that a smart account creates with scoped policies. They aren’t a special account type or a consensus node, think of them as temporary agents that can sign only within the limits you configure (what, how often, how much, and for how long).
+
+### A look at the architecture
+
+- **Owner vs. agent:** Kernel accounts (EntryPoint 0.7 / Kernel v3+) expose a “sudo” validator (owner) and any number of “regular” validators (agents). A session key is an agent that can act only inside the constraints approved by the owner.
+- **Installation flow:**
+  1. Agent creates a key pair (or remote signer) and shares the **session key address** with the owner.
+  2. Owner composes policies (timestamp, call target, spend/rate caps, etc.), installs the permission plugin, and signs the approval.
+  3. Agent receives the serialized approval (`serializePermissionAccount`) and combines it with the key to execute operations via `deserializePermissionAccount`.
+- **Revocation:** The owner (sudo validator) _uninstalls_ the plugin. Keep the serialized approval retrievable; you need it to uninstall the exact validator instance.
+
+### When to use session keys
+
+- **Use session keys** for: gameplay sessions, one-click claims, checkout flows, background actions while a tab is open, mobile device sessions.
+
+### UX wins
+
+- **Fewer prompts:** Gameplay loops, claims, or checkout steps advance programatically after the initial approval.
+- **Predictable progress:** Long-running or automated actions can finish in the background while the user keeps interacting, like a game or social media app.
+- **Confidence & control:** Scoped permissions (contract + function + value caps) lower the fear of "signing everything," and users can pause or revoke without having to touch their main key
+
+### Designing the grant (owner approval)
+
+- **Scope:** target contracts and function selectors; optional calldata guards via policies such as `toCallPolicy` with ABI filters.
+- **Limits:** set limits on the value of each call and the total value of all calls, and use `toRateLimitPolicy` (e.g., 3 calls/hour) to stop runaway loops.
+- **Lifetime:** timestamp policies limit the start and end window; combine this with a frontend UX that makes expiry stand out.
+- **Replay protection:** the permissions plugin keeps an isolated nonce space, so each session key uses its own counter to avoid replay.
+- **Surface area:** show a preview that people can read, like "Can call `mint()` on MagicBadge(0xA1B2C3...beef) up to 3 times today; gas paid for by Eden."
+
+### The lifecycle and UI
+
+Grant → Use → Monitor → Revoke/Expire → Audit
+
+Show the last activity, the active sessions, and the budget left. Give users the option to **Revoke** (sudo uninstall) and **Extend** (reissue approval) with just one click.<br/> For automations that run on servers, show webhooks or notifications when usage gets close to its limits.
+
+### Quick checklist
+
+- [ ] Set short TTLs (less than 24 hours) and small scopes by default.
+- [ ] Use policies and backend monitoring to enforce "caps and rate limits" for each session.
+- [ ] Keep each session's "nonces" separate so they can't be replayed.
+- [ ] Keep the **serialized approval** safe, just like you would a capability token. Do not leave it (or the session private key) unencrypted in localStorage.
+- [ ] Think about using "remote signers" or a trusted backend to store session keys. Before giving someone signing rights, they should have to enter a passkey or two-factor authentication.
+- [ ] Keep a record of **who/what/when** for every use and make an audit view available.
+- [ ] Support "off-chain checks": allow EIP-1271 signatures so that backend/API calls can check through the smart account.
+
+<Callout type="warning">
+  Avoid blanket “*can call anything*” grants. If you must, limit by time and budget, and require an
+  additional confirmation for dangerous functions (e.g., upgrades, ownership transfers).
+</Callout>
+
+<Callout type="info">
+  Put approvals and session keys in different areas of trust. If a frontend needs to store data, it
+  should encrypt it in memory and delete it when the user logs out or the time runs out.
+</Callout>
+
+---
+
+That's it! With these best fundamentals in mind, you can build a user-friendly account abstraction solution for your application.
+
+Check out the demos in the next few pages to get started.
