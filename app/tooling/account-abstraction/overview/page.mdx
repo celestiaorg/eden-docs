@@ -8,6 +8,22 @@ import { Callout, Steps } from 'nextra/components'
 
 Account abstraction (AA) makes your app easier to use by providing a familiar user experience (UX) and simplifying complex interactions for users.
 
+<Callout type="info" emoji="🦥">
+### tl;dr
+
+Account abstraction (AA) makes onchain apps feel like web2: simple login, one-click actions, token fees, and safer flows.
+
+- **Onboarding:** passkey/email login, easy recovery
+- **Actions:** bundle txs into one confirmation
+- **Fees:** gas covered or paid in tokens
+- **Safety:** limits, allowlists, session keys
+- **Recovery:** built-in device/account recovery
+
+**Patterns:** sponsored txs (no pre-funding, clear costs), operations (intent-first, one confirm), session keys (scoped, short-lived signers).
+
+👉 Next: [Quickstart](/tooling/account-abstraction/quickstart) · [Forkable ZeroDev+Privy example](/tooling/account-abstraction/example) · [React wallet panel](/tooling/account-abstraction/react-wallet-panel)
+</Callout>
+
 ### How does AA improve UX?
 
 - **Smooth onboarding:** Sign in without a seed phrase using passkeys, email, or phone number instead. These wallets are instantly recoverable.
@@ -19,7 +35,7 @@ In the next section, let's take a look at the steps to making a great UX:
 
 1. [Setting up sponsored transactions so that interactions go smoothly](#1-sponsored-transactions-gas-sponsorship)
 1. [Fewer transaction, more operations: using bundled operations to cut down on wait time and latency](#2-fewer-transactions-more-operations)
-1. [Session keys to make using the app easier](#3-session-keys-permissioned-validators)
+1. [Session keys to make using the app easier](#3-session-keys)
 
 <Callout type="info">
 After you've learned about the basics of AA, explore the demos:
@@ -162,11 +178,11 @@ Instead of designing for raw transactions, design for **operations** (what the u
 
 ---
 
-## 3. Session keys (permissioned validators)
+## 3. Session keys
 
 **Goal:** Design flows that feel instant, no repeat sign pop-ups, while keeping users inside safe guardrails.
 
-- **Session keys** are additional validators (“permissioned signers”) that a smart account installs with scoped policies. They aren’t a special account type—think of them as temporary agents that can sign only within the limits you configure (what, how often, how much, and for how long).
+- **Session keys** are additional validators that a smart account creates with scoped policies. They aren’t a special account type or a consensus node, think of them as temporary agents that can sign only within the limits you configure (what, how often, how much, and for how long).
 
 ### A look at the architecture
 
@@ -184,7 +200,7 @@ Instead of designing for raw transactions, design for **operations** (what the u
 ### UX wins
 
 - **Fewer prompts:** Gameplay loops, claims, or checkout steps advance programatically after the initial approval.
-- **Predictable progress:** Long-running or automated actions can finish in the background while the user keeps interacting.
+- **Predictable progress:** Long-running or automated actions can finish in the background while the user keeps interacting, like a game or social media app.
 - **Confidence & control:** Scoped permissions (contract + function + value caps) lower the fear of "signing everything," and users can pause or revoke without having to touch their main key
 
 ### Designing the grant (owner approval)
@@ -203,13 +219,13 @@ Show the last activity, the active sessions, and the budget left. Give users the
 
 ### Quick checklist
 
-- Set short TTLs (less than 24 hours) and small scopes by default.
-- Use policies and backend monitoring to enforce "caps and rate limits" for each session.
-- Keep each session's "nonces" separate so they can't be replayed.
-- Keep the **serialized approval** safe, just like you would a capability token. Do not leave it (or the session private key) unencrypted in localStorage.
-- Think about using "remote signers" or a trusted backend to store session keys. Before giving someone signing rights, they should have to enter a passkey or two-factor authentication.
-- Keep a record of **who/what/when** for every use and make an audit view available.
-- Support "off-chain checks": allow EIP-1271 signatures so that backend/API calls can check through the smart account.
+- [ ] Set short TTLs (less than 24 hours) and small scopes by default.
+- [ ] Use policies and backend monitoring to enforce "caps and rate limits" for each session.
+- [ ] Keep each session's "nonces" separate so they can't be replayed.
+- [ ] Keep the **serialized approval** safe, just like you would a capability token. Do not leave it (or the session private key) unencrypted in localStorage.
+- [ ] Think about using "remote signers" or a trusted backend to store session keys. Before giving someone signing rights, they should have to enter a passkey or two-factor authentication.
+- [ ] Keep a record of **who/what/when** for every use and make an audit view available.
+- [ ] Support "off-chain checks": allow EIP-1271 signatures so that backend/API calls can check through the smart account.
 
 <Callout type="warning">
   Avoid blanket “*can call anything*” grants. If you must, limit by time and budget, and require an
@@ -224,3 +240,5 @@ Show the last activity, the active sessions, and the budget left. Give users the
 ---
 
 That's it! With these best fundamentals in mind, you can build a user-friendly account abstraction solution for your application.
+
+Check out the demos in the next few pages to get started.
