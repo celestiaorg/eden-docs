@@ -3,39 +3,39 @@
 import { Callout, Steps } from 'nextra/components'
 
 <Callout type="info" emoji="🚧">
-  This page is a work in progress. It demonstrates indexing on Eden Testnet.
+  This page is a work in progress. It demonstrates indexing a RedStone pricefeed with Goldsky on Eden Testnet.
 </Callout>
 
 Indexers are tools that allow you to turn raw onchain data into queryable databases so apps can make queries without scanning or re-executing the whole chain. They pre-process events into indexed tables and expose them via fast APIs (GraphQL/SQL), eliminating the need to run your own archive node.
 
 ---
 
-# Indexing with Goldsky on Eden
+## Indexing with Goldsky on Eden
 
-## What is Goldsky?
+### What is Goldsky?
 
 Goldsky turns onchain data into **GraphQL** APIs (subgraphs) and can stream that data to your databases with Mirror for SQL analytics. Subraphs are The Graph-compatible; endpoints open in a GraphiQL explorer.
 
-## Subgraphs
+#### Subgraphs
 
 - **What**: GraphQL API over events/logs (optionally call data).
 - **When**: Dashboards & dapps needing fast, filtered reads.
 - **How**: Provide **contract address, ABI, network, start block** → Goldsky indexes and hosts a **The Graph–compatible** endpoint.
 
-### Instant subgraphs
+##### Instant subgraphs
 
 No‑code start: give **address + ABI + network + start block** and deploy with the CLI's `--from-abi` flag. Goldsky generates/hosts the subgraph, you can extend with enrichments.
 
-## Mirror
+#### Mirror
 
 Stream **subgraph or chain data** into your DB for **SQL** via a small **YAML** file (source → sink). Goldsky keeps tables in near‑real‑time.
 _Examples_: Postgres / ClickHouse / MySQL (sinks); S3 / SQS / Kafka (channels).
 
-## Quickstart (Eden testnet)
+### Quickstart (Eden testnet)
 
 <Steps>
 
-### Install & log in
+#### Install & log in
 
 [Install the CLI](https://docs.goldsky.com/introduction) and log in:
 
@@ -43,7 +43,7 @@ _Examples_: Postgres / ClickHouse / MySQL (sinks); S3 / SQS / Kafka (channels).
 goldsky login
 ```
 
-### Create the instant subgraph config
+#### Create the instant subgraph config
 
 Save this as `adapter.json`:
 
@@ -98,7 +98,7 @@ Save this as `adapter.json`:
 }
 ```
 
-### Deploy the instant subgraph
+#### Deploy the instant subgraph
 
 ```bash copy
 goldsky subgraph deploy eden-redstone-adapter/1.0 --from-abi adapter.json
@@ -110,7 +110,7 @@ Check sync in the dashboard or list subgraphs via CLI:
 goldsky subgraph list
 ```
 
-### Test a query (in the endpoint's GraphiQL)
+#### Test a query (in the endpoint's GraphiQL)
 
 Using the GraphQL endpoint ([example](https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/eden-redstone-adapter-eden-testnet/1.0/gn)), you can query the subgraph for data. For example, to get the latest value updates from the RedStone adapter:
 
@@ -128,7 +128,7 @@ Using the GraphQL endpoint ([example](https://api.goldsky.com/api/public/project
 }
 ```
 
-You can filter by a specific data feed ID:
+You can filter by a specific data feed ID (in this case, TIA where `TIA = 544941` in hex)
 
 ```graphql copy filename="GraphQL"
 {
@@ -150,9 +150,9 @@ You can filter by a specific data feed ID:
 
 </Steps>
 
-## Using the indexed data in your frontend
+### Using the indexed data in your frontend
 
-Here's a simple HTML page that displays live price feeds from your subgraph. Remember to replace the `SUBGRAPH_URL` with your own supgraph URL:
+Here's a simple HTML page that displays live price feeds from your subgraph. You can replace the `SUBGRAPH_URL` with your own supgraph URL:
 
 ```html copy filename="price-display.html"
 <!DOCTYPE html>
@@ -285,7 +285,7 @@ This is what your HTML will look like in the browser:
 
 ![img](/images/indexer/eden-redstone-goldsky.png)
 
-### Node.js/JavaScript example
+#### Node.js/JavaScript example
 
 For a programmatic approach, here's how to fetch prices in Node.js:
 
