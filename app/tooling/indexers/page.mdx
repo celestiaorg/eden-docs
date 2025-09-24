@@ -3,10 +3,10 @@
 import { Callout, Steps } from 'nextra/components'
 
 <Callout type="info" emoji="🚧">
-  This page is a work in progress. It currently uses Ethereum Sepolia testnet.
+  This page is a work in progress. It demonstrates indexing on Eden Testnet.
 </Callout>
 
-Indexers are tools that allow you to turn raw onchain data into queryable databases so apps can make queries without scanning the whole chain. They pre-process events into indexed tables and expose them via fast APIs (GraphQL/SQL), eliminating the need to run your own archive node.
+Indexers are tools that allow you to turn raw onchain data into queryable databases so apps can make queries without scanning or re-executing the whole chain. They pre-process events into indexed tables and expose them via fast APIs (GraphQL/SQL), eliminating the need to run your own archive node.
 
 ---
 
@@ -31,7 +31,7 @@ No‑code start: give **address + ABI + network + start block** and deploy with 
 Stream **subgraph or chain data** into your DB for **SQL** via a small **YAML** file (source → sink). Goldsky keeps tables in near‑real‑time.
 _Examples_: Postgres / ClickHouse / MySQL (sinks); S3 / SQS / Kafka (channels).
 
-## Quickstart (Sepolia → swap to Eden later)
+## Quickstart (Eden testnet)
 
 <Steps>
 
@@ -45,32 +45,54 @@ goldsky login
 
 ### Create the instant subgraph config
 
-Save this as `weth-sepolia.json`:
+Save this as `adapter.json`:
 
-```json copy filename="weth-sepolia.json"
+<Callout type="info">
+  Unlike the basic price feed, the RedStone MultiFeed Adapter emits `ValueUpdate` events, making it directly indexable with an instant subgraph.
+</Callout>
+
+```json copy filename="adapter.json"
 {
   "version": "1",
-  "name": "weth-sepolia",
+  "name": "redstone-adapter",
   "abis": {
-    "weth": [
+    "adapter": [
       {
         "anonymous": false,
         "inputs": [
-          { "indexed": true, "internalType": "address", "name": "src", "type": "address" },
-          { "indexed": true, "internalType": "address", "name": "dst", "type": "address" },
-          { "indexed": false, "internalType": "uint256", "name": "wad", "type": "uint256" }
+          { "indexed": false, "internalType": "uint256", "name": "value", "type": "uint256" },
+          { "indexed": false, "internalType": "bytes32", "name": "dataFeedId", "type": "bytes32" },
+          { "indexed": false, "internalType": "uint256", "name": "updatedAt", "type": "uint256" }
         ],
-        "name": "Transfer",
+        "name": "ValueUpdate",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          { "indexed": false, "internalType": "uint256", "name": "blockTimestamp", "type": "uint256" }
+        ],
+        "name": "UpdateSkipDueToBlockTimestamp",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          { "indexed": false, "internalType": "bytes32", "name": "dataFeedId", "type": "bytes32" },
+          { "indexed": false, "internalType": "uint256", "name": "dataTimestamp", "type": "uint256" },
+          { "indexed": false, "internalType": "uint256", "name": "lastDataTimestamp", "type": "uint256" }
+        ],
+        "name": "UpdateSkipDueToDataTimestamp",
         "type": "event"
       }
     ]
   },
   "instances": [
     {
-      "abi": "weth",
-      "address": "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",
-      "startBlock": 9126600,
-      "chain": "sepolia"
+      "abi": "adapter",
+      "address": "0x2e6495F68C8d8Bd56670Cc6110309Dd1e6Fe5CE0",
+      "startBlock": 1,
+      "chain": "eden-testnet"
     }
   ]
 }
@@ -79,7 +101,7 @@ Save this as `weth-sepolia.json`:
 ### Deploy the instant subgraph
 
 ```bash copy
-goldsky subgraph deploy eden-weth/1.0 --from-abi weth-sepolia.json
+goldsky subgraph deploy eden-redstone-adapter/1.0 --from-abi adapter.json
 ```
 
 Check sync in the dashboard or list subgraphs via CLI:
@@ -88,17 +110,17 @@ Check sync in the dashboard or list subgraphs via CLI:
 goldsky subgraph list
 ```
 
-### Test a query (in the endpoint’s GraphiQL)
+### Test a query (in the endpoint's GraphiQL)
 
-Using the GraphQL endpoint, you can query the subgraph for data. For example, to get all transfers from WETH on Sepolia:
+Using the GraphQL endpoint ([example](https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/eden-redstone-adapter-eden-testnet/1.0/gn)), you can query the subgraph for data. For example, to get the latest value updates from the RedStone adapter:
 
 ```graphql copy filename="GraphQL"
 {
-  transfers(first: 5, orderBy: block_number, orderDirection: desc) {
+  valueUpdates(first: 5, orderBy: updatedAt, orderDirection: desc) {
     id
-    src
-    dst
-    wad
+    value
+    dataFeedId
+    updatedAt
     block_number
     transactionHash_
     timestamp_
@@ -106,29 +128,217 @@ Using the GraphQL endpoint, you can query the subgraph for data. For example, to
 }
 ```
 
-Here is a demo GraphiQL [subgraph](https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/eden-weth-sepolia/2.0/gn)
-
-### Query an exact height
+You can filter by a specific data feed ID:
 
 ```graphql copy filename="GraphQL"
 {
-  transfers( # The entity/table being queried (Transfer events)
-    where: {
-      block_number: "9126654" # Filter: Only get transfers from this specific block
-    }
-    orderBy: transactionHash_ # Sort results by transaction hash
-    orderDirection: asc # Sort in ascending order (A→Z, 0→9)
+  valueUpdates(
+    first: 10,
+    where: { dataFeedId: "0x5449410000000000000000000000000000000000000000000000000000000000" }
+    orderBy: updatedAt,
+    orderDirection: desc
   ) {
-    # Fields to return for each transfer:
-    id # Unique identifier (usually txHash-logIndex)
-    src # Source address (who sent the USDC)
-    dst # Destination address (who received the USDC)
-    wad # Amount transferred (in smallest units)
-    block_number # Block number where this transfer happened
-    transactionHash_ # Transaction hash (with underscore suffix)
-    timestamp_ # Unix timestamp when block was mined
+    id
+    value
+    dataFeedId
+    updatedAt
+    block_number
+    transactionHash_
   }
 }
 ```
 
 </Steps>
+
+## Using the indexed data in your frontend
+
+Here's a simple HTML page that displays live price feeds from your subgraph. Remember to replace the `SUBGRAPH_URL` with your own supgraph URL:
+
+```html copy filename="price-display.html"
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Eden price feeds</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        h1 { color: #333; }
+        .price-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+            border-left: 4px solid #0066cc;
+        }
+        .price-card.tia { border-left-color: #7b2bf9; }
+        .price-card.eth { border-left-color: #627eea; }
+        .symbol {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        .value {
+            font-size: 24px;
+            color: #0066cc;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .loading { color: #999; }
+    </style>
+</head>
+<body>
+    <h1>Eden RedStone price feeds</h1>
+    <div id="prices" class="loading">Loading prices...</div>
+
+    <script>
+        // Replace with your actual Goldsky subgraph endpoint
+        const SUBGRAPH_URL = 'https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/eden-redstone-adapter-eden-testnet/1.0/gn';
+
+        async function fetchAndDisplayPrices() {
+            try {
+                const response = await fetch(SUBGRAPH_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: `{
+                            valueUpdates(first: 20, orderBy: updatedAt, orderDirection: desc) {
+                                value
+                                dataFeedId
+                                updatedAt
+                            }
+                        }`
+                    })
+                });
+
+                const { data } = await response.json();
+                const container = document.getElementById('prices');
+
+                // Group updates by feed ID to get latest price for each
+                const latestPrices = {};
+                data.valueUpdates.forEach(update => {
+                    if (!latestPrices[update.dataFeedId]) {
+                        latestPrices[update.dataFeedId] = update;
+                    }
+                });
+
+                // Clear and render
+                container.innerHTML = '';
+                container.className = '';
+
+                Object.values(latestPrices).forEach(update => {
+                    // Detect feed type from the dataFeedId
+                    const isETH = update.dataFeedId.startsWith('0x455448');
+                    const isTIA = update.dataFeedId.startsWith('0x544941');
+
+                    const symbol = isETH ? 'ETH' : isTIA ? 'TIA' : 'Unknown';
+                    const cssClass = isETH ? 'eth' : isTIA ? 'tia' : '';
+
+                    // Convert value (8 decimal places)
+                    const price = (Number(update.value) / 1e8).toFixed(4);
+
+                    // Format timestamp
+                    const date = new Date(update.updatedAt * 1000);
+                    const timeAgo = getTimeAgo(date);
+
+                    container.innerHTML += `
+                        <div class="price-card ${cssClass}">
+                            <div class="symbol">${symbol}/USD</div>
+                            <div class="value">$${price}</div>
+                            <div class="timestamp">Updated ${timeAgo}</div>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                document.getElementById('prices').innerHTML =
+                    '<div style="color: red;">Error loading prices. Check console for details.</div>';
+                console.error('Failed to fetch prices:', error);
+            }
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return `${seconds} seconds ago`;
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            const hours = Math.floor(minutes / 60);
+            return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        }
+
+        // Initial load
+        fetchAndDisplayPrices();
+
+        // Refresh every 10 seconds
+        setInterval(fetchAndDisplayPrices, 10000);
+    </script>
+</body>
+</html>
+```
+
+This is what your HTML will look like in the browser:
+
+![img](/images/indexer/eden-redstone-goldsky.png)
+
+### Node.js/JavaScript example
+
+For a programmatic approach, here's how to fetch prices in Node.js:
+
+```javascript copy filename="fetch-prices.js"
+async function getLatestPrices(subgraphUrl) {
+  const response = await fetch(subgraphUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query: `{
+        valueUpdates(first: 10, orderBy: updatedAt, orderDirection: desc) {
+          value
+          dataFeedId
+          updatedAt
+          block_number
+        }
+      }`
+    })
+  });
+
+  const { data } = await response.json();
+
+  // Process and format the results
+  const prices = data.valueUpdates.map(update => {
+    // Identify the feed
+    const feedId = update.dataFeedId;
+    let symbol = 'UNKNOWN';
+    if (feedId.startsWith('0x455448')) symbol = 'ETH';
+    else if (feedId.startsWith('0x544941')) symbol = 'TIA';
+
+    // Convert price (8 decimals)
+    const price = Number(update.value) / 1e8;
+
+    return {
+      symbol,
+      price,
+      timestamp: new Date(update.updatedAt * 1000),
+      block: update.block_number
+    };
+  });
+
+  return prices;
+}
+
+// Usage
+const ENDPOINT = 'YOUR_SUBGRAPH_ENDPOINT';
+getLatestPrices(ENDPOINT).then(prices => {
+  prices.forEach(({ symbol, price, timestamp }) => {
+    console.log(`${symbol}: $${price.toFixed(2)} at ${timestamp.toISOString()}`);
+  });
+});
+```
+
+<Callout type="info">
+  The price values use 8 decimal places. ETH prices will be around $4,000+ (e.g., 418000000000 = $4,180.00) and TIA prices around $1-2 (e.g., 147000000 = $1.47).
+</Callout>
