@@ -59,7 +59,8 @@ For a programmatic approach, here's how to fetch subgraph information in
 Node.js through Goldsky for the RedStone adapter contract:
 
 ```javascript copy filename="fetch-prices.js"
-const SUBGRAPH_URL = 'https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/eden-redstone-adapter-eden-testnet/1.0/gn';
+const SUBGRAPH_URL =
+  'https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/eden-redstone-adapter-eden-testnet/1.0/gn'
 
 async function fetchPriceUpdates(skip = 0, limit = 50) {
   const response = await fetch(SUBGRAPH_URL, {
@@ -75,50 +76,50 @@ orderDirection: desc) {
         }
       }`
     })
-  });
+  })
 
-  const { data } = await response.json();
+  const { data } = await response.json()
 
   // Separate updates by feed type
-  const tiaUpdates = [];
-  const ethUpdates = [];
+  const tiaUpdates = []
+  const ethUpdates = []
 
   data.valueUpdates.forEach(update => {
-    const isETH = update.dataFeedId.startsWith('0x455448');
-    const isTIA = update.dataFeedId.startsWith('0x544941');
+    const isETH = update.dataFeedId.startsWith('0x455448')
+    const isTIA = update.dataFeedId.startsWith('0x544941')
 
     // Convert value (8 decimal places)
-    const price = Number(update.value) / 1e8;
+    const price = Number(update.value) / 1e8
     const formattedUpdate = {
       ...update,
       price: price.toFixed(4),
       timestamp: new Date(update.updatedAt * 1000)
-    };
+    }
 
     if (isETH) {
-      ethUpdates.push(formattedUpdate);
+      ethUpdates.push(formattedUpdate)
     } else if (isTIA) {
-      tiaUpdates.push(formattedUpdate);
+      tiaUpdates.push(formattedUpdate)
     }
-  });
+  })
 
-  return { tiaUpdates, ethUpdates };
+  return { tiaUpdates, ethUpdates }
 }
 
 // Usage
 fetchPriceUpdates().then(({ tiaUpdates, ethUpdates }) => {
-  console.log('Latest TIA prices:');
+  console.log('Latest TIA prices:')
   tiaUpdates.slice(0, 5).forEach(update => {
     console.log(`TIA: $${update.price} at
-${update.timestamp.toLocaleString()}`);
-  });
+${update.timestamp.toLocaleString()}`)
+  })
 
-  console.log('\nLatest ETH prices:');
+  console.log('\nLatest ETH prices:')
   ethUpdates.slice(0, 5).forEach(update => {
     console.log(`ETH: $${update.price} at
-${update.timestamp.toLocaleString()}`);
-  });
-});
+${update.timestamp.toLocaleString()}`)
+  })
+})
 ```
 
 Running this with Node.js results in:
