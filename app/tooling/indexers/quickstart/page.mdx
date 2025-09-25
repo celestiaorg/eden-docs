@@ -1,42 +1,10 @@
-# Indexers
+# Quickstart (Eden testnet)
 
-import { Callout, Steps } from 'nextra/components'
-
-<Callout type="info" emoji="🚧">
-  This page is a work in progress. It demonstrates indexing a RedStone pricefeed with Goldsky on
-  Eden Testnet.
-</Callout>
-
-Indexers are tools that allow you to turn raw onchain data into queryable databases so apps can make queries without scanning or re-executing the whole chain. They pre-process events into indexed tables and expose them via fast APIs (GraphQL/SQL), eliminating the need to run your own archive node.
-
----
-
-## Indexing with Goldsky on Eden
-
-### What is Goldsky?
-
-Goldsky turns onchain data into **GraphQL** APIs (subgraphs) and can stream that data to your databases with Mirror for SQL analytics. Subraphs are The Graph-compatible; endpoints open in a GraphiQL explorer.
-
-#### Subgraphs
-
-- **What**: GraphQL API over events/logs (optionally call data).
-- **When**: Dashboards & dapps needing fast, filtered reads.
-- **How**: Provide **contract address, ABI, network, start block** → Goldsky indexes and hosts a **The Graph–compatible** endpoint.
-
-##### Instant subgraphs
-
-No‑code start: give **address + ABI + network + start block** and deploy with the CLI's `--from-abi` flag. Goldsky generates/hosts the subgraph, you can extend with enrichments.
-
-#### Mirror
-
-Stream **subgraph or chain data** into your DB for **SQL** via a small **YAML** file (source → sink). Goldsky keeps tables in near‑real‑time.
-_Examples_: Postgres / ClickHouse / MySQL (sinks); S3 / SQS / Kafka (channels).
-
-### Quickstart (Eden testnet)
+import { Steps, Callout } from 'nextra/components'
 
 <Steps>
 
-#### Install & log in
+## Install & log in
 
 [Install the CLI](https://docs.goldsky.com/introduction) and log in:
 
@@ -44,7 +12,7 @@ _Examples_: Postgres / ClickHouse / MySQL (sinks); S3 / SQS / Kafka (channels).
 goldsky login
 ```
 
-#### Create the instant subgraph config
+## Create the instant subgraph config
 
 Save this as `adapter.json`:
 
@@ -115,7 +83,7 @@ Save this as `adapter.json`:
 }
 ```
 
-#### Deploy the instant subgraph
+## Deploy the instant subgraph
 
 ```bash copy
 goldsky subgraph deploy eden-redstone-adapter/1.0 --from-abi adapter.json
@@ -127,7 +95,7 @@ Check sync in the dashboard or list subgraphs via CLI:
 goldsky subgraph list
 ```
 
-#### Test a query (in the endpoint's GraphiQL)
+## Test a query (in the endpoint's GraphiQL)
 
 Using the GraphQL endpoint ([example](https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/eden-redstone-adapter-eden-testnet/1.0/gn)), you can query the subgraph for data. For example, to get the latest value updates from the RedStone adapter:
 
@@ -167,15 +135,15 @@ You can filter by a specific data feed ID (in this case, TIA where `TIA = 544941
 
 </Steps>
 
-### Using the indexed data in your frontend
+## Using the indexed data in your frontend
 
 Here's a simple HTML page that displays live price feeds from your subgraph. You can replace the `SUBGRAPH_URL` with your own supgraph URL:
 
 ```html copy filename="price-display.html"
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <title>Eden price feeds</title>
+    <title>Eden testnet price feeds</title>
     <style>
       body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -219,7 +187,7 @@ Here's a simple HTML page that displays live price feeds from your subgraph. You
     </style>
   </head>
   <body>
-    <h1>Eden RedStone price feeds</h1>
+    <h1>Eden testnet RedStone oracle + Goldsky indexer</h1>
     <div id="prices" class="loading">Loading prices...</div>
 
     <script>
@@ -311,61 +279,7 @@ This is what your HTML will look like in the browser:
 
 ![img](/images/indexer/eden-redstone-goldsky.png)
 
-#### Node.js/JavaScript example
-
-For a programmatic approach, here's how to fetch prices in Node.js:
-
-```javascript copy filename="fetch-prices.js"
-async function getLatestPrices(subgraphUrl) {
-  const response = await fetch(subgraphUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query: `{
-        valueUpdates(first: 10, orderBy: updatedAt, orderDirection: desc) {
-          value
-          dataFeedId
-          updatedAt
-          block_number
-        }
-      }`
-    })
-  })
-
-  const { data } = await response.json()
-
-  // Process and format the results
-  const prices = data.valueUpdates.map(update => {
-    // Identify the feed
-    const feedId = update.dataFeedId
-    let symbol = 'UNKNOWN'
-    if (feedId.startsWith('0x455448')) symbol = 'ETH'
-    else if (feedId.startsWith('0x544941')) symbol = 'TIA'
-
-    // Convert price (8 decimals)
-    const price = Number(update.value) / 1e8
-
-    return {
-      symbol,
-      price,
-      timestamp: new Date(update.updatedAt * 1000),
-      block: update.block_number
-    }
-  })
-
-  return prices
-}
-
-// Usage
-const ENDPOINT = 'YOUR_SUBGRAPH_ENDPOINT'
-getLatestPrices(ENDPOINT).then(prices => {
-  prices.forEach(({ symbol, price, timestamp }) => {
-    console.log(`${symbol}: $${price.toFixed(2)} at ${timestamp.toISOString()}`)
-  })
-})
-```
-
 <Callout type="info">
   The price values use 8 decimal places. ETH prices will be around $4,000+ (e.g., 418000000000 =
-  $4,180.00) and TIA prices around $1-2 (e.g., 147000000 = $1.47).
+  $4,180.00) and TIA prices around $1-2 (e.g., 138000000 = $1.38).
 </Callout>

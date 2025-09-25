@@ -1,0 +1,152 @@
+# Example with Goldsky (and RedStone oracle)
+
+This app demonstrates reading the [Goldsky](https://docs.goldsky.com) subgraph to fetch [RedStone](https://docs.redstone.finance) oracle data from the TIA/USD and ETH/USD feeds. This guide shows you how to fork and customize the [demo](https://celestiaorg.github.io/eden-goldsky-redstone-demo) ([source](https://github.com/celestiaorg/eden-goldsky-redstone-demo)).
+
+![eden-redstone-vite](/images/indexer/eden-redstone-vite.png)
+
+## Fork the repository
+
+```bash copy
+git clone https://github.com/celestiaorg/eden-goldsky-redstone-demo.git
+cd eden-goldsky-redstone-demo
+npm install
+```
+
+### Update the subgraph endpoint
+
+Edit `main.js` and replace the `SUBGRAPH_URL` with your own endpoint from the [quickstart](/tooling/indexers/quickstart#deploy-the-instant-subgraph). This is the endpoint you receive after you deploy the subgraph. See it in the Goldsky dashboard or by running `goldsky subgraph list`.
+
+```bash
+const SUBGRAPH_URL = 'YOUR_GOLDSKY_SUBGRAPH_URL';
+```
+
+### Run the development server
+
+```bash copy
+npm run dev
+```
+
+Visit http://localhost:5173 to see your dashboard!
+
+### Customization ideas (optional)
+
+#### Add features
+
+- Historical charts using Chart.js or similar
+- Alerts when values cross thresholds
+- Export historical data to CSV
+- Modify the GraphQL query to fetch different `dataFeedId` values
+
+#### Change the data source
+
+- Index events from a different smart contract
+- Use Goldsky Mirror to stream data to PostgreSQL for SQL queries
+- Combine multiple subgraphs for cross-contract analytics
+
+#### Style customization
+
+- Edit `style.css` for visual changes
+- Add dark/light mode toggle
+- Add animations for price updates
+
+#### Deploy your own subgraph
+
+If you want to index different contracts, [create your own subgraph](https://docs.goldsky.com/subgraphs/deploying-subgraphs). You'll also need to edit the frontend accordingly.
+
+## Node.js/JavaScript example
+
+For a programmatic approach, here's how to fetch subgraph information in
+Node.js through Goldsky for the RedStone adapter contract:
+
+```javascript copy filename="fetch-prices.js"
+const SUBGRAPH_URL = 'https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/eden-redstone-adapter-eden-testnet/1.0/gn';
+
+async function fetchPriceUpdates(skip = 0, limit = 50) {
+  const response = await fetch(SUBGRAPH_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query: `{
+        valueUpdates(first: ${limit}, skip: ${skip}, orderBy: updatedAt,
+orderDirection: desc) {
+          value
+          dataFeedId
+          updatedAt
+        }
+      }`
+    })
+  });
+
+  const { data } = await response.json();
+
+  // Separate updates by feed type
+  const tiaUpdates = [];
+  const ethUpdates = [];
+
+  data.valueUpdates.forEach(update => {
+    const isETH = update.dataFeedId.startsWith('0x455448');
+    const isTIA = update.dataFeedId.startsWith('0x544941');
+
+    // Convert value (8 decimal places)
+    const price = Number(update.value) / 1e8;
+    const formattedUpdate = {
+      ...update,
+      price: price.toFixed(4),
+      timestamp: new Date(update.updatedAt * 1000)
+    };
+
+    if (isETH) {
+      ethUpdates.push(formattedUpdate);
+    } else if (isTIA) {
+      tiaUpdates.push(formattedUpdate);
+    }
+  });
+
+  return { tiaUpdates, ethUpdates };
+}
+
+// Usage
+fetchPriceUpdates().then(({ tiaUpdates, ethUpdates }) => {
+  console.log('Latest TIA prices:');
+  tiaUpdates.slice(0, 5).forEach(update => {
+    console.log(`TIA: $${update.price} at
+${update.timestamp.toLocaleString()}`);
+  });
+
+  console.log('\nLatest ETH prices:');
+  ethUpdates.slice(0, 5).forEach(update => {
+    console.log(`ETH: $${update.price} at
+${update.timestamp.toLocaleString()}`);
+  });
+});
+```
+
+Running this with Node.js results in:
+
+```bash
+$ node fetch-prices.js
+
+Latest TIA prices:
+TIA: $1.3794 at
+9/25/2025, 2:30:49 PM
+TIA: $1.3852 at
+9/25/2025, 1:51:39 PM
+TIA: $1.3937 at
+9/25/2025, 1:36:39 PM
+TIA: $1.4024 at
+9/25/2025, 1:22:58 PM
+TIA: $1.3947 at
+9/25/2025, 1:01:38 PM
+
+Latest ETH prices:
+ETH: $3896.5413 at
+9/25/2025, 2:30:49 PM
+ETH: $3917.8692 at
+9/25/2025, 2:20:57 PM
+ETH: $3897.4266 at
+9/25/2025, 2:12:09 PM
+ETH: $3917.7655 at
+9/25/2025, 1:51:39 PM
+ETH: $3936.9400 at
+9/25/2025, 1:01:38 PM
+```
