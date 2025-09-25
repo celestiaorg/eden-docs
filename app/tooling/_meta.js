@@ -4,5 +4,6 @@ export default {
   'existing-contracts': 'Existing contracts',
   indexers: 'Indexers',
   oracles: 'Oracles',
+  storage: 'Storage',
   wallets: 'Wallets'
 }
