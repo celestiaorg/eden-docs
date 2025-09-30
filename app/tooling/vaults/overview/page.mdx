@@ -1,0 +1,127 @@
+# Vaults overview
+
+import { Callout } from 'nextra/components'
+
+Vaults allow users to deposit assets and receive shares in return. As the vault generates yield, the amount of assets per share increases (while the number of shares remains constant). When users redeem their shares, they receive more assets than they originally deposited.
+
+## What are tokenized vaults?
+
+Tokenized vaults wrap DeFi strategies into a standard interface. Instead of managing complex positions across multiple protocols, users deposit into a vault and hold shares that automatically appreciate as the strategy earns yield.
+
+### Two types of tokenized vaults
+
+**1. Synchronous vaults (ERC-4626)**
+- Instant deposits and withdrawals
+- Deposit assets, immediately receive shares
+- Redeem shares, immediately receive assets
+- **Use cases**: Yield aggregation, lending protocols, automated strategies
+
+**2. Asynchronous vaults (ERC-7540)**
+- Request-based flow: `requestDeposit` -> approval/fulfillment -> `deposit`
+- Handles off-chain processes like KYC, bridge finality, or validator exit queues
+- **Use cases**: Real-world assets (RWA), liquid staking tokens (LSTs), compliance-gated strategies
+
+---
+
+## ERC-4626: Synchronous vaults
+
+[ERC-4626](https://eips.ethereum.org/EIPS/eip-4626) provides a standard interface for instant deposit/redeem vaults. All ERC-4626 vaults are also ERC-20 tokens—the vault contract extends ERC-20, so shares can be transferred, approved, and managed like any token.
+
+### Getting assets into vaults
+
+**Market order: `deposit(assets)`**
+```solidity
+// Pseudocode for illustrative purposes
+// Deposit 1000 USDC, receive shares back
+if (assets < maxDeposit && previewDeposit(assets) < shares)
+  vault.deposit(1000e6)
+```
+
+**Limit order: `mint(shares)`**
+```solidity
+// Pseudocode for illustrative purposes
+// Mint exactly 100 shares, spending up to X assets
+if (shares < maxMint && assets < previewMint(shares))
+  vault.mint(100e18)
+```
+
+- `.asset()` must be one pre-defined ERC-20 token. ERC-4626 is single-asset only.
+- [ERC-7575](https://eips.ethereum.org/EIPS/eip-7575) aims to generalize to multi-asset vaults.
+- `.deposit()` returns exactly `shares` to the receiver
+
+### Getting assets out of vaults
+
+**Market order: `redeem(shares)`**
+```solidity
+// Pseudocode for illustrative purposes
+// Redeem 100 shares for assets
+if (shares < maxRedeem && previewRedeem(shares) < assets)
+  vault.redeem(100e18)
+```
+
+**Limit order: `withdraw(assets)`**
+```solidity
+// Pseudocode for illustrative purposes
+// Withdraw exactly 1000 assets, burning up to X shares
+if (assets < maxWithdraw && shares < previewWithdraw(assets))
+  vault.withdraw(1000e6)
+```
+
+- Must only return the ERC-20 `.asset()`
+- If a user is timelocked, `maxRedeem`/`maxWithdraw` should return 0
+
+### Key methods
+
+**ERC-4626 view methods:**
+- `totalAssets()`: Total assets controlled by the vault
+- `convertToShares(assets)`: Preview shares for an asset amount
+- `convertToAssets(shares)`: Preview assets for a share amount
+
+**Inherited ERC-20 methods:**
+- `totalSupply()`: Total shares issued
+- `balanceOf(user)`: User's share balance
+
+**Share pricing:**
+```
+pricePerShare = totalAssets / totalSupply
+```
+
+The vault only tracks two numbers: total assets and total shares. Each user's value is implied by this ratio—no loops, gas-efficient accounting.
+
+---
+
+## ERC-7540: Asynchronous vaults
+
+[ERC-7540](https://eips.ethereum.org/EIPS/eip-7540) extends ERC-4626 with request-based flows for strategies that can't settle instantly. This is critical for vaults dealing with off-chain processes or delays.
+
+### Lifecycle: request -> pending -> claim
+
+**Deposits:**
+1. User calls `requestDeposit(assets)` -> status: `pendingDepositRequest`
+2. Fulfillment triggered by operator or external system (KYC, settlement, etc.) -> status: `claimableDepositRequest`
+3. User calls `deposit(assets)` -> status: `claimed`
+
+**Redemptions:**
+1. User calls `requestRedeem(shares)` -> status: `pendingRedeemRequest`
+2. Fulfillment triggered by operator or external system -> status: `claimableRedeemRequest`
+3. User claims assets -> status: `claimed`
+
+Note: The statuses shown (`pendingDepositRequest`, etc.) are conceptual. The ERC-7540 spec defines structs and mappings to track request state rather than explicit enums.
+
+**Why no `requestMint` or `requestWithdraw`?**
+The time between request submission and operator fulfillment is unpredictable. Specifying exact outputs upfront would be misleading.
+
+### Use cases
+
+- **RWA**: Real-world asset tokenization with compliance checks
+- **LSTs/LRTs**: Liquid staking/restaking with validator exit queues
+- **Cross-chain**: Deposits requiring bridge finality
+- **Off-chain collateral**: Strategies buying physical assets (real estate, commodities)
+
+---
+
+## Getting started
+
+Now that you've learned about the basics of vaults, you can start building your own.
+
+1. [Deploy an example ERC-4626 vault](/tooling/vaults/example)
