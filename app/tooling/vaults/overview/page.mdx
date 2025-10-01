@@ -11,12 +11,14 @@ Tokenized vaults wrap DeFi strategies into a standard interface. Instead of mana
 ### Two types of tokenized vaults
 
 **1. Synchronous vaults (ERC-4626)**
+
 - Instant deposits and withdrawals
 - Deposit assets, immediately receive shares
 - Redeem shares, immediately receive assets
 - **Use cases**: Yield aggregation, lending protocols, automated strategies
 
 **2. Asynchronous vaults (ERC-7540)**
+
 - Request-based flow: `requestDeposit` -> approval/fulfillment -> `deposit`
 - Handles off-chain processes like KYC, bridge finality, or validator exit queues
 - **Use cases**: Real-world assets (RWA), liquid staking tokens (LSTs), compliance-gated strategies
@@ -30,6 +32,7 @@ Tokenized vaults wrap DeFi strategies into a standard interface. Instead of mana
 ### Getting assets into vaults
 
 **Market order: `deposit(assets)`**
+
 ```solidity
 // Pseudocode for illustrative purposes
 // Deposit 1000 USDC, receive shares back
@@ -38,6 +41,7 @@ if (assets < maxDeposit && previewDeposit(assets) < shares)
 ```
 
 **Limit order: `mint(shares)`**
+
 ```solidity
 // Pseudocode for illustrative purposes
 // Mint exactly 100 shares, spending up to X assets
@@ -52,6 +56,7 @@ if (shares < maxMint && assets < previewMint(shares))
 ### Getting assets out of vaults
 
 **Market order: `redeem(shares)`**
+
 ```solidity
 // Pseudocode for illustrative purposes
 // Redeem 100 shares for assets
@@ -60,6 +65,7 @@ if (shares < maxRedeem && previewRedeem(shares) < assets)
 ```
 
 **Limit order: `withdraw(assets)`**
+
 ```solidity
 // Pseudocode for illustrative purposes
 // Withdraw exactly 1000 assets, burning up to X shares
@@ -73,15 +79,18 @@ if (assets < maxWithdraw && shares < previewWithdraw(assets))
 ### Key methods
 
 **ERC-4626 view methods:**
+
 - `totalAssets()`: Total assets controlled by the vault
 - `convertToShares(assets)`: Preview shares for an asset amount
 - `convertToAssets(shares)`: Preview assets for a share amount
 
 **Inherited ERC-20 methods:**
+
 - `totalSupply()`: Total shares issued
 - `balanceOf(user)`: User's share balance
 
 **Share pricing:**
+
 ```
 pricePerShare = totalAssets / totalSupply
 ```
@@ -97,11 +106,13 @@ The vault only tracks two numbers: total assets and total shares. Each user's va
 ### Lifecycle: request -> pending -> claim
 
 **Deposits:**
+
 1. User calls `requestDeposit(assets)` -> status: `pendingDepositRequest`
 2. Fulfillment triggered by operator or external system (KYC, settlement, etc.) -> status: `claimableDepositRequest`
 3. User calls `deposit(assets)` -> status: `claimed`
 
 **Redemptions:**
+
 1. User calls `requestRedeem(shares)` -> status: `pendingRedeemRequest`
 2. Fulfillment triggered by operator or external system -> status: `claimableRedeemRequest`
 3. User claims assets -> status: `claimed`
