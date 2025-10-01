@@ -6,7 +6,18 @@ import { Callout } from 'nextra/components'
   This page is a work in progress.
 </Callout>
 
-Oracles for TIA/USD and ETH/USD are deployed to Eden Testnet with [RedStone](https://www.redstone.finance/).
+## What are oracles?
+
+Oracles are blockchain middleware that bridge the gap between onchain smart contracts and offchain data sources. They enable smart contracts to access external data like asset prices, weather information, or sports scores in a secure manner.
+
+Price oracles provide real-time asset pricing data to smart contracts and applications on Eden testnet. Oracles for TIA/USD and ETH/USD are deployed to Eden Testnet with [RedStone](https://www.redstone.finance/) through their **push model** architecture.
+
+## Why use oracles?
+
+- **DeFi protocols**: Lending, borrowing, and liquidation systems need accurate prices
+- **Trading applications**: DEXs and automated market makers require real-time price data
+- **Derivatives**: Options and futures contracts depend on reliable price feeds
+- **Analytics**: Track historical price movements and calculate metrics
 
 ## Existing contracts
 
@@ -15,3 +26,5 @@ Existing contracts are listed on the [Eden testnet page](/networks/testnet#exist
 ## Using oracles in your app
 
 Learn how to index the RedStone pricefeeds on Eden testnet with Goldsky in the [indexing quickstart](/tooling/indexers/quickstart) and [example](/tooling/indexers/example).
+
+Visit [RedStone's documentation](https://docs.redstone.finance) for in-depth technical details.
