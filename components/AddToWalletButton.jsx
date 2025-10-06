@@ -14,7 +14,7 @@ const DEFAULT_CHAIN_CONFIG = {
     decimals: 18
   },
   rpcUrls: ['https://ev-reth-eden-testnet.binarybuilders.services:8545/'],
-  blockExplorerUrls: ['https://explorer-eden-testnet.binarybuilders.services']
+  blockExplorerUrls: ['https://eden.blockscout.com/']
 }
 
 export default function AddToWalletButton({ chainConfig = DEFAULT_CHAIN_CONFIG, label }) {
