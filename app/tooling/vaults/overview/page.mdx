@@ -2,125 +2,91 @@
 
 import { Callout } from 'nextra/components'
 
-Vaults allow users to deposit assets and receive shares in return. As the vault generates yield, the amount of assets per share increases (while the number of shares remains constant). When users redeem their shares, they receive more assets than they originally deposited.
+Vaults let users pool assets into a smart contract and receive shares. The vault runs a strategy, yield flows back, and share price increases. Users deposit assets, get shares, and redeem shares for more assets than they put in.
 
-## What are tokenized vaults?
-
-Tokenized vaults wrap DeFi strategies into a standard interface. Instead of managing complex positions across multiple protocols, users deposit into a vault and hold shares that automatically appreciate as the strategy earns yield.
-
-### Two types of tokenized vaults
-
-**1. Synchronous vaults (ERC-4626)**
-
-- Instant deposits and withdrawals
-- Deposit assets, immediately receive shares
-- Redeem shares, immediately receive assets
-- **Use cases**: Yield aggregation, lending protocols, automated strategies
-
-**2. Asynchronous vaults (ERC-7540)**
-
-- Request-based flow: `requestDeposit` -> approval/fulfillment -> `deposit`
-- Handles off-chain processes like KYC, bridge finality, or validator exit queues
-- **Use cases**: Real-world assets (RWA), liquid staking tokens (LSTs), compliance-gated strategies
-
----
+Think of vaults as programmable, permissionless yield. They don't have to live fully onchain—you could pool funds to buy a condo, list it on Airbnb, and flow rental income back into the vault. Shareholders own a slice of both the asset and the profits.
 
 ## ERC-4626: Synchronous vaults
 
-[ERC-4626](https://eips.ethereum.org/EIPS/eip-4626) provides a standard interface for instant deposit/redeem vaults. All ERC-4626 vaults are also ERC-20 tokens—the vault contract extends ERC-20, so shares can be transferred, approved, and managed like any token.
+[ERC-4626](https://eips.ethereum.org/EIPS/eip-4626) provides a standard interface for instant deposit/redeem vaults. Every vault exposes the same methods: `deposit`, `mint`, `redeem`, `withdraw`.
 
-### Getting assets into vaults
+ERC-4626 vaults are also ERC-20 tokens. The vault contract extends ERC-20, so when you deposit, the vault mints you shares. Those shares are implemented inside the vault itself—you can call `balanceOf`, `transfer`, `approve`, all the usual ERC-20 methods.
 
-**Market order: `deposit(assets)`**
+### How vault accounting works
 
-```solidity
-// Pseudocode for illustrative purposes
-// Deposit 1000 USDC, receive shares back
-if (assets < maxDeposit && previewDeposit(assets) < shares)
-  vault.deposit(1000e6)
-```
+Instead of tracking each user's balance with for-loops (gas-inefficient), vaults track two numbers:
 
-**Limit order: `mint(shares)`**
+- `totalAssets`: Total assets controlled by the vault
+- `totalSupply`: Total shares issued
 
-```solidity
-// Pseudocode for illustrative purposes
-// Mint exactly 100 shares, spending up to X assets
-if (shares < maxMint && assets < previewMint(shares))
-  vault.mint(100e18)
-```
-
-- `.asset()` must be one pre-defined ERC-20 token. ERC-4626 is single-asset only.
-- [ERC-7575](https://eips.ethereum.org/EIPS/eip-7575) aims to generalize to multi-asset vaults.
-- `.deposit()` returns exactly `shares` to the receiver
-
-### Getting assets out of vaults
-
-**Market order: `redeem(shares)`**
-
-```solidity
-// Pseudocode for illustrative purposes
-// Redeem 100 shares for assets
-if (shares < maxRedeem && previewRedeem(shares) < assets)
-  vault.redeem(100e18)
-```
-
-**Limit order: `withdraw(assets)`**
-
-```solidity
-// Pseudocode for illustrative purposes
-// Withdraw exactly 1000 assets, burning up to X shares
-if (assets < maxWithdraw && shares < previewWithdraw(assets))
-  vault.withdraw(1000e6)
-```
-
-- Must only return the ERC-20 `.asset()`
-- If a user is timelocked, `maxRedeem`/`maxWithdraw` should return 0
-
-### Key methods
-
-**ERC-4626 view methods:**
-
-- `totalAssets()`: Total assets controlled by the vault
-- `convertToShares(assets)`: Preview shares for an asset amount
-- `convertToAssets(shares)`: Preview assets for a share amount
-
-**Inherited ERC-20 methods:**
-
-- `totalSupply()`: Total shares issued
-- `balanceOf(user)`: User's share balance
-
-**Share pricing:**
+Each share's value is implied by the ratio:
 
 ```
 pricePerShare = totalAssets / totalSupply
 ```
 
-The vault only tracks two numbers: total assets and total shares. Each user's value is implied by this ratio—no loops, gas-efficient accounting.
+**Example:**
+
+Ten users each deposit 100 USDC.
+
+- `totalAssets = 1000`
+- `totalSupply = 1000`
+- `pricePerShare = 1000 / 1000 = $1`
+
+After a month, the vault earns 100 USDC profit.
+
+- `totalAssets = 1100`
+- `totalSupply = 1000`
+- `pricePerShare = 1100 / 1000 = $1.10`
+
+If you redeem 100 shares, you get $110 back instead of the $100 you deposited. The contract never updated your balance directly—it just updated two numbers. No loops, gas-efficient.
+
+### Core methods
+
+**Deposits:**
+
+- `deposit(assets)`: Deposit assets, receive shares
+- `mint(shares)`: Mint exact number of shares, spending required assets
+
+**Withdrawals:**
+
+- `redeem(shares)`: Burn shares, receive assets
+- `withdraw(assets)`: Withdraw exact assets, burning required shares
+
+**Notes:**
+
+- `.asset()` must be one pre-defined ERC-20 token. ERC-4626 is single-asset only.
+- [ERC-7575](https://eips.ethereum.org/EIPS/eip-7575) aims to generalize to multi-asset vaults.
+- If a user is timelocked, `maxRedeem`/`maxWithdraw` should return 0
 
 ---
 
 ## ERC-7540: Asynchronous vaults
 
-[ERC-7540](https://eips.ethereum.org/EIPS/eip-7540) extends ERC-4626 with request-based flows for strategies that can't settle instantly. This is critical for vaults dealing with off-chain processes or delays.
+[ERC-7540](https://eips.ethereum.org/EIPS/eip-7540) extends ERC-4626 with request-based flows for strategies that can't settle instantly onchain.
 
-### Lifecycle: request -> pending -> claim
+Sometimes deposits require KYC checks. Assets live across a bridge and you're waiting for finality. Redemptions are gated by validator exit queues. Or the vault buys off-chain collateral and waits for settlement.
+
+Yield doesn't always live in a synchronous world.
+
+### Lifecycle: request → pending → claim
+
+Instead of minting shares right away, you first make a request. That request is marked pending while external processes happen. Once ready, status flips to claimable, then you mint shares.
 
 **Deposits:**
 
-1. User calls `requestDeposit(assets)` -> status: `pendingDepositRequest`
-2. Fulfillment triggered by operator or external system (KYC, settlement, etc.) -> status: `claimableDepositRequest`
-3. User calls `deposit(assets)` -> status: `claimed`
+1. User calls `requestDeposit(assets)` → status: pending
+2. Fulfillment triggered by operator or external system (KYC, settlement, etc.) → status: claimable
+3. User calls `deposit(assets)` → shares minted
 
 **Redemptions:**
 
-1. User calls `requestRedeem(shares)` -> status: `pendingRedeemRequest`
-2. Fulfillment triggered by operator or external system -> status: `claimableRedeemRequest`
-3. User claims assets -> status: `claimed`
-
-Note: The statuses shown (`pendingDepositRequest`, etc.) are conceptual. The ERC-7540 spec defines structs and mappings to track request state rather than explicit enums.
+1. User calls `requestRedeem(shares)` → status: pending
+2. Fulfillment triggered by operator or external system → status: claimable
+3. User claims assets
 
 **Why no `requestMint` or `requestWithdraw`?**
-The time between request submission and operator fulfillment is unpredictable. Specifying exact outputs upfront would be misleading.
+The time between request and fulfillment is unpredictable. Specifying exact outputs upfront would be misleading.
 
 ### Use cases
 
@@ -129,10 +95,8 @@ The time between request submission and operator fulfillment is unpredictable. S
 - **Cross-chain**: Deposits requiring bridge finality
 - **Off-chain collateral**: Strategies buying physical assets (real estate, commodities)
 
----
-
 ## Getting started
 
-Now that you've learned about the basics of vaults, you can start building your own.
+Ready to build? Check out the [example ERC-4626 vault](/tooling/vaults/example) to get started.
 
-1. [Deploy an example ERC-4626 vault](/tooling/vaults/example)
+If you have questions or need help, reach out on [Telegram](http://t.me/celestiacommunity).
