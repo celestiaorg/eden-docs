@@ -155,7 +155,7 @@ contract InteractCounter is Script {
 
 ## Explorer
 
-Check addresses and transactions at [https://eden.blockscout.com/](https://eden.blockscout.com/)
+Check addresses and transactions at [https://eden-testnet.blockscout.com/](https://eden-testnet.blockscout.com/)
 
 ## Contract verification
 
@@ -167,7 +167,7 @@ Use the `verify-contract` command to verify your contract. When using the code b
 forge verify-contract \
     --rpc-url https://ev-reth-eden-testnet.binarybuilders.services:8545 \
     --verifier blockscout \
-    --verifier-url 'https://eden.blockscout.com:443/api/' \
+    --verifier-url 'https://eden-testnet.blockscout.com:443/api/' \
     --compiler-version 0.8.28 \
     $DEPLOYED_ADDRESS \
     src/Counter.sol:Counter
@@ -212,7 +212,7 @@ Then run the command with the correct version:
 forge verify-contract \
     --rpc-url https://ev-reth-eden-testnet.binarybuilders.services:8545 \
     --verifier blockscout \
-    --verifier-url 'https://eden.blockscout.com/:443/api/' \
+    --verifier-url 'https://eden-testnet.blockscout.com/:443/api/' \
     --compiler-version 0.8.30 \ # Change this version
     $DEPLOYED_ADDRESS \
     src/Counter.sol:Counter
