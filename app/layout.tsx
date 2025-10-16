@@ -73,7 +73,7 @@ const footer = (
         <Image src="/eden-logo.svg" alt="Eden" width={60} height={20} style={{ height: 'auto' }} />
       </Link>
       <span style={{ color: '#35A35A', fontWeight: '500' }}>•</span>
-      <span>Infinity starts here</span>
+      <span>Welcome to Eden</span>
     </div>
   </Footer>
 )
