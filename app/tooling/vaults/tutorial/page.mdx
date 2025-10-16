@@ -1,0 +1,322 @@
+# Build Your Own Vault on Eden
+
+import { Callout, Steps } from 'nextra/components'
+import {
+  WalletConnect,
+  DeployVault,
+  ConfigureVault,
+  GetTestTokens,
+  DepositToVault,
+  VaultStats,
+} from '../../../../components/vault-tutorial/TutorialComponents'
+
+<Callout type="info">
+  This is an interactive tutorial. You'll deploy a real MetaMorpho vault on Eden Testnet and
+  interact with it through embedded components.
+</Callout>
+
+This tutorial will guide you through the complete process of creating and using a yield-bearing vault using the Morpho protocol. By the end, you'll have deployed your own ERC-4626 compliant vault that generates yield from lending markets.
+
+## What You'll Build
+
+- A **MetaMorpho vault** that accepts deposits and issues shares
+- Configuration for **supply caps** and **market allocation**
+- Integration with **Morpho Blue** lending markets for yield generation
+- Real-time monitoring of **vault performance** and **share price**
+
+<Steps>
+
+### Get Eden Testnet Tokens
+
+Before we begin, you'll need some testnet TIA tokens for gas fees. Visit the [Eden Testnet Faucet](https://faucet-eden-testnet.binarybuilders.services) to get free testnet tokens.
+
+Once you have testnet TIA, connect your wallet below:
+
+<WalletConnect />
+
+<Callout type="warning">
+  Make sure your wallet is connected to **Eden Testnet** (Chain ID: 3735928814). If you're on a
+  different network, your wallet should prompt you to switch.
+</Callout>
+
+### Deploy Your Vault
+
+MetaMorpho vaults are deployed through a factory contract using CREATE2, which ensures deterministic addresses. You'll be the owner of this vault and control all its configuration.
+
+Choose a name and symbol for your vault, then deploy it:
+
+<DeployVault />
+
+**What just happened?**
+
+The factory deployed a new MetaMorpho v1.1 vault contract with you as the owner. This vault implements the **ERC-4626** standard, making it compatible with any DeFi protocol that supports tokenized vaults.
+
+Key properties of your vault:
+
+- **Owner**: Your address (can configure the vault)
+- **Timelock**: 0 seconds (instant execution for testing)
+- **Asset**: fakeUSD (the token depositors will provide)
+- **ERC-4626**: Full compliance for maximum composability
+
+### Configure Your Vault
+
+Before users can deposit, your vault needs two critical configurations:
+
+1. **Supply Cap** - Maximum amount of assets the vault can hold (risk management)
+2. **Supply Queue** - Ordered list of markets where deposits will be allocated
+
+<ConfigureVault />
+
+**Understanding Supply Caps**
+
+Supply caps protect depositors by limiting exposure to any single market. As the vault curator, you set caps based on your risk assessment. Higher caps = higher risk but potentially higher yield.
+
+The configuration process has two steps:
+
+1. **Submit Cap**: Propose a new cap (subject to timelock)
+2. **Accept Cap**: Accept the pending cap (after timelock expires)
+
+Since we set timelock=0 for testing, you can submit and accept immediately.
+
+**Understanding Supply Queue**
+
+The **supply queue** is an ordered list of markets. When users deposit, the vault automatically:
+
+1. Allocates funds to the first market in the queue (up to its cap)
+2. If that market is full, moves to the next market
+3. Continues until all funds are allocated or the queue is exhausted
+
+For this tutorial, we're using a single market with these parameters:
+
+- **Loan Token**: fakeUSD (what lenders supply)
+- **Collateral Token**: fakeTIA (what borrowers provide)
+- **LLTV**: 86% (loan-to-value ratio)
+- **Oracle**: Mock oracle for testing
+
+### Get Test Tokens
+
+Now that your vault is configured, you need some fakeUSD tokens to deposit. Use the faucet below to mint test tokens:
+
+<GetTestTokens />
+
+**About fakeUSD**
+
+`fakeUSD` is an ERC-20 token with a public faucet for testing on Eden Testnet. It simulates a stablecoin like USDC or DAI. In production, you'd use real tokens.
+
+The faucet has these limits:
+
+- **Max per call**: 2000 tokens
+- **Cooldown**: 60 seconds per address per token
+- **Free**: No gas fees for minting
+
+<Callout type="info">
+  You can also mint **fakeTIA** (collateral token) if you want to explore borrowing from the market
+  directly, though that's outside the scope of this tutorial.
+</Callout>
+
+### Deposit to Your Vault
+
+With fakeUSD tokens in your wallet, you're ready to deposit into your vault and receive vault shares in return.
+
+<DepositToVault />
+
+**ERC-4626 Deposit Mechanics**
+
+When you deposit assets into an ERC-4626 vault, here's what happens:
+
+1. **Approval**: First, you approve the vault to spend your fakeUSD
+2. **Deposit**: The vault pulls your fakeUSD and mints you shares
+3. **Shares**: Your shares represent ownership in the vault's total assets
+
+**Share Price Calculation**
+
+The share price is determined by:
+
+```
+sharePrice = totalAssets / totalSupply
+```
+
+- On the **first deposit**, the ratio is typically 1:1 (100 fakeUSD → 100 shares)
+- As **interest accrues**, totalAssets grows but totalSupply stays constant
+- Your shares become **more valuable** over time
+
+**Example:**
+
+- You deposit 100 fakeUSD → receive 100 shares
+- Vault earns 10 fakeUSD in interest → totalAssets = 110, totalSupply = 100
+- Share price = 110 / 100 = 1.10 fakeUSD per share
+- Your 100 shares are now worth 110 fakeUSD!
+
+### Observe the Results
+
+Watch your vault's metrics update in real-time. The stats auto-refresh every 10 seconds:
+
+<VaultStats />
+
+**Key Metrics Explained**
+
+- **Total Assets**: Total fakeUSD controlled by the vault (increases as interest accrues)
+- **Total Supply**: Total vault shares issued to all depositors (only changes on deposit/withdraw)
+- **Share Price**: Current value of each share (totalAssets / totalSupply)
+- **Your Shares**: Your portion of the vault, and its current value in fakeUSD
+
+**How Yield Accrues**
+
+Your vault earns yield through the underlying Morpho Blue market:
+
+1. **Lenders supply** fakeUSD to the market
+2. **Borrowers borrow** fakeUSD by providing fakeTIA collateral
+3. **Interest accrues** on borrowed amounts
+4. **Interest flows back** to lenders (including your vault)
+5. **Share price increases** as totalAssets grows
+
+The beauty of ERC-4626: **you don't need to do anything**. Just hold your shares, and they automatically appreciate as the vault earns yield.
+
+</Steps>
+
+## What You Built
+
+Congratulations! You've deployed a fully functional ERC-4626 vault on Eden Testnet. Your vault:
+
+- ✅ Accepts deposits and mints shares (ERC-4626 compliant)
+- ✅ Allocates capital to Morpho Blue markets
+- ✅ Earns yield from lending activity
+- ✅ Increases share value as interest accrues
+- ✅ Allows withdrawals at any time (subject to market liquidity)
+
+## Next Steps
+
+Ready to take your vault further? Here are some ideas:
+
+### Add More Markets
+
+Diversify risk by enabling multiple lending markets with different:
+
+- **Collateral types**: ETH, BTC, TIA, etc.
+- **LTV ratios**: Conservative (80%) vs aggressive (95%)
+- **Risk profiles**: Stable vs volatile assets
+
+To add markets:
+
+1. Submit and accept a new supply cap for each market
+2. Update the supply queue with your preferred order
+3. Higher priority markets fill first
+
+### Implement Advanced Features
+
+- **Withdrawal queue**: Handle markets with low liquidity
+- **Performance fees**: Take a cut of yields
+- **Deposit fees**: Discourage short-term deposits
+- **Timelock**: Add governance delays for production
+- **Multi-sig**: Use a multi-signature wallet as owner
+
+### Monitor Performance
+
+Track your vault's key metrics:
+
+- **APY**: Weighted average across all markets
+- **Utilization**: How much capital is actively earning
+- **Idle assets**: Capital waiting for market allocation
+- **Risk metrics**: Health factors of underlying positions
+
+## Going to Production
+
+Deploying on mainnet? Here's what changes:
+
+### Use Real Assets
+
+Replace test tokens with production assets:
+
+- **fakeUSD** → **USDC**, **DAI**, **USDT**
+- **Collateral** → **WETH**, **WBTC**, real TIA
+
+### Implement Security
+
+1. **Audits**: Get professional security audits
+2. **Timelock**: Use 24-48 hour delays for governance actions
+3. **Multi-sig**: Use a 3-of-5 or higher threshold for ownership
+4. **Monitoring**: Set up alerts for unusual activity
+5. **Insurance**: Consider smart contract insurance
+
+### Curate Markets Carefully
+
+Production market selection requires due diligence:
+
+- **Oracle quality**: Use Chainlink or Pyth, not test oracles
+- **LTV ratios**: Verify against historical liquidation data
+- **Collateral risk**: Assess volatility and liquidity
+- **IRM validation**: Ensure interest rate models are battle-tested
+
+### Legal & Compliance
+
+Depending on your jurisdiction:
+
+- **KYC/AML**: May be required for certain users
+- **Securities law**: Understand if vault shares are securities
+- **Tax reporting**: Provide necessary documentation to users
+- **Terms of service**: Clear legal agreements
+
+## Learn More
+
+### Morpho Resources
+
+- **[Morpho Documentation](https://docs.morpho.org)** - Complete protocol docs
+- **[Security Guide](https://docs.morpho.org/security)** - Best practices
+- **[Morpho Blue Markets](https://app.morpho.org)** - Browse live markets
+- **[GitHub](https://github.com/morpho-org)** - Open source contracts
+
+### ERC-4626 Standard
+
+- **[EIP-4626](https://eips.ethereum.org/EIPS/eip-4626)** - Original specification
+- **[OpenZeppelin Implementation](https://docs.openzeppelin.com/contracts/5.x/erc4626)** - Reference code
+- **[ERC-4626 Alliance](https://erc4626.info)** - Community resources
+
+### Eden Testnet
+
+- **[Eden Testnet Explorer](https://eden-testnet.blockscout.com)** - View your contracts
+- **[Eden Testnet Faucet](https://faucet-eden-testnet.binarybuilders.services)** - Get more tokens
+- **[Example Vault Implementation](https://github.com/gbarros/token-vaults)** - Complete codebase
+
+## Troubleshooting
+
+### Common Issues
+
+**"Wrong network" error**
+
+- Ensure your wallet is connected to Eden Testnet (Chain ID: 3735928814)
+- Add the network manually if it's not in your wallet
+
+**"Insufficient funds" when deploying**
+
+- Get more testnet TIA from the [faucet](https://faucet-eden-testnet.binarybuilders.services)
+- Each transaction requires a small amount of gas
+
+**"Insufficient allowance" when depositing**
+
+- Click the "Approve" button before "Deposit"
+- Wait for the approval transaction to confirm
+- Then retry the deposit
+
+**"Cooldown active" when minting tokens**
+
+- The faucet has a 60-second cooldown per address per token
+- Wait for the cooldown to expire, or use a different wallet
+
+**Vault metrics showing 0**
+
+- Make sure you've completed all previous steps
+- Check that transactions have confirmed (view on explorer)
+- Refresh the page if metrics don't update
+
+### Need Help?
+
+If you're stuck, reach out:
+
+- **[Telegram Community](http://t.me/celestiacommunity)** - Ask questions
+- **[GitHub Issues](https://github.com/celestiaorg/eden-docs/issues)** - Report bugs
+- **[Eden Documentation](/)** - Browse other guides
+
+---
+
+**Happy building on Eden! 🚀**
+

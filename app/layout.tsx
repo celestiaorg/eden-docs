@@ -5,6 +5,7 @@ import './globals.css'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Metadata } from 'next'
+import Providers from './providers'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://crispy-eureka-2nvnerv.pages.github.io/'),
@@ -90,19 +91,21 @@ export default async function RootLayout({ children }) {
         <link rel="apple-touch-icon" href="/favicon.png" />
       </Head>
       <body>
-        <Layout
-          banner={banner}
-          navbar={navbar}
-          pageMap={await getPageMap()}
-          docsRepositoryBase="https://github.com/celestiaorg/eden-docs/edit/main"
-          footer={footer}
-          sidebar={{
-            autoCollapse: true, // collapse inactive folders
-            defaultMenuCollapseLevel: 1
-          }}
-        >
-          {children}
-        </Layout>
+        <Providers>
+          <Layout
+            banner={banner}
+            navbar={navbar}
+            pageMap={await getPageMap()}
+            docsRepositoryBase="https://github.com/celestiaorg/eden-docs/edit/main"
+            footer={footer}
+            sidebar={{
+              autoCollapse: true, // collapse inactive folders
+              defaultMenuCollapseLevel: 1
+            }}
+          >
+            {children}
+          </Layout>
+        </Providers>
       </body>
     </html>
   )
