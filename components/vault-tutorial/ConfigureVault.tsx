@@ -1,61 +1,60 @@
-'use client';
+'use client'
 
 /**
  * ConfigureVault Component
  * UI for configuring vault supply caps and queue
  */
 
-import { useState, useEffect } from 'react';
-import { useAccount, useWriteContract, useReadContract, useWaitForTransactionReceipt } from 'wagmi';
-import { parseEther, formatEther } from 'viem';
-import { metaMorphoAbi } from '../../lib/abis';
-import { MARKET_ID, marketParams, getTxUrl } from '../../lib/vaultTutorialConfig';
+import { useState, useEffect } from 'react'
+import { useAccount, useWriteContract, useReadContract, useWaitForTransactionReceipt } from 'wagmi'
+import { parseEther, formatEther } from 'viem'
+import { metaMorphoAbi } from '../../lib/abis'
+import { MARKET_ID, marketParams, getTxUrl } from '../../lib/vaultTutorialConfig'
 
 export default function ConfigureVault() {
-  const { address, isConnected } = useAccount();
-  const [mounted, setMounted] = useState(false);
-  const [vaultAddress, setVaultAddress] = useState<string>('');
-  const [capAmount, setCapAmount] = useState('1000000');
+  const { address, isConnected } = useAccount()
+  const [mounted, setMounted] = useState(false)
+  const [vaultAddress, setVaultAddress] = useState<string>('')
+  const [capAmount, setCapAmount] = useState('1000000')
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
   // Load vault address from localStorage
   useEffect(() => {
     const loadVaultAddress = () => {
-      const saved = localStorage.getItem('tutorialVaultAddress');
+      const saved = localStorage.getItem('tutorialVaultAddress')
       if (saved) {
-        setVaultAddress(saved);
+        setVaultAddress(saved)
       }
-    };
+    }
 
     // Load initially
-    loadVaultAddress();
+    loadVaultAddress()
 
     // Listen for vault deployment events
     const handleVaultDeployed = (event: Event) => {
-      const customEvent = event as CustomEvent<{ address: string }>;
+      const customEvent = event as CustomEvent<{ address: string }>
       if (customEvent.detail?.address) {
-        setVaultAddress(customEvent.detail.address);
+        setVaultAddress(customEvent.detail.address)
       }
-    };
+    }
 
-    window.addEventListener('vaultDeployed', handleVaultDeployed);
+    window.addEventListener('vaultDeployed', handleVaultDeployed)
 
     return () => {
-      window.removeEventListener('vaultDeployed', handleVaultDeployed);
-    };
-  }, []);
+      window.removeEventListener('vaultDeployed', handleVaultDeployed)
+    }
+  }, [])
 
   // Check vault ownership
   const { data: vaultOwner } = useReadContract({
     address: vaultAddress as `0x${string}`,
     abi: metaMorphoAbi,
     functionName: 'owner',
-    query: { enabled: !!vaultAddress && vaultAddress !== '' },
-  });
-
+    query: { enabled: !!vaultAddress && vaultAddress !== '' }
+  })
 
   // Read current config
   const { data: configData, refetch: refetchConfig } = useReadContract({
@@ -63,101 +62,100 @@ export default function ConfigureVault() {
     abi: metaMorphoAbi,
     functionName: 'config',
     args: [MARKET_ID],
-    query: { enabled: !!vaultAddress && vaultAddress !== '' },
-  });
+    query: { enabled: !!vaultAddress && vaultAddress !== '' }
+  })
 
   const {
     writeContract: submitCap,
     data: submitCapHash,
     isPending: isSubmitCapPending,
-    error: submitCapError,
-  } = useWriteContract();
+    error: submitCapError
+  } = useWriteContract()
   const { isSuccess: isSubmitCapSuccess } = useWaitForTransactionReceipt({
-    hash: submitCapHash,
-  });
-
+    hash: submitCapHash
+  })
 
   const {
     writeContract: acceptCap,
     data: acceptCapHash,
-    isPending: isAcceptCapPending,
-  } = useWriteContract();
+    isPending: isAcceptCapPending
+  } = useWriteContract()
   const { isSuccess: isAcceptCapSuccess } = useWaitForTransactionReceipt({
-    hash: acceptCapHash,
-  });
+    hash: acceptCapHash
+  })
 
   const {
     writeContract: setQueue,
     data: setQueueHash,
-    isPending: isSetQueuePending,
-  } = useWriteContract();
+    isPending: isSetQueuePending
+  } = useWriteContract()
   const { isSuccess: isSetQueueSuccess } = useWaitForTransactionReceipt({
-    hash: setQueueHash,
-  });
+    hash: setQueueHash
+  })
 
   // Refetch config when transactions succeed
   useEffect(() => {
     if (isSubmitCapSuccess || isAcceptCapSuccess || isSetQueueSuccess) {
-      refetchConfig();
+      refetchConfig()
     }
-  }, [isSubmitCapSuccess, isAcceptCapSuccess, isSetQueueSuccess, refetchConfig]);
+  }, [isSubmitCapSuccess, isAcceptCapSuccess, isSetQueueSuccess, refetchConfig])
 
   const handleSubmitCap = () => {
-    if (!vaultAddress) return;
-    
-    const capValue = parseEther(capAmount);
-    
+    if (!vaultAddress) return
+
+    const capValue = parseEther(capAmount)
+
     // Convert MarketParams SDK object to plain struct with ONLY the 5 required fields
     const marketParamsStruct = {
       loanToken: marketParams.loanToken,
       collateralToken: marketParams.collateralToken,
       oracle: marketParams.oracle,
       irm: marketParams.irm,
-      lltv: marketParams.lltv,
-    };
-    
+      lltv: marketParams.lltv
+    }
+
     // @ts-ignore - Wagmi type definitions are overly strict
     submitCap({
       address: vaultAddress as `0x${string}`,
       abi: metaMorphoAbi,
       functionName: 'submitCap',
-      args: [marketParamsStruct, capValue],
-    });
-  };
+      args: [marketParamsStruct, capValue]
+    })
+  }
 
   const handleAcceptCap = () => {
-    if (!vaultAddress) return;
-    
+    if (!vaultAddress) return
+
     // Convert MarketParams to plain struct
     const marketParamsStruct = {
       loanToken: marketParams.loanToken,
       collateralToken: marketParams.collateralToken,
       oracle: marketParams.oracle,
       irm: marketParams.irm,
-      lltv: marketParams.lltv,
-    };
-    
+      lltv: marketParams.lltv
+    }
+
     // @ts-ignore - Wagmi type definitions are overly strict
     acceptCap({
       address: vaultAddress as `0x${string}`,
       abi: metaMorphoAbi,
       functionName: 'acceptCap',
-      args: [marketParamsStruct],
-    });
-  };
+      args: [marketParamsStruct]
+    })
+  }
 
   const handleSetQueue = () => {
-    if (!vaultAddress) return;
-    
+    if (!vaultAddress) return
+
     // setSupplyQueue expects an array of market IDs (bytes32), not MarketParams
     // @ts-ignore - Wagmi type definitions are overly strict
     setQueue({
       address: vaultAddress as `0x${string}`,
       abi: metaMorphoAbi,
       functionName: 'setSupplyQueue',
-      args: [[MARKET_ID]], // Array of market IDs
-    });
-  };
+      args: [[MARKET_ID]] // Array of market IDs
+    })
+  }
 
   if (!mounted) {
     return (
@@ -166,7 +164,7 @@ export default function ConfigureVault() {
           <p className="text-gray-700 dark:text-gray-300">Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!isConnected) {
@@ -176,7 +174,7 @@ export default function ConfigureVault() {
           Please connect your wallet to configure the vault.
         </p>
       </div>
-    );
+    )
   }
 
   if (!vaultAddress) {
@@ -186,10 +184,10 @@ export default function ConfigureVault() {
           Please deploy a vault first to configure it.
         </p>
       </div>
-    );
+    )
   }
 
-  const isOwner = vaultOwner && address && vaultOwner.toLowerCase() === address.toLowerCase();
+  const isOwner = vaultOwner && address && vaultOwner.toLowerCase() === address.toLowerCase()
 
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 my-4 bg-white dark:bg-gray-900 space-y-6">
@@ -197,11 +195,12 @@ export default function ConfigureVault() {
       {vaultOwner && !isOwner && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
           <p className="text-red-700 dark:text-red-400 text-sm">
-            ⚠️ You are not the owner of this vault. Only the owner ({vaultOwner.slice(0, 6)}...{vaultOwner.slice(-4)}) can configure it.
+            ⚠️ You are not the owner of this vault. Only the owner ({vaultOwner.slice(0, 6)}...
+            {vaultOwner.slice(-4)}) can configure it.
           </p>
         </div>
       )}
-      
+
       {/* Supply Cap Section */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -214,7 +213,7 @@ export default function ConfigureVault() {
           <input
             type="text"
             value={capAmount}
-            onChange={(e) => setCapAmount(e.target.value)}
+            onChange={e => setCapAmount(e.target.value)}
             placeholder="1000000"
             className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
@@ -301,6 +300,5 @@ export default function ConfigureVault() {
         </div>
       )}
     </div>
-  );
+  )
 }
-

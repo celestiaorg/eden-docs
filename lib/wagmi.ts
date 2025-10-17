@@ -2,8 +2,8 @@
  * Wagmi Configuration for Eden Testnet
  */
 
-import { defineChain } from 'viem';
-import { CHAIN_ID, CHAIN_NAME, RPC_URL, BLOCK_EXPLORER_URL } from './vaultTutorialConfig';
+import { defineChain } from 'viem'
+import { CHAIN_ID, CHAIN_NAME, RPC_URL, BLOCK_EXPLORER_URL } from './vaultTutorialConfig'
 
 /**
  * Eden Testnet chain configuration
@@ -15,22 +15,21 @@ export const edenTestnet = defineChain({
   nativeCurrency: {
     decimals: 18,
     name: 'TIA',
-    symbol: 'TIA',
+    symbol: 'TIA'
   },
   rpcUrls: {
     default: {
-      http: [RPC_URL],
+      http: [RPC_URL]
     },
     public: {
-      http: [RPC_URL],
-    },
+      http: [RPC_URL]
+    }
   },
   blockExplorers: {
     default: {
       name: 'Blockscout',
-      url: BLOCK_EXPLORER_URL,
-    },
+      url: BLOCK_EXPLORER_URL
+    }
   },
-  testnet: true,
-});
-
+  testnet: true
+})

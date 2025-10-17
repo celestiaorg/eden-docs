@@ -1,52 +1,52 @@
-'use client';
+'use client'
 
 /**
  * DepositToVault Component
  * UI for approving and depositing tokens into the vault
  */
 
-import { useState, useEffect } from 'react';
-import { useAccount, useWriteContract, useReadContract, useWaitForTransactionReceipt } from 'wagmi';
-import { parseEther, formatEther } from 'viem';
-import { faucetERC20Abi, metaMorphoAbi } from '../../lib/abis';
-import { LOAN_TOKEN, getTxUrl } from '../../lib/vaultTutorialConfig';
+import { useState, useEffect } from 'react'
+import { useAccount, useWriteContract, useReadContract, useWaitForTransactionReceipt } from 'wagmi'
+import { parseEther, formatEther } from 'viem'
+import { faucetERC20Abi, metaMorphoAbi } from '../../lib/abis'
+import { LOAN_TOKEN, getTxUrl } from '../../lib/vaultTutorialConfig'
 
 export default function DepositToVault() {
-  const { address, isConnected } = useAccount();
-  const [mounted, setMounted] = useState(false);
-  const [vaultAddress, setVaultAddress] = useState<string>('');
-  const [depositAmount, setDepositAmount] = useState('100');
+  const { address, isConnected } = useAccount()
+  const [mounted, setMounted] = useState(false)
+  const [vaultAddress, setVaultAddress] = useState<string>('')
+  const [depositAmount, setDepositAmount] = useState('100')
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
   // Load vault address from localStorage and listen for deployment events
   useEffect(() => {
     const loadVaultAddress = () => {
-      const saved = localStorage.getItem('tutorialVaultAddress');
+      const saved = localStorage.getItem('tutorialVaultAddress')
       if (saved) {
-        setVaultAddress(saved);
+        setVaultAddress(saved)
       }
-    };
+    }
 
     // Load initially
-    loadVaultAddress();
+    loadVaultAddress()
 
     // Listen for vault deployment events
     const handleVaultDeployed = (event: Event) => {
-      const customEvent = event as CustomEvent<{ address: string }>;
+      const customEvent = event as CustomEvent<{ address: string }>
       if (customEvent.detail?.address) {
-        setVaultAddress(customEvent.detail.address);
+        setVaultAddress(customEvent.detail.address)
       }
-    };
+    }
 
-    window.addEventListener('vaultDeployed', handleVaultDeployed);
+    window.addEventListener('vaultDeployed', handleVaultDeployed)
 
     return () => {
-      window.removeEventListener('vaultDeployed', handleVaultDeployed);
-    };
-  }, []);
+      window.removeEventListener('vaultDeployed', handleVaultDeployed)
+    }
+  }, [])
 
   // Read user's fakeUSD balance
   const { data: userBalance, refetch: refetchBalance } = useReadContract({
@@ -54,8 +54,8 @@ export default function DepositToVault() {
     abi: faucetERC20Abi,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
-    query: { enabled: !!address && isConnected },
-  });
+    query: { enabled: !!address && isConnected }
+  })
 
   // Read user's allowance
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
@@ -63,74 +63,72 @@ export default function DepositToVault() {
     abi: faucetERC20Abi,
     functionName: 'allowance',
     args: address && vaultAddress ? [address, vaultAddress as `0x${string}`] : undefined,
-    query: { enabled: !!address && !!vaultAddress && isConnected },
-  });
+    query: { enabled: !!address && !!vaultAddress && isConnected }
+  })
 
   // Read vault total assets
   const { data: totalAssets, refetch: refetchTotalAssets } = useReadContract({
     address: vaultAddress as `0x${string}`,
     abi: metaMorphoAbi,
     functionName: 'totalAssets',
-    query: { enabled: !!vaultAddress },
-  });
+    query: { enabled: !!vaultAddress }
+  })
 
   // Approve transaction
   const {
     writeContract: approve,
     data: approveHash,
-    isPending: isApprovePending,
-  } = useWriteContract();
-  const { isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveHash });
+    isPending: isApprovePending
+  } = useWriteContract()
+  const { isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveHash })
 
   // Deposit transaction
   const {
     writeContract: deposit,
     data: depositHash,
     isPending: isDepositPending,
-    error: depositError,
-  } = useWriteContract();
-  const { isSuccess: isDepositSuccess } = useWaitForTransactionReceipt({ hash: depositHash });
+    error: depositError
+  } = useWriteContract()
+  const { isSuccess: isDepositSuccess } = useWaitForTransactionReceipt({ hash: depositHash })
 
   // Refetch after transactions
   useEffect(() => {
     if (isApproveSuccess) {
-      refetchAllowance();
+      refetchAllowance()
     }
-  }, [isApproveSuccess, refetchAllowance]);
+  }, [isApproveSuccess, refetchAllowance])
 
   useEffect(() => {
     if (isDepositSuccess) {
-      refetchBalance();
-      refetchAllowance();
-      refetchTotalAssets();
+      refetchBalance()
+      refetchAllowance()
+      refetchTotalAssets()
     }
-  }, [isDepositSuccess, refetchBalance, refetchAllowance, refetchTotalAssets]);
+  }, [isDepositSuccess, refetchBalance, refetchAllowance, refetchTotalAssets])
 
-  const needsApproval =
-    allowance === undefined ||
-    allowance < parseEther(depositAmount || '0');
+  const needsApproval = allowance === undefined || allowance < parseEther(depositAmount || '0')
 
   const handleApprove = () => {
-    if (!vaultAddress) return;
+    if (!vaultAddress) return
     // @ts-ignore - Wagmi type definitions are overly strict
     approve({
       address: LOAN_TOKEN as `0x${string}`,
       abi: faucetERC20Abi,
       functionName: 'approve',
-      args: [vaultAddress as `0x${string}`, parseEther(depositAmount)],
-    });
-  };
+      args: [vaultAddress as `0x${string}`, parseEther(depositAmount)]
+    })
+  }
 
   const handleDeposit = () => {
-    if (!vaultAddress || !address) return;
+    if (!vaultAddress || !address) return
     // @ts-ignore - Wagmi type definitions are overly strict
     deposit({
       address: vaultAddress as `0x${string}`,
       abi: metaMorphoAbi,
       functionName: 'deposit',
-      args: [parseEther(depositAmount), address],
-    });
-  };
+      args: [parseEther(depositAmount), address]
+    })
+  }
 
   if (!mounted) {
     return (
@@ -139,7 +137,7 @@ export default function DepositToVault() {
           <p className="text-gray-700 dark:text-gray-300">Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!isConnected) {
@@ -149,7 +147,7 @@ export default function DepositToVault() {
           Please connect your wallet to deposit to the vault.
         </p>
       </div>
-    );
+    )
   }
 
   if (!vaultAddress) {
@@ -159,7 +157,7 @@ export default function DepositToVault() {
           Please deploy a vault first to deposit tokens.
         </p>
       </div>
-    );
+    )
   }
 
   return (
@@ -187,7 +185,7 @@ export default function DepositToVault() {
           <input
             type="text"
             value={depositAmount}
-            onChange={(e) => setDepositAmount(e.target.value)}
+            onChange={e => setDepositAmount(e.target.value)}
             placeholder="100"
             className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
@@ -281,6 +279,5 @@ export default function DepositToVault() {
         )}
       </div>
     </div>
-  );
+  )
 }
-

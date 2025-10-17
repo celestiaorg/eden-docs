@@ -3,7 +3,7 @@
  */
 
 // Import ABIs from Morpho SDK
-export { blueAbi, metaMorphoAbi } from '@morpho-org/blue-sdk-viem';
+export { blueAbi, metaMorphoAbi } from '@morpho-org/blue-sdk-viem'
 
 /**
  * MetaMorpho Factory ABI
@@ -20,11 +20,11 @@ export const metaMorphoFactoryAbi = [
       { name: 'asset', type: 'address' },
       { name: 'name', type: 'string' },
       { name: 'symbol', type: 'string' },
-      { name: 'salt', type: 'bytes32' },
+      { name: 'salt', type: 'bytes32' }
     ],
-    outputs: [{ name: 'metaMorpho', type: 'address' }],
-  },
-] as const;
+    outputs: [{ name: 'metaMorpho', type: 'address' }]
+  }
+] as const
 
 /**
  * FaucetERC20 ABI
@@ -37,35 +37,35 @@ export const faucetERC20Abi = [
     name: 'name',
     stateMutability: 'view',
     inputs: [],
-    outputs: [{ name: '', type: 'string' }],
+    outputs: [{ name: '', type: 'string' }]
   },
   {
     type: 'function',
     name: 'symbol',
     stateMutability: 'view',
     inputs: [],
-    outputs: [{ name: '', type: 'string' }],
+    outputs: [{ name: '', type: 'string' }]
   },
   {
     type: 'function',
     name: 'decimals',
     stateMutability: 'view',
     inputs: [],
-    outputs: [{ name: '', type: 'uint8' }],
+    outputs: [{ name: '', type: 'uint8' }]
   },
   {
     type: 'function',
     name: 'balanceOf',
     stateMutability: 'view',
     inputs: [{ name: 'account', type: 'address' }],
-    outputs: [{ name: '', type: 'uint256' }],
+    outputs: [{ name: '', type: 'uint256' }]
   },
   {
     type: 'function',
     name: 'totalSupply',
     stateMutability: 'view',
     inputs: [],
-    outputs: [{ name: '', type: 'uint256' }],
+    outputs: [{ name: '', type: 'uint256' }]
   },
   {
     type: 'function',
@@ -73,9 +73,9 @@ export const faucetERC20Abi = [
     stateMutability: 'nonpayable',
     inputs: [
       { name: 'spender', type: 'address' },
-      { name: 'amount', type: 'uint256' },
+      { name: 'amount', type: 'uint256' }
     ],
-    outputs: [{ name: '', type: 'bool' }],
+    outputs: [{ name: '', type: 'bool' }]
   },
   {
     type: 'function',
@@ -83,9 +83,9 @@ export const faucetERC20Abi = [
     stateMutability: 'view',
     inputs: [
       { name: 'owner', type: 'address' },
-      { name: 'spender', type: 'address' },
+      { name: 'spender', type: 'address' }
     ],
-    outputs: [{ name: '', type: 'uint256' }],
+    outputs: [{ name: '', type: 'uint256' }]
   },
   {
     type: 'function',
@@ -93,44 +93,43 @@ export const faucetERC20Abi = [
     stateMutability: 'nonpayable',
     inputs: [
       { name: 'to', type: 'address' },
-      { name: 'amount', type: 'uint256' },
+      { name: 'amount', type: 'uint256' }
     ],
-    outputs: [],
+    outputs: []
   },
   {
     type: 'function',
     name: 'canMint',
     stateMutability: 'view',
     inputs: [{ name: 'user', type: 'address' }],
-    outputs: [{ name: '', type: 'bool' }],
+    outputs: [{ name: '', type: 'bool' }]
   },
   {
     type: 'function',
     name: 'remainingCooldown',
     stateMutability: 'view',
     inputs: [{ name: 'user', type: 'address' }],
-    outputs: [{ name: '', type: 'uint256' }],
+    outputs: [{ name: '', type: 'uint256' }]
   },
   {
     type: 'function',
     name: 'maxMintPerCall',
     stateMutability: 'view',
     inputs: [],
-    outputs: [{ name: '', type: 'uint256' }],
+    outputs: [{ name: '', type: 'uint256' }]
   },
   {
     type: 'function',
     name: 'cooldownSeconds',
     stateMutability: 'view',
     inputs: [],
-    outputs: [{ name: '', type: 'uint256' }],
+    outputs: [{ name: '', type: 'uint256' }]
   },
   {
     type: 'function',
     name: 'lastMintTime',
     stateMutability: 'view',
     inputs: [{ name: 'account', type: 'address' }],
-    outputs: [{ name: '', type: 'uint256' }],
-  },
-] as const;
-
+    outputs: [{ name: '', type: 'uint256' }]
+  }
+] as const

@@ -1,88 +1,88 @@
-'use client';
+'use client'
 
 /**
  * VaultStats Component
  * Display real-time vault metrics
  */
 
-import { useState, useEffect } from 'react';
-import { useAccount, useReadContract } from 'wagmi';
-import { formatEther } from 'viem';
-import { metaMorphoAbi } from '../../lib/abis';
-import { getAddressUrl } from '../../lib/vaultTutorialConfig';
+import { useState, useEffect } from 'react'
+import { useAccount, useReadContract } from 'wagmi'
+import { formatEther } from 'viem'
+import { metaMorphoAbi } from '../../lib/abis'
+import { getAddressUrl } from '../../lib/vaultTutorialConfig'
 
 export default function VaultStats() {
-  const { address, isConnected } = useAccount();
-  const [mounted, setMounted] = useState(false);
-  const [vaultAddress, setVaultAddress] = useState<string>('');
+  const { address, isConnected } = useAccount()
+  const [mounted, setMounted] = useState(false)
+  const [vaultAddress, setVaultAddress] = useState<string>('')
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
   // Load vault address from localStorage and listen for deployment events
   useEffect(() => {
     const loadVaultAddress = () => {
-      const saved = localStorage.getItem('tutorialVaultAddress');
+      const saved = localStorage.getItem('tutorialVaultAddress')
       if (saved) {
-        setVaultAddress(saved);
+        setVaultAddress(saved)
       }
-    };
+    }
 
     // Load initially
-    loadVaultAddress();
+    loadVaultAddress()
 
     // Listen for vault deployment events
     const handleVaultDeployed = (event: Event) => {
-      const customEvent = event as CustomEvent<{ address: string }>;
+      const customEvent = event as CustomEvent<{ address: string }>
       if (customEvent.detail?.address) {
-        setVaultAddress(customEvent.detail.address);
+        setVaultAddress(customEvent.detail.address)
       }
-    };
+    }
 
-    window.addEventListener('vaultDeployed', handleVaultDeployed);
+    window.addEventListener('vaultDeployed', handleVaultDeployed)
 
     return () => {
-      window.removeEventListener('vaultDeployed', handleVaultDeployed);
-    };
-  }, []);
+      window.removeEventListener('vaultDeployed', handleVaultDeployed)
+    }
+  }, [])
 
   // Read vault data with auto-refresh every 10 seconds
   const { data: totalAssets } = useReadContract({
     address: vaultAddress as `0x${string}`,
     abi: metaMorphoAbi,
     functionName: 'totalAssets',
-    query: { enabled: !!vaultAddress, refetchInterval: 10000 },
-  });
+    query: { enabled: !!vaultAddress, refetchInterval: 10000 }
+  })
 
   const { data: totalSupply } = useReadContract({
     address: vaultAddress as `0x${string}`,
     abi: metaMorphoAbi,
     functionName: 'totalSupply',
-    query: { enabled: !!vaultAddress, refetchInterval: 10000 },
-  });
+    query: { enabled: !!vaultAddress, refetchInterval: 10000 }
+  })
 
   const { data: userShares } = useReadContract({
     address: vaultAddress as `0x${string}`,
     abi: metaMorphoAbi,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
-    query: { enabled: !!vaultAddress && !!address && isConnected, refetchInterval: 10000 },
-  });
+    query: { enabled: !!vaultAddress && !!address && isConnected, refetchInterval: 10000 }
+  })
 
   const { data: userAssets } = useReadContract({
     address: vaultAddress as `0x${string}`,
     abi: metaMorphoAbi,
     functionName: 'convertToAssets',
     args: userShares ? [userShares] : undefined,
-    query: { enabled: !!vaultAddress && !!userShares, refetchInterval: 10000 },
-  });
+    query: { enabled: !!vaultAddress && !!userShares, refetchInterval: 10000 }
+  })
 
   // Calculate share price
   const sharePrice =
     totalAssets && totalSupply && totalSupply > BigInt(0)
       ? Number(totalAssets) / Number(totalSupply)
-      : 1;
+      : 1
 
   if (!mounted) {
     return (
@@ -91,7 +91,7 @@ export default function VaultStats() {
           <p className="text-gray-700 dark:text-gray-300">Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!vaultAddress) {
@@ -101,16 +101,14 @@ export default function VaultStats() {
           Please deploy a vault first to view its stats.
         </p>
       </div>
-    );
+    )
   }
 
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 my-4 bg-white dark:bg-gray-900">
       <div className="space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Vault Metrics
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Vault Metrics</h3>
           <span className="text-xs text-gray-500 dark:text-gray-400">Auto-refreshes every 10s</span>
         </div>
 
@@ -169,7 +167,9 @@ export default function VaultStats() {
         </div>
 
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-sm space-y-2">
-          <p className="font-medium text-gray-900 dark:text-gray-100">💡 How to read these metrics:</p>
+          <p className="font-medium text-gray-900 dark:text-gray-100">
+            💡 How to read these metrics:
+          </p>
           <ul className="space-y-1 text-gray-700 dark:text-gray-300 ml-4 list-disc">
             <li>
               <strong>Total Assets:</strong> Total fakeUSD held by the vault
@@ -191,6 +191,5 @@ export default function VaultStats() {
         </div>
       </div>
     </div>
-  );
+  )
 }
-

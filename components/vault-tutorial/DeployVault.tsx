@@ -1,68 +1,63 @@
-'use client';
+'use client'
 
 /**
  * DeployVault Component
  * UI for deploying a new MetaMorpho vault via the factory
  */
 
-import { useState, useEffect } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { metaMorphoFactoryAbi } from '../../lib/abis';
-import { METAMORPHO_FACTORY, LOAN_TOKEN, getTxUrl } from '../../lib/vaultTutorialConfig';
+import { useState, useEffect } from 'react'
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { metaMorphoFactoryAbi } from '../../lib/abis'
+import { METAMORPHO_FACTORY, LOAN_TOKEN, getTxUrl } from '../../lib/vaultTutorialConfig'
 
 export default function DeployVault() {
-  const { address, isConnected } = useAccount();
-  const [mounted, setMounted] = useState(false);
-  const [vaultName, setVaultName] = useState('My Vault');
-  const [vaultSymbol, setVaultSymbol] = useState('mvUSD');
-  const [deployedVaultAddress, setDeployedVaultAddress] = useState<string>('');
+  const { address, isConnected } = useAccount()
+  const [mounted, setMounted] = useState(false)
+  const [vaultName, setVaultName] = useState('My Vault')
+  const [vaultSymbol, setVaultSymbol] = useState('mvUSD')
+  const [deployedVaultAddress, setDeployedVaultAddress] = useState<string>('')
 
-  const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
-  const { isSuccess, data: receipt } = useWaitForTransactionReceipt({ hash });
+  const { writeContract, data: hash, isPending, error: writeError } = useWriteContract()
+  const { isSuccess, data: receipt } = useWaitForTransactionReceipt({ hash })
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
   // Extract vault address from transaction receipt
   useEffect(() => {
     if (isSuccess && receipt?.logs && receipt.logs.length > 0) {
       // The factory emits a CreateMetaMorpho event
       // The vault address is in the logs
-      const vaultAddress = receipt.logs[0]?.address;
+      const vaultAddress = receipt.logs[0]?.address
       if (vaultAddress) {
-        setDeployedVaultAddress(vaultAddress);
+        setDeployedVaultAddress(vaultAddress)
         // Save to localStorage for next steps
-        localStorage.setItem('tutorialVaultAddress', vaultAddress);
-        
+        localStorage.setItem('tutorialVaultAddress', vaultAddress)
+
         // Dispatch custom event to notify other components
-        window.dispatchEvent(new CustomEvent('vaultDeployed', { detail: { address: vaultAddress } }));
+        window.dispatchEvent(
+          new CustomEvent('vaultDeployed', { detail: { address: vaultAddress } })
+        )
       }
     }
-  }, [isSuccess, receipt]);
+  }, [isSuccess, receipt])
 
   const handleDeploy = async () => {
-    if (!address) return;
+    if (!address) return
 
     // Generate unique salt per user (to avoid collisions)
-    const { keccak256, encodePacked } = await import('viem');
-    const salt = keccak256(encodePacked(['address', 'string'], [address, vaultName + vaultSymbol]));
+    const { keccak256, encodePacked } = await import('viem')
+    const salt = keccak256(encodePacked(['address', 'string'], [address, vaultName + vaultSymbol]))
 
     // @ts-ignore - Wagmi type definitions are overly strict here
     writeContract({
       address: METAMORPHO_FACTORY as `0x${string}`,
       abi: metaMorphoFactoryAbi,
       functionName: 'createMetaMorpho',
-      args: [
-        address,
-        BigInt(0),
-        LOAN_TOKEN as `0x${string}`,
-        vaultName,
-        vaultSymbol,
-        salt,
-      ],
-    });
-  };
+      args: [address, BigInt(0), LOAN_TOKEN as `0x${string}`, vaultName, vaultSymbol, salt]
+    })
+  }
 
   if (!mounted) {
     return (
@@ -71,7 +66,7 @@ export default function DeployVault() {
           <p className="text-gray-700 dark:text-gray-300">Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!isConnected) {
@@ -81,7 +76,7 @@ export default function DeployVault() {
           Please connect your wallet to deploy a vault.
         </p>
       </div>
-    );
+    )
   }
 
   return (
@@ -94,7 +89,7 @@ export default function DeployVault() {
           <input
             type="text"
             value={vaultName}
-            onChange={(e) => setVaultName(e.target.value)}
+            onChange={e => setVaultName(e.target.value)}
             placeholder="My Vault"
             className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             disabled={isPending || isSuccess}
@@ -108,7 +103,7 @@ export default function DeployVault() {
           <input
             type="text"
             value={vaultSymbol}
-            onChange={(e) => setVaultSymbol(e.target.value)}
+            onChange={e => setVaultSymbol(e.target.value)}
             placeholder="mvUSD"
             className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             disabled={isPending || isSuccess}
@@ -125,9 +120,7 @@ export default function DeployVault() {
 
         {writeError && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-            <p className="text-red-700 dark:text-red-400 text-sm">
-              Error: {writeError.message}
-            </p>
+            <p className="text-red-700 dark:text-red-400 text-sm">Error: {writeError.message}</p>
           </div>
         )}
 
@@ -173,6 +166,5 @@ export default function DeployVault() {
         )}
       </div>
     </div>
-  );
+  )
 }
-

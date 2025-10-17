@@ -1,83 +1,83 @@
-'use client';
+'use client'
 
 /**
  * WalletConnect Component
  * Simple wallet connection UI with network validation
  */
 
-import { useState, useEffect } from 'react';
-import { useAccount, useConnect, useDisconnect, useChainId } from 'wagmi';
-import { FAUCET_URL } from '../../lib/vaultTutorialConfig';
+import { useState, useEffect } from 'react'
+import { useAccount, useConnect, useDisconnect, useChainId } from 'wagmi'
+import { FAUCET_URL } from '../../lib/vaultTutorialConfig'
 
 // Extend Window interface for ethereum
 declare global {
   interface Window {
-    ethereum?: any;
+    ethereum?: any
   }
 }
 
 export default function WalletConnect() {
-  const { address, isConnected } = useAccount();
-  const chainId = useChainId(); // Use Wagmi's useChainId hook - this is more reliable!
-  const { connectors, connect, isPending } = useConnect();
-  const { disconnect } = useDisconnect();
-  const [mounted, setMounted] = useState(false);
-  const [isSwitching, setIsSwitching] = useState(false);
+  const { address, isConnected } = useAccount()
+  const chainId = useChainId() // Use Wagmi's useChainId hook - this is more reliable!
+  const { connectors, connect, isPending } = useConnect()
+  const { disconnect } = useDisconnect()
+  const [mounted, setMounted] = useState(false)
+  const [isSwitching, setIsSwitching] = useState(false)
 
   // Prevent hydration mismatch by only rendering after mount
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
   // Validate Eden Testnet using Wagmi's chainId
-  const isCorrectChain = mounted && isConnected && chainId === 3735928814;
+  const isCorrectChain = mounted && isConnected && chainId === 3735928814
 
   // Function to switch to Eden Testnet
   const handleSwitchNetwork = async () => {
     if (!window.ethereum) {
-      alert('Please install MetaMask to use this feature');
-      return;
+      alert('Please install MetaMask to use this feature')
+      return
     }
 
-        setIsSwitching(true);
+    setIsSwitching(true)
+    try {
+      // Try to switch to Eden Testnet
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0xDEADBFEE' }] // 3735928814 in hex
+      })
+    } catch (switchError: any) {
+      // This error code indicates that the chain has not been added to MetaMask
+      if (switchError.code === 4902) {
         try {
-          // Try to switch to Eden Testnet
+          // Add the network to MetaMask
           await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0xDEADBFEE' }], // 3735928814 in hex
-          });
-        } catch (switchError: any) {
-          // This error code indicates that the chain has not been added to MetaMask
-          if (switchError.code === 4902) {
-            try {
-              // Add the network to MetaMask
-              await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [
-                  {
-                    chainId: '0xDEADBFEE',
-                    chainName: 'Eden Testnet',
-                    nativeCurrency: {
-                      name: 'TIA',
-                      symbol: 'TIA',
-                      decimals: 18,
-                    },
-                    rpcUrls: ['http://localhost:3001/api/rpc'],
-                    blockExplorerUrls: ['https://eden-testnet.blockscout.com'],
-                  },
-                ],
-              });
-            } catch (addError) {
-              alert('Failed to add Eden Testnet. Please add it manually in MetaMask.');
-            }
-          } else if (switchError.code !== 4001) {
-            // Only alert if it's not a user rejection
-            alert('Failed to switch network. Please try manually in MetaMask.');
-          }
-        } finally {
-          setIsSwitching(false);
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: '0xDEADBFEE',
+                chainName: 'Eden Testnet',
+                nativeCurrency: {
+                  name: 'TIA',
+                  symbol: 'TIA',
+                  decimals: 18
+                },
+                rpcUrls: ['http://localhost:3001/api/rpc'],
+                blockExplorerUrls: ['https://eden-testnet.blockscout.com']
+              }
+            ]
+          })
+        } catch (addError) {
+          alert('Failed to add Eden Testnet. Please add it manually in MetaMask.')
         }
-  };
+      } else if (switchError.code !== 4001) {
+        // Only alert if it's not a user rejection
+        alert('Failed to switch network. Please try manually in MetaMask.')
+      }
+    } finally {
+      setIsSwitching(false)
+    }
+  }
 
   // Show loading state during SSR to match server HTML
   if (!mounted) {
@@ -87,7 +87,7 @@ export default function WalletConnect() {
           <p className="text-gray-700 dark:text-gray-300">Loading wallet connection...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!isConnected) {
@@ -99,8 +99,8 @@ export default function WalletConnect() {
           </p>
           <button
             onClick={() => {
-              const connector = connectors[0];
-              if (connector) connect({ connector });
+              const connector = connectors[0]
+              if (connector) connect({ connector })
             }}
             disabled={isPending}
             className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-medium px-6 py-3 rounded-lg transition-colors"
@@ -120,7 +120,7 @@ export default function WalletConnect() {
           </p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -145,9 +145,7 @@ export default function WalletConnect() {
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
             <p className="text-red-700 dark:text-red-400 text-sm flex items-center gap-2 mb-3">
               <span className="text-lg">⚠️</span>
-              <span>
-                Wrong network detected. Please switch to Eden Testnet.
-              </span>
+              <span>Wrong network detected. Please switch to Eden Testnet.</span>
             </p>
             <button
               onClick={handleSwitchNetwork}
@@ -169,5 +167,5 @@ export default function WalletConnect() {
         )}
       </div>
     </div>
-  );
+  )
 }

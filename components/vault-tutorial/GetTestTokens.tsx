@@ -1,110 +1,110 @@
-'use client';
+'use client'
 
 /**
  * GetTestTokens Component
  * UI for minting test tokens from the faucet
  */
 
-import { useState, useEffect } from 'react';
-import { useAccount, useWriteContract, useReadContract, useWaitForTransactionReceipt } from 'wagmi';
-import { parseEther, formatEther } from 'viem';
-import { faucetERC20Abi } from '../../lib/abis';
-import { LOAN_TOKEN, COLLATERAL_TOKEN, getTxUrl } from '../../lib/vaultTutorialConfig';
+import { useState, useEffect } from 'react'
+import { useAccount, useWriteContract, useReadContract, useWaitForTransactionReceipt } from 'wagmi'
+import { parseEther, formatEther } from 'viem'
+import { faucetERC20Abi } from '../../lib/abis'
+import { LOAN_TOKEN, COLLATERAL_TOKEN, getTxUrl } from '../../lib/vaultTutorialConfig'
 
-type TokenType = 'fakeUSD' | 'fakeTIA';
+type TokenType = 'fakeUSD' | 'fakeTIA'
 
 export default function GetTestTokens() {
-  const { address, isConnected } = useAccount();
-  const [mounted, setMounted] = useState(false);
-  const [selectedToken, setSelectedToken] = useState<TokenType>('fakeUSD');
-  const [mintAmount, setMintAmount] = useState('100');
-  const [cooldownTimer, setCooldownTimer] = useState<number>(0);
+  const { address, isConnected } = useAccount()
+  const [mounted, setMounted] = useState(false)
+  const [selectedToken, setSelectedToken] = useState<TokenType>('fakeUSD')
+  const [mintAmount, setMintAmount] = useState('100')
+  const [cooldownTimer, setCooldownTimer] = useState<number>(0)
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
-  const tokenAddress = selectedToken === 'fakeUSD' ? LOAN_TOKEN : COLLATERAL_TOKEN;
+  const tokenAddress = selectedToken === 'fakeUSD' ? LOAN_TOKEN : COLLATERAL_TOKEN
 
   // Read token data
   const { data: tokenSymbol } = useReadContract({
     address: tokenAddress as `0x${string}`,
     abi: faucetERC20Abi,
     functionName: 'symbol',
-    query: { enabled: !!tokenAddress && isConnected },
-  });
+    query: { enabled: !!tokenAddress && isConnected }
+  })
 
   const { data: userBalance, refetch: refetchBalance } = useReadContract({
     address: tokenAddress as `0x${string}`,
     abi: faucetERC20Abi,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
-    query: { enabled: !!tokenAddress && !!address && isConnected },
-  });
+    query: { enabled: !!tokenAddress && !!address && isConnected }
+  })
 
   const { data: canMint } = useReadContract({
     address: tokenAddress as `0x${string}`,
     abi: faucetERC20Abi,
     functionName: 'canMint',
     args: address ? [address] : undefined,
-    query: { enabled: !!tokenAddress && !!address && isConnected },
-  });
+    query: { enabled: !!tokenAddress && !!address && isConnected }
+  })
 
   const { data: remainingCooldown } = useReadContract({
     address: tokenAddress as `0x${string}`,
     abi: faucetERC20Abi,
     functionName: 'remainingCooldown',
     args: address ? [address] : undefined,
-    query: { enabled: !!tokenAddress && !!address && isConnected },
-  });
+    query: { enabled: !!tokenAddress && !!address && isConnected }
+  })
 
   const { data: maxMintPerCall } = useReadContract({
     address: tokenAddress as `0x${string}`,
     abi: faucetERC20Abi,
     functionName: 'maxMintPerCall',
-    query: { enabled: !!tokenAddress && isConnected },
-  });
+    query: { enabled: !!tokenAddress && isConnected }
+  })
 
-  const { writeContract, data: mintHash, isPending, error: writeError } = useWriteContract();
-  const { isSuccess } = useWaitForTransactionReceipt({ hash: mintHash });
+  const { writeContract, data: mintHash, isPending, error: writeError } = useWriteContract()
+  const { isSuccess } = useWaitForTransactionReceipt({ hash: mintHash })
 
   // Update cooldown timer
   useEffect(() => {
     if (remainingCooldown && typeof remainingCooldown === 'bigint') {
-      setCooldownTimer(Number(remainingCooldown));
+      setCooldownTimer(Number(remainingCooldown))
     }
-  }, [remainingCooldown]);
+  }, [remainingCooldown])
 
   // Countdown timer
   useEffect(() => {
     if (cooldownTimer > 0) {
       const interval = setInterval(() => {
-        setCooldownTimer((prev) => Math.max(0, prev - 1));
-      }, 1000);
-      return () => clearInterval(interval);
+        setCooldownTimer(prev => Math.max(0, prev - 1))
+      }, 1000)
+      return () => clearInterval(interval)
     }
-  }, [cooldownTimer]);
+  }, [cooldownTimer])
 
   // Refetch balance after successful mint
   useEffect(() => {
     if (isSuccess) {
-      refetchBalance();
+      refetchBalance()
     }
-  }, [isSuccess, refetchBalance]);
+  }, [isSuccess, refetchBalance])
 
   const handleMint = () => {
-    if (!address || !tokenAddress) return;
+    if (!address || !tokenAddress) return
 
-    const amount = parseEther(mintAmount);
+    const amount = parseEther(mintAmount)
 
     // @ts-ignore - Wagmi type definitions are overly strict
     writeContract({
       address: tokenAddress as `0x${string}`,
       abi: faucetERC20Abi,
       functionName: 'mint',
-      args: [address, amount],
-    });
-  };
+      args: [address, amount]
+    })
+  }
 
   if (!mounted) {
     return (
@@ -113,7 +113,7 @@ export default function GetTestTokens() {
           <p className="text-gray-700 dark:text-gray-300">Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!isConnected) {
@@ -123,7 +123,7 @@ export default function GetTestTokens() {
           Please connect your wallet to mint test tokens.
         </p>
       </div>
-    );
+    )
   }
 
   return (
@@ -135,7 +135,7 @@ export default function GetTestTokens() {
           </label>
           <select
             value={selectedToken}
-            onChange={(e) => setSelectedToken(e.target.value as TokenType)}
+            onChange={e => setSelectedToken(e.target.value as TokenType)}
             className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="fakeUSD">fakeUSD (Loan Token)</option>
@@ -165,7 +165,7 @@ export default function GetTestTokens() {
           <input
             type="text"
             value={mintAmount}
-            onChange={(e) => setMintAmount(e.target.value)}
+            onChange={e => setMintAmount(e.target.value)}
             placeholder="100"
             className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             disabled={isPending || !canMint}
@@ -193,9 +193,7 @@ export default function GetTestTokens() {
 
         {writeError && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-            <p className="text-red-700 dark:text-red-400 text-sm">
-              Error: {writeError.message}
-            </p>
+            <p className="text-red-700 dark:text-red-400 text-sm">Error: {writeError.message}</p>
           </div>
         )}
 
@@ -217,6 +215,5 @@ export default function GetTestTokens() {
         )}
       </div>
     </div>
-  );
+  )
 }
-
