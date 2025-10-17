@@ -7,7 +7,8 @@ import {
   ConfigureVault,
   GetTestTokens,
   DepositToVault,
-  VaultStats
+  VaultStats,
+  OracleControls
 } from '../../../../components/vault-tutorial/TutorialComponents'
 
 <Callout type="info">
@@ -219,9 +220,21 @@ If one node pulled a price from one website and another node saw a slightly diff
 
 That’s why vaults rely on oracles, which are special contracts that publish verified price data onchain so every node (and every vault), can reach the same result through consensus.
 
-To help you understand how oracles work, we've deployed a mock oracle contract that you can use to get and set the price of fakeUSD.
+To help you understand how oracles work, we've deployed a mock oracle contract that you can use to get and set the price of fakeTIA/fakeUSD.
 
-INSERT ORACLE COMPONENT HERE
+<OracleControls />
+
+The oracle component above displays the current fakeTIA/fakeUSD price and lets you update it. Try setting a new price to see how oracle updates work.
+
+**How This Affects Your Vault**
+
+Price changes impact the market in real-time:
+
+- **Collateral Value**: If fakeTIA price drops, borrowers may face liquidation
+- **Borrowing Power**: Higher prices mean borrowers can borrow more
+- **Vault Health**: The vault monitors these prices to manage risk
+
+In production, you'd use real oracles like **Chainlink** or **Pyth** that fetch actual market prices from exchanges. For testing, this mock oracle lets you simulate different market conditions.
 
 </Steps>
 

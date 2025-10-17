@@ -133,3 +133,24 @@ export const faucetERC20Abi = [
     outputs: [{ name: '', type: 'uint256' }]
   }
 ] as const
+
+/**
+ * OracleMock ABI
+ * Simple oracle for testing (Morpho Blue built-in)
+ */
+export const oracleMockAbi = [
+  {
+    type: 'function',
+    name: 'price',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }]
+  },
+  {
+    type: 'function',
+    name: 'setPrice',
+    stateMutability: 'nonpayable',
+    inputs: [{ name: 'newPrice', type: 'uint256' }],
+    outputs: []
+  }
+] as const
