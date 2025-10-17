@@ -1,5 +1,5 @@
 export default {
   overview: 'Overview',
-  tutorial: 'Interactive Tutorial',
+  tutorial: 'Interactive tutorial',
   example: 'Deploy an example vault'
 }
