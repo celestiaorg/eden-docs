@@ -11,5 +11,14 @@ import ConfigureVault from './ConfigureVault'
 import GetTestTokens from './GetTestTokens'
 import DepositToVault from './DepositToVault'
 import VaultStats from './VaultStats'
+import OracleControls from './OracleControls'
 
-export { WalletConnect, DeployVault, ConfigureVault, GetTestTokens, DepositToVault, VaultStats }
+export {
+  WalletConnect,
+  DeployVault,
+  ConfigureVault,
+  GetTestTokens,
+  DepositToVault,
+  VaultStats,
+  OracleControls
+}

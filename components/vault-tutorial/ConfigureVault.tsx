@@ -202,9 +202,7 @@ export default function ConfigureVault() {
 
       {/* Supply Cap Section */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          1. Set Supply Cap
-        </h3>
+        <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">Set Supply Cap</p>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Cap Amount (fakeUSD)
@@ -262,9 +260,9 @@ export default function ConfigureVault() {
 
       {/* Supply Queue Section */}
       <div className="space-y-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          2. Add Market to Supply Queue
-        </h3>
+        <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Add Market to Supply Queue
+        </p>
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
           <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Market ID:</p>
           <p className="font-mono text-xs text-gray-800 dark:text-gray-200 break-all">

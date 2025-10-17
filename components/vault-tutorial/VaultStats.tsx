@@ -108,7 +108,7 @@ export default function VaultStats() {
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 my-4 bg-white dark:bg-gray-900">
       <div className="space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Vault Metrics</h3>
+          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">Vault Metrics</p>
           <span className="text-xs text-gray-500 dark:text-gray-400">Auto-refreshes every 10s</span>
         </div>
 
