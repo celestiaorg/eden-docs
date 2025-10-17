@@ -9,12 +9,13 @@ import { useState, useEffect } from 'react'
 import { useAccount, useConnect, useDisconnect, useChainId } from 'wagmi'
 import { FAUCET_URL } from '../../lib/vaultTutorialConfig'
 
-// Extend Window interface for ethereum
+/* eslint-disable no-unused-vars */
 declare global {
   interface Window {
     ethereum?: any
   }
 }
+/* eslint-enable no-unused-vars */
 
 export default function WalletConnect() {
   const { address, isConnected } = useAccount()
@@ -67,7 +68,7 @@ export default function WalletConnect() {
               }
             ]
           })
-        } catch (addError) {
+        } catch {
           alert('Failed to add Eden Testnet. Please add it manually in MetaMask.')
         }
       } else if (switchError.code !== 4001) {

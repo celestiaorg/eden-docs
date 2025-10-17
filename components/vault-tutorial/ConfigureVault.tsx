@@ -68,8 +68,7 @@ export default function ConfigureVault() {
   const {
     writeContract: submitCap,
     data: submitCapHash,
-    isPending: isSubmitCapPending,
-    error: submitCapError
+    isPending: isSubmitCapPending
   } = useWriteContract()
   const { isSuccess: isSubmitCapSuccess } = useWaitForTransactionReceipt({
     hash: submitCapHash

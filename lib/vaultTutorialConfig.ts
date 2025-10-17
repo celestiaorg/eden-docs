@@ -54,12 +54,12 @@ const DEPLOYED_MARKET_ID =
   '0x75f28b20c33eb6a853c3bb8fb6bae1b3902f6941ad4f1ebea4b245c00541e95d' as const
 
 // Validate that computed ID matches deployed market
-if (COMPUTED_MARKET_ID !== DEPLOYED_MARKET_ID) {
+if (String(COMPUTED_MARKET_ID) !== DEPLOYED_MARKET_ID) {
   throw new Error(
-    `Market ID mismatch!\n` +
+    'Market ID mismatch!\n' +
       `Computed:  ${COMPUTED_MARKET_ID}\n` +
       `Deployed:  ${DEPLOYED_MARKET_ID}\n\n` +
-      `This means one or more market parameters are incorrect:\n` +
+      'This means one or more market parameters are incorrect:\n' +
       `- Loan Token: ${LOAN_TOKEN}\n` +
       `- Collateral Token: ${COLLATERAL_TOKEN}\n` +
       `- Oracle: ${ORACLE_ADDRESS}\n` +
