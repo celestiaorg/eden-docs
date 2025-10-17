@@ -7,7 +7,7 @@ import {
   ConfigureVault,
   GetTestTokens,
   DepositToVault,
-  VaultStats,
+  VaultStats
 } from '../../../../components/vault-tutorial/TutorialComponents'
 
 <Callout type="info">
@@ -19,7 +19,6 @@ This tutorial will guide you through the complete process of creating and using 
 
 If you're already up to speed on vaults, you can skip to the [full demo](https://github.com/gbarros/token-vaults) and it's code on [Github](TODO).
 
-
 ## Who this is for
 
 This tutorial is for Web2 developers who are new to blockchains. You don’t need prior experience with Solidity or DeFi, just a basic grasp of programming concepts and curiosity about how value moves through smart contracts.
@@ -30,40 +29,38 @@ By the end, you’ll know how vaults store assets, generate yield, and report re
 
 ## Vaults explained
 
-A vault is a smart contract that pools user deposits and runs a predefined strategy such as lending, staking, or providing liquidity. When users deposit an asset, the vault issues shares that represent ownership in the pool. As the underlying strategy earns yield, the total pool grows and each share becomes worth more. 
+A vault is a smart contract that pools user deposits and runs a predefined strategy such as lending, staking, or providing liquidity. When users deposit an asset, the vault issues shares that represent ownership in the pool. As the underlying strategy earns yield, the total pool grows and each share becomes worth more.
 
 A good real-world analogy is a mutual fund or ETF. Investors pool capital, the fund executes a strategy, and profits flow back in. The difference is that a vault’s rules are enforced by smart contracts, not fund managers, and everything is onchain and fully transparent.
-
 
 ### Why use vaults
 
 When you build vaults, you tap into [~$100B in onchain assets](https://defillama.com/) and a fast-growing tokenized RWA (Real World Assets) segment. You get access to real capital your product can reach on day one.
 
-* **There’s real liquidity to tap.** [DeFi holds well over **$100B** in assets across protocols in 2025](https://defillama.com/). Vaults give users a single asset to hold while you route that liquidity into strategies. 
+- **There’s real liquidity to tap.** [DeFi holds well over **$100B** in assets across protocols in 2025](https://defillama.com/). Vaults give users a single asset to hold while you route that liquidity into strategies.
 
-* **RWAs are a tailwind.** Real-World Assets (RWAs) are expanding fast, [with over $24 billion now tokenized onchain](https://cointelegraph.com/news/private-credit-powers-24b-tokenization-market-ethereum-still-dominates-redstone) across Treasuries, private credit, and other yield-bearing instruments. For builders, RWAs open up access to stable, low-volatility yield sources that can be wrapped by vaults and composed directly into DeFi strategies.
+- **RWAs are a tailwind.** Real-World Assets (RWAs) are expanding fast, [with over $24 billion now tokenized onchain](https://cointelegraph.com/news/private-credit-powers-24b-tokenization-market-ethereum-still-dominates-redstone) across Treasuries, private credit, and other yield-bearing instruments. For builders, RWAs open up access to stable, low-volatility yield sources that can be wrapped by vaults and composed directly into DeFi strategies.
 
-* **Standards reduce integration cost.** An open vault standard means one set of deposit/withdraw semantics, one share model, and predictable previews. It also makes your product easier to list, monitor, and compose with other apps because everyone "speaks" the same interface.
+- **Standards reduce integration cost.** An open vault standard means one set of deposit/withdraw semantics, one share model, and predictable previews. It also makes your product easier to list, monitor, and compose with other apps because everyone "speaks" the same interface.
 
-* **Composability expands distribution.** Other apps can treat vault shares as building blocks (hold them as collateral, bundle them, or route capital into them) so your strategy can plug into a larger ecosystem day one. 
+- **Composability expands distribution.** Other apps can treat vault shares as building blocks (hold them as collateral, bundle them, or route capital into them) so your strategy can plug into a larger ecosystem day one.
 
+## Deploying your vault
 
-## Deploying your vault 
-
-Ready to dive in and deploy your own vault? 
+Ready to dive in and deploy your own vault?
 
 <Steps>
 ### Get Eden testnet tokens
 
-Before we begin, you'll need some [testnet TIA tokens for gas fees](https://faucet-eden-testnet.binarybuilders.services). 
+Before we begin, you'll need some [testnet TIA tokens for gas fees](https://faucet-eden-testnet.binarybuilders.services).
 
 Once you have testnet TIA, connect your wallet below:
 
 <WalletConnect />
 
 <Callout type="warning">
-  Make sure your wallet is connected to [**Eden Testnet**](/networks/testnet) (Chain ID: 3735928814). If you're on a
-  different network, your wallet should prompt you to switch.
+  Make sure your wallet is connected to [**Eden Testnet**](/networks/testnet) (Chain ID:
+  3735928814). If you're on a different network, your wallet should prompt you to switch.
 </Callout>
 
 ### Deploying your vault
@@ -145,7 +142,6 @@ The faucet has these limits:
 
 With fakeUSD tokens in your wallet, you're ready to deposit into your vault and receive vault shares in return.
 
-
 The math used in vaults is simple, but it may not be what you expect as certain considerations are taken to reduce computation costs. You can dive deeper into this in the video below, or read on for details.
 
 **INSERT LUKE'S VAULT MATH VIDEO HERE**
@@ -190,8 +186,6 @@ When you deposit assets into an ERC-4626 vault, here's what happens:
 2. **Deposit**: The vault pulls your fakeUSD and mints you shares
 3. **Shares**: Shares are minted and transferred to your wallet, your shares represent ownership in the vault's total assets
 
-
-
 ### Observing the results
 
 Watch your vault's metrics update in real-time. The stats auto-refresh every 10 seconds:
@@ -217,7 +211,6 @@ Your vault earns yield through the underlying Morpho Blue market:
 
 The beauty of ERC-4626: **you don't need to do anything**. Just hold your shares, and they automatically appreciate as the vault earns yield.
 
-
 ### How prices work (oracles)
 
 Every vault needs reliable asset prices to know how much its collateral is worth. But smart contracts can’t just look up prices from the web the way a normal app can. On a blockchain, every node must reach the same result from the same inputs, that agreement is called consensus.
@@ -229,7 +222,6 @@ That’s why vaults rely on oracles, which are special contracts that publish ve
 To help you understand how oracles work, we've deployed a mock oracle contract that you can use to get and set the price of fakeUSD.
 
 INSERT ORACLE COMPONENT HERE
-
 
 </Steps>
 
@@ -260,7 +252,6 @@ To add markets:
 1. Submit and accept a new supply cap for each market
 2. Update the supply queue with your preferred order
 3. Higher priority markets fill first
-
 
 ## Going to production
 
@@ -345,4 +336,3 @@ If you're stuck, reach out:
 ---
 
 **Happy building on Eden! 🚀**
-
