@@ -27,12 +27,13 @@ Existing contracts are listed on the [Eden testnet page](/networks/testnet#exist
 
 Use RedStone’s dedicated price feed contracts (push model) on Eden testnet.
 
-* **ETH/USD feed (Eden):** `0xfe743BF30eB5d0e22ED806910914E15915611E6f`
-* **Read value:** call **`latestAnswer()`** on the feed and scale by **`decimals()`**.
-* **Optional freshness:** call **`latestRoundData()`** and use **`updatedAt`** to reject stale data.
+- **ETH/USD feed (Eden):** `0xfe743BF30eB5d0e22ED806910914E15915611E6f`
+- **Read value:** call **`latestAnswer()`** on the feed and scale by **`decimals()`**.
+- **Optional freshness:** call **`latestRoundData()`** and use **`updatedAt`** to reject stale data.
 
 <Callout type="warning" emoji="⏱️">
-  **Update cadence on Eden testnet:** prices refresh on **≥ 0.5%** move or every **6 hours** (heartbeat), whichever comes first.
+  **Update cadence on Eden testnet:** prices refresh on **≥ 0.5%** move or every **6 hours**
+  (heartbeat), whichever comes first.
 </Callout>
 
 ## Using oracles in your app
