@@ -1,3 +1,6 @@
+/* For math notation */
+@import 'katex/dist/katex.min.css';
+
 /* Import Tailwind CSS */
 @import 'tailwindcss';
 
