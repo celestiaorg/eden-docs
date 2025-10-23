@@ -5,14 +5,14 @@ import rehypeKatex from 'rehype-katex'
 const withNextra = nextra({
   mdxOptions: {
     remarkPlugins: [remarkMath],
-    rehypePlugins: [rehypeKatex],
-  },
+    rehypePlugins: [rehypeKatex]
+  }
 })
 
 export default withNextra({
   output: 'export',
   images: {
-    unoptimized: true,
+    unoptimized: true
   },
   webpack: (config, { isServer }) => {
     config.resolve.fallback = {
@@ -22,7 +22,7 @@ export default withNextra({
       'pino-pretty': false,
       lokijs: false,
       '@tanstack/query-sync-storage-persister': false,
-      '@react-native-async-storage/async-storage': false,
+      '@react-native-async-storage/async-storage': false
     }
 
     if (!isServer) {
@@ -36,5 +36,5 @@ export default withNextra({
 
     config.ignoreWarnings = [{ module: /node_modules\/@metamask\/sdk/ }]
     return config
-  },
+  }
 })

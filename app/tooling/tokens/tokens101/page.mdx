@@ -8,8 +8,6 @@ ERC-20 is the **standard interface** that defines how these tokens behave. Every
 
 In this guide, we’ll unpack how ERC-20 tokens work, explore how transfers and approvals function under the hood, and explain how tokenomics (the “rules of the game”) are encoded directly into smart contracts.
 
-
-
 ## What ERC-20 defines
 
 The [ERC-20 spec](https://ethereum.org/sw/developers/docs/standards/tokens/erc-20/) describes a minimal set of functions that every fungible token must implement. These functions let contracts and wallets interact with tokens in a predictable way.
@@ -33,8 +31,7 @@ function symbol() external view returns (string memory);
 function decimals() external view returns (uint8);
 ```
 
-Every ERC-20 token you’ve heard of implements this same interface. The difference lies in *how the logic inside those functions is written*.
-
+Every ERC-20 token you’ve heard of implements this same interface. The difference lies in _how the logic inside those functions is written_.
 
 ## Units and decimals
 
@@ -57,7 +54,7 @@ event Transfer(address indexed from, address indexed to, uint256 value);
 event Approval(address indexed owner, address indexed spender, uint256 value);
 ```
 
-These events don’t alter contract storage; they’re lightweight logs recorded on the blockchain. [Indexers](/tooling/indexers/overview), explorers, and [wallets](/tooling/wallets) watch for them to track token movements and update user interfaces. 
+These events don’t alter contract storage; they’re lightweight logs recorded on the blockchain. [Indexers](/tooling/indexers/overview), explorers, and [wallets](/tooling/wallets) watch for them to track token movements and update user interfaces.
 
 ## Reactivity and external triggers
 
@@ -82,16 +79,15 @@ mapping(address => uint256) public balanceOf;
 mapping(address => mapping(address => uint256)) public allowance;
 ```
 
-`balanceOf` tracks how many tokens each address owns. `allowance` tracks how many tokens one address (the *owner*) has approved another (the *spender*) to transfer on their behalf.
+`balanceOf` tracks how many tokens each address owns. `allowance` tracks how many tokens one address (the _owner_) has approved another (the _spender_) to transfer on their behalf.
 
 Together, these mappings form the token’s internal ledger. The contract updates them when tokens are minted, burned, or transferred. Your wallet simply reads these values to show your token balance.
 
 This mental model (balances and allowances stored in the contract) sets up the foundation for understanding how token transfers actually work.
 
-
 ## How token transfers actually work
 
-For developers new to blockchains, it’s tempting to think that sending a token works like sending digital cash. You might imagine that your tokens live *inside* your wallet and are sent across the network when you hit “transfer.” But that’s not what actually happens.
+For developers new to blockchains, it’s tempting to think that sending a token works like sending digital cash. You might imagine that your tokens live _inside_ your wallet and are sent across the network when you hit “transfer.” But that’s not what actually happens.
 
 Tokens live **inside a smart contract**, not inside your wallet. The ERC-20 contract keeps a public ledger of who owns what by mapping addresses to balances. Your wallet doesn’t hold tokens directly, it simply knows how to **read** your balance from that contract and how to **sign** transactions that tell the contract to update it.
 
@@ -115,15 +111,14 @@ myToken.transferFrom(msg.sender, address(this), 1000 * 1e18);
 
 This two-step design keeps control in your hands. The contract can only transfer the amount you’ve approved, never more. However, it also introduces security risks if used carelessly:
 
-* Approving unlimited allowances can expose your tokens if the spender contract or its keys are compromised.
-* Poorly written contracts can misuse approvals, leading to drained balances.
+- Approving unlimited allowances can expose your tokens if the spender contract or its keys are compromised.
+- Poorly written contracts can misuse approvals, leading to drained balances.
 
 In practice, most apps and wallets handle this flow automatically: you click “approve,” the wallet signs the transaction, and the smart contract gains limited access. But it’s important to understand what’s really happening under the hood: **the tokens never leave the contract that defines them; only the ownership record inside that contract changes.**
 
-
 ## Tokenomics: rules as code
 
-What people call *tokenomics* is simply **custom logic coded into the token contract**. The ERC-20 interface defines the shape (total supply, balances, transfers) but the *math* and *rules* are up to you.
+What people call _tokenomics_ is simply **custom logic coded into the token contract**. The ERC-20 interface defines the shape (total supply, balances, transfers) but the _math_ and _rules_ are up to you.
 
 For example:
 

@@ -12,7 +12,6 @@ TODO: Add video link
 
 A bonding curve defines how the price of a token changes as supply increases or decreases. In a **linear** bonding curve, the price rises at a constant rate with supply, making the math predictable and gas-efficient to compute directly onchain.
 
-
 ## Why use bonding curves?
 
 Bonding curves make token pricing automatic, transparent, and trustless.
@@ -29,22 +28,20 @@ We have example repository available [here](TODO: GitHub link placeholder) that 
 
 The repository contains:
 
-* `contracts/` — Solidity implementation
-* `contracts/test/` — Foundry-based tests
-* `ui/` — web interface built with Next.js
+- `contracts/` — Solidity implementation
+- `contracts/test/` — Foundry-based tests
+- `ui/` — web interface built with Next.js
 
 <Callout type="info">
-This tutorial focuses only on the contract logic. If you want to see how the front end interacts with the contract, check out the `/ui` folder or follow this [guide](/guides/build-a-frontend).
+  This tutorial focuses only on the contract logic. If you want to see how the front end interacts
+  with the contract, check out the `/ui` folder or follow this [guide](/guides/build-a-frontend).
 </Callout>
-
-
 
 ## How linear bonding curves work
 
 A bonding curve defines **price as a function of total supply**. When someone mints tokens, total supply increases and price rises along the curve. When tokens are burned, supply decreases and price falls.
 
 ![Linear bonding curve](/images/guides/bonding-curve/linearBondingCurve.png)
-
 
 A **linear** curve means price changes at a constant rate with supply. The function is:
 
@@ -54,9 +51,9 @@ $$
 
 where:
 
-* $s$ is the current total supply
-* $\text{initialPrice}$ is the base price when supply is zero (optional, can be set to 0)
-* $\text{slope}$ determines how much price increases per token minted
+- $s$ is the current total supply
+- $\text{initialPrice}$ is the base price when supply is zero (optional, can be set to 0)
+- $\text{slope}$ determines how much price increases per token minted
 
 ## The math
 
@@ -65,7 +62,6 @@ When tokens are minted or burned, calculating the cost is a little tricky due to
 Instead of looping, we treat the entire mint or burn as one smooth move along a straight line, and the total cost to mint is just the **area under that line**.
 
 ![Linear bonding curve](/images/guides/bonding-curve/totalCost.png)
-
 
 At first, that shape looks like a trapezoid, and you probably remember from geometry class the formula area of a trapezoid is $A = \frac{1}{2} \times (b_1 + b_2) \times h$, but we can make it easier than that. If you slice off the small triangle at one end and flip it over, it fills the gap on the other side and turns the trapezoid into a perfect rectangle. So the total cost is simply the **average price** times the **number of tokens**.
 
@@ -80,9 +76,7 @@ $$
 \end{align*}
 $$
 
-
 That’s it. No loops, no calculus, just the midpoint of a line times its width. Burning works the same way but in reverse: the same rectangle, just sliding back down the line.
-
 
 ## Implementing the contract
 
@@ -106,7 +100,7 @@ function getCurrentPrice() public view returns (uint256) {
 ```
 
 <Callout type="info">
-ERC‑20 amounts use **18 decimals** (atomic units). Both `slope` and `supply` are 18‑decimal‑scaled. Multiplying them temporarily produces **36 decimals** of precision. Dividing by `1e18` brings the result back to the standard **18‑decimal** scale so the price is expressed in atomic units (wei). 
+ERC‑20 amounts use **18 decimals** (atomic units). Both `slope` and `supply` are 18‑decimal‑scaled. Multiplying them temporarily produces **36 decimals** of precision. Dividing by `1e18` brings the result back to the standard **18‑decimal** scale so the price is expressed in atomic units (wei).
 
 Both `_priceAt()` and `getCurrentPrice()` return **atomic units**. To display a human‑readable price in a UI, divide the return value by `1e18`.
 
@@ -131,12 +125,12 @@ function calculateCost(uint256 amount) public view returns (uint256) {
 
 `Math.mulDiv(x, y, denominator, rounding)` computes `(x * y) / denominator` with full 512‑bit precision to avoid overflow, then applies rounding.
 
-* **x** = `pStart + pEnd` (sum of endpoint prices, 18d)
-* **y** = `amount` (numberOfTokens, 18d)
-* **denominator** = `2 * 1e18` → `2` averages the endpoints; `1e18` corrects decimal scale (36d → 18d)
-* **rounding** = `Ceil` → buyers never underpay by 1 wei
+- **x** = `pStart + pEnd` (sum of endpoint prices, 18d)
+- **y** = `amount` (numberOfTokens, 18d)
+- **denominator** = `2 * 1e18` → `2` averages the endpoints; `1e18` corrects decimal scale (36d → 18d)
+- **rounding** = `Ceil` → buyers never underpay by 1 wei
 
-Because all three terms are scaled, the extra `/ 1e18` inside the denominator is essential to keep the result in 18‑decimal atomic units. 
+Because all three terms are scaled, the extra `/ 1e18` inside the denominator is essential to keep the result in 18‑decimal atomic units.
 
 </Callout>
 
@@ -162,9 +156,9 @@ function mintTokens(uint256 amount, uint256 minTokenOut) public payable nonReent
 }
 ```
 
-* `nonReentrant` protects the transfer + state sequence.
-* `minTokenOut` provides simple slippage protection against adverse price movement between quote and execution.
-* Any excess TIA is returned after mint.
+- `nonReentrant` protects the transfer + state sequence.
+- `minTokenOut` provides simple slippage protection against adverse price movement between quote and execution.
+- Any excess TIA is returned after mint.
 
 ### Quoting tokens for a fixed TIA amount
 
@@ -199,12 +193,11 @@ function calculateTokensForTia(uint256 ethAmount) public view returns (uint256) 
 }
 ```
 
-This makes it easy for a frontend to quote *tokens‑for‑TIA* in one call without looping through each incremental mint.
+This makes it easy for a frontend to quote _tokens‑for‑TIA_ in one call without looping through each incremental mint.
 
 ### Refund for burns
 
 When users burn tokens, the contract calculates how much ETH they receive back from the bonding‑curve reserve. It uses the same midpoint‑pricing math as `calculateCost`, but in reverse. It mirrors `calculateCost` but uses `Floor` so the contract cannot over‑refund.
-
 
 ```solidity
 function calculateRefund(uint256 amount) public view returns (uint256) {
@@ -238,10 +231,9 @@ function burnTokens(uint256 amount) public nonReentrant {
 }
 ```
 
-* Calculates the refund **before** burning to lock in price at the current supply.
-* Verifies the reserve covers the payout.
-* Uses `nonReentrant` for safety.
-
+- Calculates the refund **before** burning to lock in price at the current supply.
+- Verifies the reserve covers the payout.
+- Uses `nonReentrant` for safety.
 
 ## Summary
 
