@@ -1,6 +1,10 @@
 import nextra from 'nextra'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url))
 
 const withNextra = nextra({
   mdxOptions: {
@@ -23,6 +27,13 @@ export default withNextra({
       lokijs: false,
       '@tanstack/query-sync-storage-persister': false,
       '@react-native-async-storage/async-storage': false
+    }
+
+    config.resolve.alias = {
+      ...(config.resolve.alias ?? {}),
+      '@': projectRoot,
+      '@components': path.resolve(projectRoot, 'components'),
+      '@lib': path.resolve(projectRoot, 'lib')
     }
 
     if (!isServer) {
