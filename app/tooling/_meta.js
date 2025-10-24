@@ -3,6 +3,5 @@ export default {
   bridging: 'Bridging',
   indexers: 'Indexers',
   oracles: 'Oracles',
-  vaults: 'Vaults',
   wallets: 'Wallets'
 }
