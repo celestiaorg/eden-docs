@@ -29,7 +29,7 @@ optimizer = true
 optimizer_runs = 200
 
 [rpc_endpoints]
-eden = "https://ev-reth-eden-testnet.binarybuilders.services:8545/"
+eden = "https://rpc.testnet.eden.gateway.fm/"
 ```
 
 <Callout type="info">
@@ -39,9 +39,7 @@ eden = "https://ev-reth-eden-testnet.binarybuilders.services:8545/"
 
 ## Use the example contract
 
-The `forge init` command automatically creates an example `Counter.sol` contract in `src/Counter.sol`.
-
-## Use the example deploy script
+The `forge init Counter` command automatically creates an example `Counter.sol` contract in `src/Counter.sol`.
 
 The `forge init` command automatically creates an example deploy script in `script/Counter.s.sol`.
 
@@ -72,11 +70,9 @@ forge script script/Counter.s.sol:CounterScript \
 ```
 
 <Callout type="info">
-  The chain ID 3735928814 is for Eden testnet. For mainnet, use chain ID 42420. See the [RPCs
+  The chain ID 3735928814 is for Eden testnet. For mainnet, use chain ID TODO: TBD. See the [RPCs
   page](/networks/rpcs) for current values.
 </Callout>
-
-If the RPC does not support [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), add `--legacy`.
 
 ## Interact with the contract
 
@@ -165,7 +161,7 @@ Use the `verify-contract` command to verify your contract. When using the code b
 
 ```bash copy
 forge verify-contract \
-    --rpc-url https://ev-reth-eden-testnet.binarybuilders.services:8545 \
+    --rpc-url https://rpc.testnet.eden.gateway.fm/ \
     --verifier blockscout \
     --verifier-url 'https://eden-testnet.blockscout.com:443/api/' \
     --compiler-version 0.8.28 \
@@ -177,18 +173,11 @@ forge verify-contract \
 
 ## Troubleshooting
 
-### RPC endpoint issues
-
-If you get "503 Service Unavailable" errors, try different RPC endpoints from the [RPC list](/networks/testnet#rpcs).
-
 ### Check network status
 
 ```bash copy
 # Test RPC connectivity
-curl -s http://rpc-evnode-edennet-1-testnet.binary.builders:8080 -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
-
-# Check Eden testnet status
-curl -s https://status-eden-testnet.binarybuilders.services
+curl -s https://rpc.testnet.eden.gateway.fm/ -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
 ```
 
 ### Complier version mismatch
@@ -210,7 +199,7 @@ Then run the command with the correct version:
 
 ```bash copy
 forge verify-contract \
-    --rpc-url https://ev-reth-eden-testnet.binarybuilders.services:8545 \
+    --rpc-url https://rpc.testnet.eden.gateway.fm/ \
     --verifier blockscout \
     --verifier-url 'https://eden-testnet.blockscout.com/:443/api/' \
     --compiler-version 0.8.30 \ # Change this version
@@ -220,7 +209,6 @@ forge verify-contract \
 
 ### Common issues
 
-- **RPC timeouts**: Try different endpoints from the [RPC list](/networks/testnet#rpcs) or wait and retry
 - **Gas estimation failures**: Ensure you have sufficient testnet TIA from the [faucet](/networks/testnet#faucet)
 
 That's it, you're live on Eden!

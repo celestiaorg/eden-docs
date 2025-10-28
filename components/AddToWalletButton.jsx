@@ -13,7 +13,7 @@ const DEFAULT_CHAIN_CONFIG = {
     symbol: 'TIA',
     decimals: 18
   },
-  rpcUrls: ['https://ev-reth-eden-testnet.binarybuilders.services:8545/'],
+  rpcUrls: ['https://rpc.testnet.eden.gateway.fm/'],
   blockExplorerUrls: ['https://eden-testnet.blockscout.com/']
 }
 
