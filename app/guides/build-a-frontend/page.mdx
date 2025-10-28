@@ -58,9 +58,14 @@ import { metaMask } from 'wagmi/connectors'
 
 export const eden = {
   id: 3735928814,
-  name: 'Eden testnet',
-  nativeCurrency: { name: 'TIA', symbol: 'TIA', decimals: 18 },
-  rpcUrls: { default: { http: 'https://rpc.testnet.eden.gateway.fm/'] } }
+  name: "Eden testnet",
+  nativeCurrency: { name: "TIA", symbol: "TIA", decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.testnet.eden.gateway.fm/"],
+      wss: ["wss://rpc.testnet.eden.gateway.fm/"],
+    },
+  },
 } as const
 
 export const config = createConfig({
@@ -71,14 +76,6 @@ export const config = createConfig({
 ```
 
 Create environment files for different environments:
-
-```bash copy
-# .env.development
-VITE_RPC_URL=http://localhost:5173/rpc
-
-# .env.production
-VITE_RPC_URL=https://ev-reth-eden-testnet.binarybuilders.services:8545
-```
 
 ## Create the Counter component
 
