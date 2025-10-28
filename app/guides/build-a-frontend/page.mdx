@@ -47,28 +47,7 @@ export const counterABI = [
 export const COUNTER_ADDRESS = '0x...' as const
 ```
 
-## Configure CORS proxy for local development
-
-When developing locally, you may encounter CORS errors when connecting to your Eden node. To resolve this, configure a proxy in your Vite config:
-
-```ts copy
-// vite.config.ts
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    proxy: {
-      '/rpc': {
-        target: 'https://ev-reth-eden-testnet.binarybuilders.services:8545', // Your Eden RPC endpoint
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/rpc/, '')
-      }
-    }
-  }
-})
-```
+## Configure wagmi
 
 Then update your wagmi configuration to use environment variables:
 
@@ -81,7 +60,7 @@ export const eden = {
   id: 3735928814,
   name: 'Eden testnet',
   nativeCurrency: { name: 'TIA', symbol: 'TIA', decimals: 18 },
-  rpcUrls: { default: { http: [import.meta.env.VITE_RPC_URL || 'http://localhost:5173/rpc'] } }
+  rpcUrls: { default: { http: 'https://rpc.testnet.eden.gateway.fm/'] } }
 } as const
 
 export const config = createConfig({
@@ -426,28 +405,6 @@ Visit `http://localhost:5173` and:
 3. Interact with your Counter contract
 
 </Steps>
-
-## Troubleshooting
-
-### CORS Errors
-
-If you encounter CORS errors when connecting to the Eden RPC endpoint, make sure:
-
-1. Your Vite proxy configuration is correct
-2. You're using the proxied URL in development (`http://localhost:5173/rpc`)
-3. Your dev server is running on the correct port (check with `lsof -i :5173`)
-
-### Alternative Solutions
-
-If the proxy doesn't work for your setup, you can:
-
-1. **Configure CORS on your RPC node** (if you control it):
-   - Add appropriate `Access-Control-Allow-Origin` headers
-   - Allow the necessary HTTP methods (POST, OPTIONS)
-
-2. **Use a public RPC endpoint** that already has CORS configured properly
-
-3. **Deploy a simple proxy server** using services like Cloudflare Workers or Vercel Edge Functions
 
 ## Branding
 

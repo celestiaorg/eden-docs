@@ -19,29 +19,6 @@ cd eden-viem-app
 npm install viem
 ```
 
-### Configure Vite proxy to handle CORS
-
-Create a `vite.config.ts` file to proxy RPC requests:
-
-```typescript copy
-// vite.config.ts
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    proxy: {
-      '/rpc': {
-        target: 'https://ev-reth-eden-testnet.binarybuilders.services:8545',
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/rpc/, '')
-      }
-    }
-  }
-})
-```
-
 ### Set up Eden configuration
 
 Create a new file `src/config.ts`:
@@ -60,7 +37,7 @@ export const eden = defineChain({
   },
   rpcUrls: {
     default: {
-      http: ['http://localhost:5173/rpc'] // Use proxied URL in development
+      http: ['https://rpc.testnet.eden.gateway.fm/']
     }
   }
 })
@@ -150,18 +127,6 @@ npm run dev
 ```
 
 </Steps>
-
-## Troubleshooting
-
-### CORS errors
-
-If you see CORS errors in the browser console, this means the RPC endpoint doesn't allow requests from browser origins. The Vite proxy configuration above handles this by routing requests through your development server.
-
-For production deployments, you'll need to:
-
-- Use an RPC provider that supports CORS
-- Set up your own proxy server like we did in this guide
-- Use a service like [Cloudflare Workers](https://workers.cloudflare.com/) to proxy requests
 
 ## Next steps
 
