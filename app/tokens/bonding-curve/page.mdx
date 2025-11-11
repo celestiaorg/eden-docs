@@ -143,7 +143,7 @@ function mintTokens(uint256 amount, uint256 minTokenOut) public payable nonReent
     require(amount > 0, "Cannot mint zero tokens");
 
     uint256 cost = calculateCost(amount);
-    require(msg.value >= cost, "Insufficient ETH sent");
+    require(msg.value >= cost, "Insufficient TIA sent");
     require(amount >= minTokenOut, "Slippage: fewer tokens than expected");
 
     _mint(msg.sender, amount);
@@ -165,13 +165,13 @@ function mintTokens(uint256 amount, uint256 minTokenOut) public payable nonReent
 This helper inverts the bonding‑curve equation to determine how many tokens a buyer can receive for a given TIA input. It solves the pricing curve algebraically using the quadratic formula.
 
 ```solidity
-function calculateTokensForTia(uint256 ethAmount) public view returns (uint256) {
-    require(ethAmount > 0, "Must send more than 0 TIA");
+function calculateTokensForTia(uint256 tiaAmount) public view returns (uint256) {
+    require(tiaAmount > 0, "Must send more than 0 TIA");
 
     uint256 s = totalSupply();
     uint256 a = slope;
     uint256 b = initialPrice;
-    uint256 c = ethAmount;
+    uint256 c = tiaAmount;
 
     uint256 A = (a / 2);               // quadratic term
     uint256 B = ((a * s) / 1e18) + b;  // linear term
@@ -188,7 +188,7 @@ function calculateTokensForTia(uint256 ethAmount) public view returns (uint256) 
 
     // Scale by 1e18 to return an 18‑decimal token amount
     uint256 amount = (numerator * 1e18) / denominator;
-    require(amount > 0, "Not enough ETH to buy tokens");
+    require(amount > 0, "Not enough TIA to buy tokens");
     return amount;
 }
 ```
@@ -197,7 +197,7 @@ This makes it easy for a frontend to quote _tokens‑for‑TIA_ in one call with
 
 ### Refund for burns
 
-When users burn tokens, the contract calculates how much ETH they receive back from the bonding‑curve reserve. It uses the same midpoint‑pricing math as `calculateCost`, but in reverse. It mirrors `calculateCost` but uses `Floor` so the contract cannot over‑refund.
+When users burn tokens, the contract calculates how much TIA they receive back from the bonding‑curve reserve. It uses the same midpoint‑pricing math as `calculateCost`, but in reverse. It mirrors `calculateCost` but uses `Floor` so the contract cannot over‑refund.
 
 ```solidity
 function calculateRefund(uint256 amount) public view returns (uint256) {
@@ -222,7 +222,7 @@ function burnTokens(uint256 amount) public nonReentrant {
     require(balanceOf(msg.sender) >= amount, "Insufficient balance to burn");
 
     uint256 refund = calculateRefund(amount); // compute before burning
-    require(address(this).balance >= refund, "Contract has insufficient ETH for refund");
+    require(address(this).balance >= refund, "Contract has insufficient TIA for refund");
 
     _burn(msg.sender, amount);
 
