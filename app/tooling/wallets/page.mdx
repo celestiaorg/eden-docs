@@ -17,7 +17,7 @@ There are generally two ways to interact with Eden:
   - Can be **self-custodial** (keys with the user) or **managed** (automation/policies built in).
   - See the [Porto example](#setting-up-eden-with-porto) below for how developers can integrate this flow.
 
-## Adding Eden to MetaMask
+## Adding Eden testnet to MetaMask
 
 import { Steps } from 'nextra/components'
 
@@ -73,7 +73,7 @@ If you're using the testnet, visit the [Eden faucet](/networks/testnet#faucet) t
 
 </Steps>
 
-## Setting up Eden with Porto
+## Setting up Eden testnet with Porto
 
 <Callout type="info" emoji="🚧">
   This section is a work in progress. It currently uses Ethereum Sepolia testnet.
@@ -90,7 +90,7 @@ npm create vite@latest eden-porto -- --template react-ts
 cd eden-porto
 ```
 
-### Define Eden (custom chain for now)
+### Define Eden testnet (custom chain for now)
 
 ```ts copy filename="src/chains.ts"
 import { defineChain } from 'viem'
