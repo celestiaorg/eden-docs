@@ -2,10 +2,32 @@
 
 ## RPCs
 
-| Endpoint                               | Type                                               |
-| -------------------------------------- | -------------------------------------------------- |
-| `https://rpc.testnet.eden.gateway.fm/` | RPC: [ev-reth](https://github.com/evstack/ev-reth) |
-| `wss://rpc.testnet.eden.gateway.fm/`   | WS: [ev-reth](https://github.com/evstack/ev-reth)  |
+| Endpoint                               | Type                                               | Provider                         |
+| -------------------------------------- | -------------------------------------------------- | -------------------------------- |
+| `https://rpc.testnet.eden.gateway.fm/` | RPC: [ev-reth](https://github.com/evstack/ev-reth) | [Gateway.fm](https://gateway.fm) |
+| `wss://rpc.testnet.eden.gateway.fm/ws` | WS: [ev-reth](https://github.com/evstack/ev-reth)  | [Gateway.fm](https://gateway.fm) |
+
+> **Gateway.fm rate limits:** 30 requests/second per IP. [Register at admin.gateway.fm](https://admin.gateway.fm) for 60 requests/second.
+
+## Hardware requirements
+
+### Eden nodes
+
+| Component | Requirement |
+| --------- | ----------- |
+| CPU       | 8 cores     |
+| RAM       | 16 GB       |
+| Storage   | 400 GB SSD  |
+| Network   | 1 GB/s      |
+
+### Recommended system requirements
+
+| Component | Requirement   |
+| --------- | ------------- |
+| CPU       | 16 cores      |
+| RAM       | 32 GB         |
+| Storage   | 1 TB NVMe SSD |
+| Network   | 10 GB/s       |
 
 ## Faucet
 
