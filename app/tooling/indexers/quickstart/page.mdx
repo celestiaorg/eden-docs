@@ -97,7 +97,14 @@ goldsky subgraph list
 
 ## Test a query (in the endpoint's GraphiQL)
 
-Using the GraphQL endpoint ([example](https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/redstone-testnet-fast-eden-testnet/1.0.0/gn)), you can query the subgraph for data. For example, to get the latest value updates from the RedStone adapter:
+Using your deployed GraphQL endpoint (shown in the Goldsky dashboard or from `goldsky subgraph
+list`), you can query the subgraph for data. Endpoint format:
+
+```text copy
+https://api.goldsky.com/api/public/project_<PROJECT_ID>/subgraphs/<SUBGRAPH_NAME>/<VERSION>/gn
+```
+
+For example, to get the latest value updates from the RedStone adapter:
 
 ```graphql copy filename="GraphQL"
 {
@@ -137,7 +144,8 @@ You can filter by a specific data feed ID (in this case, TIA where `TIA = 544941
 
 ## Using the indexed data in your frontend
 
-Here's a simple HTML page that displays live price feeds from your subgraph. You can replace the `SUBGRAPH_URL` with your own supgraph URL:
+Here's a simple HTML page that displays live price feeds from your subgraph. You can replace the
+`SUBGRAPH_URL` with your own subgraph URL:
 
 ```html copy filename="price-display.html"
 <!doctype html>
@@ -192,8 +200,7 @@ Here's a simple HTML page that displays live price feeds from your subgraph. You
 
     <script>
       // Replace with your actual Goldsky subgraph endpoint
-      const SUBGRAPH_URL =
-        'https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/redstone-testnet-fast-eden-testnet/1.0.0/gn'
+      const SUBGRAPH_URL = 'YOUR_GOLDSKY_SUBGRAPH_URL'
 
       async function fetchAndDisplayPrices() {
         try {

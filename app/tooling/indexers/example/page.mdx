@@ -24,8 +24,7 @@ receive after you deploy the subgraph. See it in the Goldsky dashboard or by run
 `goldsky subgraph list`.
 
 ```js copy
-const SUBGRAPH_URL =
-  "https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/redstone-testnet-fast-eden-testnet/1.0.0/gn";
+const SUBGRAPH_URL = 'YOUR_GOLDSKY_SUBGRAPH_URL'
 ```
 
 ## Run the development server
@@ -76,8 +75,7 @@ If you want to index different contracts, [create your own subgraph](https://doc
 For a programmatic approach, here's how to fetch updates through Goldsky:
 
 ```javascript copy filename="fetch-prices.js"
-const SUBGRAPH_URL =
-  'https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/redstone-testnet-fast-eden-testnet/1.0.0/gn'
+const SUBGRAPH_URL = 'YOUR_GOLDSKY_SUBGRAPH_URL'
 
 async function fetchPriceUpdates(skip = 0, limit = 50) {
   const response = await fetch(SUBGRAPH_URL, {
