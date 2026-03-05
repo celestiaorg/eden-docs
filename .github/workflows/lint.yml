@@ -20,16 +20,7 @@ jobs:
         cache: 'yarn'
 
     - name: Install dependencies
-      run: |
-        for attempt in 1 2 3; do
-          yarn install --frozen-lockfile --network-timeout 300000 && exit 0
-          if [ "$attempt" -lt 3 ]; then
-            echo "yarn install failed (attempt $attempt/3), retrying in 15 seconds..."
-            sleep 15
-          fi
-        done
-        echo "yarn install failed after 3 attempts"
-        exit 1
+      run: yarn install --frozen-lockfile
 
     - name: Run ESLint
       run: npx eslint . --ext .js,.jsx,.ts,.tsx,.mdx --max-warnings 0
