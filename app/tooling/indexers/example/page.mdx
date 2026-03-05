@@ -1,6 +1,10 @@
 # Example with Goldsky (and RedStone oracle)
 
-This app demonstrates reading the [Goldsky](https://docs.goldsky.com) subgraph to fetch [RedStone](https://docs.redstone.finance) oracle data from the TIA/USD and ETH/USD feeds. This guide shows you how to fork and customize the [demo](https://celestiaorg.github.io/eden-goldsky-redstone-demo) ([source](https://github.com/celestiaorg/eden-goldsky-redstone-demo)).
+This app demonstrates reading the [Goldsky](https://docs.goldsky.com) subgraph to fetch
+[RedStone](https://docs.redstone.finance) oracle data from the TIA/USD and ETH/USD feeds. This
+guide shows you how to fork and customize the
+[demo](https://celestiaorg.github.io/eden-goldsky-redstone-demo)
+([source](https://github.com/celestiaorg/eden-goldsky-redstone-demo)).
 
 ![eden-redstone-vite](/images/indexer/eden-redstone-vite.png)
 
@@ -14,19 +18,41 @@ npm install
 
 ### Update the subgraph endpoint
 
-Edit `main.js` and replace the `SUBGRAPH_URL` with your own endpoint from the [quickstart](/tooling/indexers/quickstart#deploy-the-instant-subgraph). This is the endpoint you receive after you deploy the subgraph. See it in the Goldsky dashboard or by running `goldsky subgraph list`.
+Edit `main.js` and replace the `SUBGRAPH_URL` with your own endpoint from the
+[quickstart](/tooling/indexers/quickstart#deploy-the-instant-subgraph). This is the endpoint you
+receive after you deploy the subgraph. See it in the Goldsky dashboard or by running
+`goldsky subgraph list`.
 
-```bash
-const SUBGRAPH_URL = 'YOUR_GOLDSKY_SUBGRAPH_URL';
+```js copy
+const SUBGRAPH_URL = 'YOUR_GOLDSKY_SUBGRAPH_URL'
 ```
 
-### Run the development server
+For a current working demo endpoint, see
+[`eden-goldsky-redstone-demo/main.js`](https://github.com/celestiaorg/eden-goldsky-redstone-demo/blob/main/main.js).
+
+## Run the development server
 
 ```bash copy
 npm run dev
 ```
 
 Visit http://localhost:5173 to see your dashboard!
+
+## Troubleshooting
+
+If you see this error:
+
+```text
+Type `Query` has no field `valueUpdates`
+```
+
+your subgraph was deployed with the wrong ABI/event type (often proxy ABI events like
+`AdminChanged`, `BeaconUpgraded`, `Upgraded`) instead of the adapter `ValueUpdate` event.
+
+- The testnet adapter address is `0x2e6495F68C8d8Bd56670Cc6110309Dd1e6Fe5CE0`.
+- The mainnet adapter address is `0x4154f0e4dc70DFA4219309fBea34322225E17b68`.
+- `startBlock` only changes how far back history is indexed. It does not change schema/entity names.
+- Redeploy with the `ValueUpdate` ABI above and then query `valueUpdates`.
 
 ### Customization ideas (optional)
 
@@ -49,36 +75,37 @@ If you want to index different contracts, [create your own subgraph](https://doc
 
 ## Node.js/JavaScript example
 
-For a programmatic approach, here's how to fetch subgraph information in
-Node.js through Goldsky for the RedStone adapter contract:
+For a programmatic approach, here's how to fetch updates through Goldsky:
 
 ```javascript copy filename="fetch-prices.js"
-const SUBGRAPH_URL =
-  'https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/eden-redstone-adapter-eden-testnet/1.0/gn'
+const SUBGRAPH_URL = 'YOUR_GOLDSKY_SUBGRAPH_URL'
 
 async function fetchPriceUpdates(skip = 0, limit = 50) {
   const response = await fetch(SUBGRAPH_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      query: `{
-        valueUpdates(first: ${limit}, skip: ${skip}, orderBy: updatedAt,
-orderDirection: desc) {
+      query: `query PriceUpdates($first: Int!, $skip: Int!) {
+        valueUpdates(first: $first, skip: $skip, orderBy: updatedAt, orderDirection: desc) {
           value
           dataFeedId
           updatedAt
         }
-      }`
+      }`,
+      variables: { first: limit, skip }
     })
   })
 
-  const { data } = await response.json()
+  const payload = await response.json()
+  if (payload.errors?.length) {
+    throw new Error(payload.errors.map(e => e.message).join('; '))
+  }
 
   // Separate updates by feed type
   const tiaUpdates = []
   const ethUpdates = []
 
-  data.valueUpdates.forEach(update => {
+  payload.data.valueUpdates.forEach(update => {
     const isETH = update.dataFeedId.startsWith('0x455448')
     const isTIA = update.dataFeedId.startsWith('0x544941')
 
@@ -114,34 +141,4 @@ ${update.timestamp.toLocaleString()}`)
 ${update.timestamp.toLocaleString()}`)
   })
 })
-```
-
-Running this with Node.js results in:
-
-```bash
-$ node fetch-prices.js
-
-Latest TIA prices:
-TIA: $1.3794 at
-9/25/2025, 2:30:49 PM
-TIA: $1.3852 at
-9/25/2025, 1:51:39 PM
-TIA: $1.3937 at
-9/25/2025, 1:36:39 PM
-TIA: $1.4024 at
-9/25/2025, 1:22:58 PM
-TIA: $1.3947 at
-9/25/2025, 1:01:38 PM
-
-Latest ETH prices:
-ETH: $3896.5413 at
-9/25/2025, 2:30:49 PM
-ETH: $3917.8692 at
-9/25/2025, 2:20:57 PM
-ETH: $3897.4266 at
-9/25/2025, 2:12:09 PM
-ETH: $3917.7655 at
-9/25/2025, 1:51:39 PM
-ETH: $3936.9400 at
-9/25/2025, 1:01:38 PM
 ```
