@@ -97,7 +97,7 @@ goldsky subgraph list
 
 ## Test a query (in the endpoint's GraphiQL)
 
-Using the GraphQL endpoint ([example](https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/eden-redstone-adapter-eden-testnet/1.0/gn)), you can query the subgraph for data. For example, to get the latest value updates from the RedStone adapter:
+Using the GraphQL endpoint ([example](https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/redstone-testnet-fast-eden-testnet/1.0.0/gn)), you can query the subgraph for data. For example, to get the latest value updates from the RedStone adapter:
 
 ```graphql copy filename="GraphQL"
 {
@@ -193,7 +193,7 @@ Here's a simple HTML page that displays live price feeds from your subgraph. You
     <script>
       // Replace with your actual Goldsky subgraph endpoint
       const SUBGRAPH_URL =
-        'https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/eden-redstone-adapter-eden-testnet/1.0/gn'
+        'https://api.goldsky.com/api/public/project_cmf4aw4t78kut01ya4vbh4iz6/subgraphs/redstone-testnet-fast-eden-testnet/1.0.0/gn'
 
       async function fetchAndDisplayPrices() {
         try {
