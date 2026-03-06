@@ -75,6 +75,8 @@ const footer = (
       </Link>
       <span style={{ color: '#35A35A', fontWeight: '500' }}>•</span>
       <span>Welcome to Eden</span>
+      <span style={{ color: '#35A35A', fontWeight: '500' }}>•</span>
+      <Link href="/legal/disclaimer">Disclaimer</Link>
     </div>
   </Footer>
 )
