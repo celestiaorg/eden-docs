@@ -52,6 +52,7 @@
     "js-yaml": "4.1.1",
     "lodash": "4.17.23",
     "lodash-es": "4.17.23",
-    "mdast-util-to-hast": "13.2.1"
+    "mdast-util-to-hast": "13.2.1",
+    "socket.io-parser": "4.2.6"
   }
 }
