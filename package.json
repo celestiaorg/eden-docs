@@ -42,7 +42,7 @@
     "eslint/minimatch": "3.1.5",
     "@typescript-eslint/typescript-estree/minimatch": "9.0.9",
     "@ts-morph/common/minimatch": "10.2.4",
-    "@xmldom/xmldom": "0.9.9",
+    "@xmldom/xmldom": "0.9.10",
     "h3": "1.15.9",
     "hono": "4.12.8",
     "tar": "7.5.11",
