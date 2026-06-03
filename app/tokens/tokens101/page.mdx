@@ -99,7 +99,7 @@ myToken.transfer(0xRecipient, 100 * 1e18);
 
 Here, your wallet signs a message that says, “update the balance mapping: subtract 100 from me, add 100 to the recipient.” The contract then verifies your signature and updates its internal record.
 
-Things work a bit differently when interacting with **other smart contracts** (like [vaults](/tooling/vaults/overview) or DEXes). A smart contract can’t initiate its own transfe, it can only move tokens that you’ve explicitly approved it to access. That’s why ERC-20 includes the **approve → transferFrom** pattern:
+Things work a bit differently when interacting with **other smart contracts**. A smart contract can't initiate its own transfer, it can only move tokens that you've explicitly approved it to access. That's why ERC-20 includes the **approve → transferFrom** pattern:
 
 ```solidity
 // You approve another contract to use some of your tokens

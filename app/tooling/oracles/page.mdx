@@ -2,42 +2,48 @@
 
 import { Callout } from 'nextra/components'
 
-<Callout type="info" emoji="🚧">
-  This page is a work in progress.
-</Callout>
+Oracles let smart contracts use external data that has been published onchain. On Eden, RedStone
+price feeds are available for builders who need TIA/USD or ETH/USD reference prices.
 
-## What are oracles?
+## RedStone on Eden
 
-Oracles are blockchain middleware that bridge the gap between onchain smart contracts and offchain data sources. They enable smart contracts to access external data like asset prices, weather information, or sports scores in a secure manner.
+RedStone provides price feeds through a push-model architecture. Dedicated feed contracts expose
+price values directly, while the multi-feed adapter emits events that can be indexed by tools such
+as Goldsky.
 
-Price oracles provide real-time asset pricing data to smart contracts and applications on Eden testnet. Oracles for TIA/USD and ETH/USD are deployed to Eden Testnet with [RedStone](https://www.redstone.finance/) through their **push model** architecture.
+## Mainnet contracts
 
-## Why use oracles?
+| Contract | Address |
+| --- | --- |
+| TIA/USD feed | [`0x6ED89c637A6a42E0dc625Fbc16888263fa724d51`](https://eden.blockscout.com/address/0x6ED89c637A6a42E0dc625Fbc16888263fa724d51) |
+| ETH/USD feed | [`0xEB9972BE4202493316cd7459F1722de0E806D394`](https://eden.blockscout.com/address/0xEB9972BE4202493316cd7459F1722de0E806D394) |
+| Multi-feed adapter | [`0x4154f0e4dc70DFA4219309fBea34322225E17b68`](https://eden.blockscout.com/address/0x4154f0e4dc70DFA4219309fBea34322225E17b68) |
 
-- **DeFi protocols**: Lending, borrowing, and liquidation systems need accurate prices
-- **Trading applications**: DEXs and automated market makers require real-time price data
-- **Derivatives**: Options and futures contracts depend on reliable price feeds
-- **Analytics**: Track historical price movements and calculate metrics
+## Testnet contracts
 
-## Existing contracts
+| Contract | Address |
+| --- | --- |
+| TIA/USD feed | [`0x26CD22Ff0D84BAB3f6fec78eee790bE566E170Ce`](https://eden-testnet.blockscout.com/address/0x26CD22Ff0D84BAB3f6fec78eee790bE566E170Ce) |
+| ETH/USD feed | [`0xfe743BF30eB5d0e22ED806910914E15915611E6f`](https://eden-testnet.blockscout.com/address/0xfe743BF30eB5d0e22ED806910914E15915611E6f) |
+| Multi-feed adapter | [`0x2e6495F68C8d8Bd56670Cc6110309Dd1e6Fe5CE0`](https://eden-testnet.blockscout.com/address/0x2e6495F68C8d8Bd56670Cc6110309Dd1e6Fe5CE0) |
 
-Existing contracts are listed on the [Eden testnet page](/networks/testnet#existing-contracts).
+## Reading a feed
 
-### Quickstart
+Use RedStone's dedicated price feed contracts for direct reads.
 
-Use RedStone’s dedicated price feed contracts (push model) on Eden testnet.
-
-- **ETH/USD feed (Eden):** `0xfe743BF30eB5d0e22ED806910914E15915611E6f`
-- **Read value:** call **`latestAnswer()`** on the feed and scale by **`decimals()`**.
-- **Optional freshness:** call **`latestRoundData()`** and use **`updatedAt`** to reject stale data.
+- Call `latestAnswer()` to read the latest value.
+- Call `decimals()` to scale the value for display.
+- Call `latestRoundData()` and check `updatedAt` if your app needs to reject stale prices.
 
 <Callout type="warning" emoji="⏱️">
-  **Update cadence on Eden testnet:** prices refresh on **≥ 0.5%** move or every **6 hours**
-  (heartbeat), whichever comes first.
+  Check RedStone's current feed configuration for heartbeat and deviation thresholds before relying
+  on freshness assumptions in production.
 </Callout>
 
-## Using oracles in your app
+## Indexing oracle updates
 
-Learn how to index the RedStone pricefeeds on Eden testnet with Goldsky in the [indexing quickstart](/tooling/indexers/quickstart) and [example](/tooling/indexers/example).
+The RedStone multi-feed adapter emits `ValueUpdate` events. See the
+[Goldsky quickstart](/tooling/indexers/quickstart) and
+[Goldsky example](/tooling/indexers/example) for indexing those updates on Eden.
 
 Visit [RedStone's documentation](https://docs.redstone.finance) for in-depth technical details.

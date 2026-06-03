@@ -1,6 +1,10 @@
-# Quickstart (Eden testnet)
+# Quickstart with Goldsky
 
 import { Steps, Callout } from 'nextra/components'
+
+This quickstart uses the RedStone multi-feed adapter as an example event source. The same Goldsky
+workflow applies to other contracts: provide the contract address, ABI, network, and start block,
+then deploy an instant subgraph.
 
 <Steps>
 
@@ -17,7 +21,7 @@ goldsky login
 Save this as `adapter.json`:
 
 <Callout type="info">
-  Unlike the basic price feed, the RedStone MultiFeed Adapter emits `ValueUpdate` events, making it
+  Unlike the dedicated price feed contracts, the RedStone multi-feed adapter emits `ValueUpdate` events, making it
   directly indexable with an instant subgraph.
 </Callout>
 
@@ -75,9 +79,9 @@ Save this as `adapter.json`:
   "instances": [
     {
       "abi": "adapter",
-      "address": "0x2e6495F68C8d8Bd56670Cc6110309Dd1e6Fe5CE0",
+      "address": "0x4154f0e4dc70DFA4219309fBea34322225E17b68",
       "startBlock": 1,
-      "chain": "eden-testnet"
+      "chain": "eden"
     }
   ]
 }
@@ -154,7 +158,7 @@ Here's a simple HTML page that displays live price feeds from your subgraph. You
 <!doctype html>
 <html>
   <head>
-    <title>Eden testnet price feeds</title>
+    <title>Eden price feeds</title>
     <style>
       body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -198,7 +202,7 @@ Here's a simple HTML page that displays live price feeds from your subgraph. You
     </style>
   </head>
   <body>
-    <h1>Eden testnet RedStone oracle + Goldsky indexer</h1>
+    <h1>Eden RedStone oracle + Goldsky indexer</h1>
     <div id="prices" class="loading">Loading prices...</div>
 
     <script>
