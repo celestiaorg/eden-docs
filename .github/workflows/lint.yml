@@ -13,20 +13,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
       with:
-        node-version: '20'
-        cache: 'yarn'
+        bun-version: latest
 
     - name: Install dependencies
-      run: yarn install --frozen-lockfile
+      run: bun install --frozen-lockfile
 
     - name: Run ESLint
-      run: npx eslint . --ext .js,.jsx,.ts,.tsx,.mdx --max-warnings 0
+      run: bunx eslint . --ext .js,.jsx,.ts,.tsx,.mdx --max-warnings 0
 
     - name: Run TypeScript type checking
-      run: npx tsc --noEmit
+      run: bunx tsc --noEmit
 
     - name: Run Prettier check
-      run: npx prettier --check "**/*.{js,jsx,ts,tsx,mdx,json,css,md}"
+      run: bunx prettier --check "**/*.{js,jsx,ts,tsx,mdx,json,css,md}"

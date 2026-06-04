@@ -1,13 +1,21 @@
 # eden-docs
 
+This project uses [bun](https://bun.sh) as its package manager and task runner.
+
 to install dependencies:
 
 ```bash
-yarn
+bun install
 ```
 
 to start the development server:
 
 ```bash
-yarn dev
+bun dev
+```
+
+to build the static site (output in `out/`):
+
+```bash
+bun run build
 ```
