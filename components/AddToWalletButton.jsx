@@ -4,17 +4,16 @@ import { useState, useCallback } from 'react'
 
 // Generic "Add / Switch Network" button for any EIP-1193 compatible wallet
 // that implements EIP-3085 (wallet_addEthereumChain) and EIP-3326 (wallet_switchEthereumChain).
-// NOTE: Update the placeholder chainId and token symbol/details before production usage.
 const DEFAULT_CHAIN_CONFIG = {
-  chainId: '0xDEADBFEE', // 3735928814 in hex
-  chainName: 'Eden testnet',
+  chainId: '0x2ca', // 714 in hex
+  chainName: 'Eden',
   nativeCurrency: {
-    name: 'Testnet TIA',
+    name: 'TIA',
     symbol: 'TIA',
     decimals: 18
   },
-  rpcUrls: ['https://rpc.testnet.eden.gateway.fm/'],
-  blockExplorerUrls: ['https://eden-testnet.blockscout.com/']
+  rpcUrls: ['https://rpc.eden.gateway.fm/'],
+  blockExplorerUrls: ['https://eden.blockscout.com/']
 }
 
 export default function AddToWalletButton({ chainConfig = DEFAULT_CHAIN_CONFIG, label }) {
@@ -122,7 +121,7 @@ export default function AddToWalletButton({ chainConfig = DEFAULT_CHAIN_CONFIG, 
           {message}
         </span>
       )}
-      {/* No placeholder warning needed, config is correct for Eden testnet */}
+      {/* Config is correct for Eden mainnet. */}
     </div>
   )
 }

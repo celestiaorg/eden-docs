@@ -7,7 +7,7 @@ A minimal guide to deploying and interacting with smart contracts on **Celestia 
 ## Prerequisites
 
 - [Foundry](https://book.getfoundry.sh/getting-started/installation) installed (`foundryup`)
-- A funded Eden testnet address (use the [Eden faucet](/networks/testnet#faucet))
+- A funded Eden address. Use the [Eden bridge](https://eden.zone/) to deposit TIA.
 
 import { Steps } from 'nextra/components'
 
@@ -29,12 +29,11 @@ optimizer = true
 optimizer_runs = 200
 
 [rpc_endpoints]
-eden = "https://rpc.testnet.eden.gateway.fm/"
+eden = "https://rpc.eden.gateway.fm/"
 ```
 
 <Callout type="info">
-  Use an RPC endpoint from the [RPCs list](/networks/testnet#rpcs). Some endpoints may be
-  temporarily unavailable, if one fails, try another from the list.
+  The public Gateway RPC is rate limited. Higher limits are available by registering with Gateway.fm.
 </Callout>
 
 ## Use the example contract
@@ -64,15 +63,10 @@ Deploy with:
 ```bash copy
 forge script script/Counter.s.sol:CounterScript \
   --rpc-url eden \
-  --chain-id 3735928814 \
+  --chain-id 714 \
   --broadcast \
   --account eden-deployer
 ```
-
-<Callout type="info">
-  The chain ID 3735928814 is for Eden testnet. For mainnet, use chain ID TODO: TBD. See the [RPCs
-  page](/networks/rpcs) for current values.
-</Callout>
 
 ## Interact with the contract
 
@@ -151,7 +145,7 @@ contract InteractCounter is Script {
 
 ## Explorer
 
-Check addresses and transactions at [https://eden-testnet.blockscout.com/](https://eden-testnet.blockscout.com/)
+Check addresses and transactions at [https://eden.blockscout.com/](https://eden.blockscout.com/)
 
 ## Contract verification
 
@@ -161,9 +155,9 @@ Use the `verify-contract` command to verify your contract. When using the code b
 
 ```bash copy
 forge verify-contract \
-    --rpc-url https://rpc.testnet.eden.gateway.fm/ \
+    --rpc-url https://rpc.eden.gateway.fm/ \
     --verifier blockscout \
-    --verifier-url 'https://eden-testnet.blockscout.com:443/api/' \
+    --verifier-url 'https://eden.blockscout.com/api/' \
     --compiler-version 0.8.28 \
     $DEPLOYED_ADDRESS \
     src/Counter.sol:Counter
@@ -177,7 +171,7 @@ forge verify-contract \
 
 ```bash copy
 # Test RPC connectivity
-curl -s https://rpc.testnet.eden.gateway.fm/ -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
+curl -s https://rpc.eden.gateway.fm/ -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
 ```
 
 ### Complier version mismatch
@@ -199,9 +193,9 @@ Then run the command with the correct version:
 
 ```bash copy
 forge verify-contract \
-    --rpc-url https://rpc.testnet.eden.gateway.fm/ \
+    --rpc-url https://rpc.eden.gateway.fm/ \
     --verifier blockscout \
-    --verifier-url 'https://eden-testnet.blockscout.com/:443/api/' \
+    --verifier-url 'https://eden.blockscout.com/api/' \
     --compiler-version 0.8.30 \ # Change this version
     $DEPLOYED_ADDRESS \
     src/Counter.sol:Counter
@@ -209,6 +203,6 @@ forge verify-contract \
 
 ### Common issues
 
-- **Gas estimation failures**: Ensure you have sufficient testnet TIA from the [faucet](/networks/testnet#faucet)
+- **Gas estimation failures**: Ensure your Eden wallet has enough TIA to pay transaction fees.
 
 That's it, you're live on Eden!

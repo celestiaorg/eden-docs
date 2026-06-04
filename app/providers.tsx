@@ -5,17 +5,39 @@
  * Enables Web3 interactions throughout the app
  */
 
+import { defineChain } from 'viem'
 import { WagmiProvider, createConfig, http } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { injected } from 'wagmi/connectors'
-import { edenTestnet } from '../lib/wagmi'
 
-// Create Wagmi config for Eden Testnet
+const eden = defineChain({
+  id: 714,
+  name: 'Eden',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'TIA',
+    symbol: 'TIA'
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://rpc.eden.gateway.fm/'],
+      webSocket: ['wss://rpc.eden.gateway.fm/ws']
+    }
+  },
+  blockExplorers: {
+    default: {
+      name: 'Blockscout',
+      url: 'https://eden.blockscout.com/'
+    }
+  }
+})
+
+// Create Wagmi config for Eden
 const config = createConfig({
-  chains: [edenTestnet],
+  chains: [eden],
   connectors: [injected()],
   transports: {
-    [edenTestnet.id]: http()
+    [eden.id]: http()
   }
 })
 

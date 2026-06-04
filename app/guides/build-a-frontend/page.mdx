@@ -57,25 +57,26 @@ import { createConfig, http } from 'wagmi'
 import { metaMask } from 'wagmi/connectors'
 
 export const eden = {
-  id: 3735928814,
-  name: 'Eden testnet',
+  id: 714,
+  name: 'Eden',
   nativeCurrency: { name: 'TIA', symbol: 'TIA', decimals: 18 },
   rpcUrls: {
     default: {
-      http: ['https://rpc.testnet.eden.gateway.fm/'],
-      wss: ['wss://rpc.testnet.eden.gateway.fm/']
+      http: ['https://rpc.eden.gateway.fm/'],
+      webSocket: ['wss://rpc.eden.gateway.fm/ws']
     }
+  },
+  blockExplorers: {
+    default: { name: 'Blockscout', url: 'https://eden.blockscout.com/' }
   }
 } as const
 
 export const config = createConfig({
   chains: [eden],
   connectors: [metaMask()],
-  transports: { [eden.id]: http() }
+  transports: { [eden.id]: http('https://rpc.eden.gateway.fm/') }
 })
 ```
-
-Create environment files for different environments:
 
 ## Create the Counter component
 
@@ -381,7 +382,7 @@ export default function App() {
             color: '#6b7280'
           }}
         >
-          Please switch to Eden testnet to interact with the contract.
+          Please switch to Eden to interact with the contract.
         </div>
       )}
     </div>
@@ -398,7 +399,7 @@ npm run dev
 Visit `http://localhost:5173` and:
 
 1. Connect your MetaMask wallet
-2. Switch to Eden testnet if needed
+2. Switch to Eden if needed
 3. Interact with your Counter contract
 
 </Steps>
