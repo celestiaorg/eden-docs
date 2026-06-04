@@ -1,0 +1,83 @@
+# Why Eden over a generic EVM chain
+
+import { Callout } from 'nextra/components'
+
+<Callout type="info" emoji="🚧">
+  This page is a work in progress.
+</Callout>
+
+Eden is not a fork of an existing EVM chain — it is built from scratch on the [Evolve stack](https://github.com/evstack), purpose-designed to remove the constraints that come with running a general-purpose EVM network. This page covers what that means in practice.
+
+## The core architectural difference
+
+A generic EVM chain (Ethereum, most L2s, most alt-L1s) bundles three concerns together: execution, consensus, and data availability. Eden decouples them:
+
+| Layer             | Generic EVM                      | Eden                                                          |
+| ----------------- | -------------------------------- | ------------------------------------------------------------- |
+| Execution         | EVM node (shared)                | `ev-reth` — dedicated EVM node with protocol-level extensions |
+| Consensus         | Validator set (staked tokens)    | Single sequencer via Engine API                               |
+| Data availability | On-chain or external blob market | Celestia mainnet                                              |
+
+Decoupling DA from execution means the sequencer does not compete for blockspace with anyone else, and the cost of posting transaction data scales with actual usage rather than with auction dynamics.
+
+## What the Evolve stack adds over vanilla EVM
+
+### No validator overhead
+
+Generic EVM chains require a validator set to produce and attest to blocks. Validators need economic incentives — typically token emissions — which creates ongoing inflation and dilutes holders. Eden runs a single sequencer backed by Celestia for DA security. There is no validator set to bootstrap, no token inflation to fund, and no validator cut taken from transaction revenue.
+
+### Sequencer revenue stays with the operator
+
+On most chains, base fees are burned or split between a protocol treasury and validators. On Eden, EIP-1559 base fees are redirected at the protocol level to a designated address configured in the chainspec. Operators retain the economic value their sequencer generates rather than subsidizing a validator set or a burn mechanism.
+
+### Custom contract size limit
+
+Ethereum and most EVM chains cap deployed bytecode at 24 KB (EIP-170). Eden raises this to 128 KB by default, configurable at the chainspec level with staged activation heights. This removes a real constraint for complex on-chain protocols, game logic, and large library deployments without needing proxy patterns or split deployments as a workaround.
+
+### Native batch transactions with sponsored gas
+
+Eden introduces a custom transaction type (`0x76`) that does not exist on any standard EVM chain:
+
+- **Batch calls**: Multiple `Call` structs execute atomically within a single transaction. Either all succeed or all revert — no partial execution, no multi-tx coordination.
+- **Sponsored gas**: A dual-signature scheme separates the executor (who provides intent) from the sponsor (who pays gas). This enables gasless UX flows natively at the protocol level, without relying on ERC-4337 bundlers or off-chain relayers.
+
+### Direct Engine API transaction injection
+
+Standard EVM nodes accept transactions through the public mempool: transactions broadcast to the network, sit in the mempool, and are included by the next block producer. Eden's sequencer injects transactions directly through the Engine API via payload attributes, bypassing mempool dynamics entirely. Block construction is deterministic and ordering is controlled explicitly by the sequencer rather than by fee auction.
+
+### Configurable EIP-1559 parameters
+
+Base fee adjustment parameters (`baseFeeMaxChangeDenominator`, elasticity multiplier, initial base fee) are configurable per-chain in Eden's chainspec rather than hardcoded in the client. This lets the fee market be tuned to actual usage patterns rather than being fixed to Ethereum's mainnet defaults — which were calibrated for a very different throughput regime.
+
+### Flexible block timing
+
+Ethereum requires each block's timestamp to be strictly greater than its parent. Eden relaxes this to `>=`, enabling multiple blocks to share a timestamp. This is a prerequisite for Evolve's concurrent block production model and allows the sequencer to maximize throughput without artificial timing constraints.
+
+## Summary comparison
+
+| Capability         | Generic EVM                     | Eden                           |
+| ------------------ | ------------------------------- | ------------------------------ |
+| DA layer           | On-chain / shared blob market   | Celestia (dedicated namespace) |
+| Validator set      | Required (staked, inflationary) | None                           |
+| Sequencer revenue  | Split / burned                  | Retained by operator           |
+| Max contract size  | 24 KB                           | 128 KB                         |
+| Batch transactions | No (ERC-4337 workaround)        | Yes, native (`0x76`)           |
+| Sponsored gas      | No (off-chain relayer)          | Yes, native (dual-signature)   |
+| Block inclusion    | Mempool auction                 | Direct Engine API injection    |
+| Base fee params    | Hardcoded                       | Configurable per chainspec     |
+| Block timestamp    | Strictly increasing             | Non-decreasing                 |
+
+## What this means for builders
+
+If you are deploying an existing EVM app, the differences above are largely transparent — Eden is fully EVM-compatible and standard tooling (Hardhat, Foundry, Ethers, Viem) works unchanged.
+
+Where you notice the difference:
+
+- **Complex contracts** that hit the 24 KB ceiling on other chains can deploy without restructuring.
+- **Gasless UX** can be implemented without a separate relayer infrastructure using the native sponsored transaction type.
+- **Multi-step operations** that currently require multiple transactions and careful error handling can be collapsed into a single atomic batch.
+- **Predictable fee costs** due to configurable fee market parameters tuned for Eden's actual throughput rather than inherited Ethereum mainnet defaults.
+
+<Callout type="info">
+  The `0x76` batch transaction type requires wallet or SDK support to construct. Standard EOA transactions work normally without any changes.
+</Callout>
