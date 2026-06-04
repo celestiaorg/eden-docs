@@ -2,13 +2,13 @@
 
 import { Steps } from 'nextra/components'
 
-Learn how to build a frontend application using [wagmi](https://wagmi.sh/), a popular React library for interacting with EVM networks and connecting your MetaMask wallet to Eden testnet.
+Learn how to build a frontend application using [wagmi](https://wagmi.sh/), a popular React library for interacting with EVM networks and connecting your MetaMask wallet to Eden.
 
 ## Prerequisites
 
 - Node.js 20.x LTS (recommended) or at least 18.18.0+
 - npm 9.x or 10.x (comes with Node)
-- [Eden testnet added to MetaMask](/tooling/wallets)
+- [Eden added to MetaMask](/tooling/wallets)
 
 <Steps>
 
@@ -27,21 +27,24 @@ import { createConfig, http } from 'wagmi'
 import { metaMask } from 'wagmi/connectors'
 
 export const eden = {
-  id: 3735928814,
-  name: 'Eden testnet',
+  id: 714,
+  name: 'Eden',
   nativeCurrency: { name: 'TIA', symbol: 'TIA', decimals: 18 },
   rpcUrls: {
     default: {
-      http: ['https://rpc.testnet.eden.gateway.fm/'],
-      wss: ['wss://rpc.testnet.eden.gateway.fm/']
+      http: ['https://rpc.eden.gateway.fm/'],
+      webSocket: ['wss://rpc.eden.gateway.fm/ws']
     }
+  },
+  blockExplorers: {
+    default: { name: 'Blockscout', url: 'https://eden.blockscout.com/' }
   }
 } as const
 
 export const config = createConfig({
   chains: [eden],
   connectors: [metaMask()],
-  transports: { [eden.id]: http() }
+  transports: { [eden.id]: http('https://rpc.eden.gateway.fm/') }
 })
 ```
 

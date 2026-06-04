@@ -1,6 +1,7 @@
 # Wallets
 
-import { Callout } from 'nextra/components'
+import { Callout, Steps } from 'nextra/components'
+import AddToWalletButton from '../../../components/AddToWalletButton.jsx'
 
 Eden is an EVM-compatible chain. You can use MetaMask, WalletConnect, Rabby, or any other EVM wallet to interact with Eden.
 
@@ -11,15 +12,15 @@ There are generally two ways to interact with Eden:
 - **External wallets**: Wallets you already control, such as MetaMask, WalletConnect, or Rabby.
   - Full custody of your keys.
   - Can be **user wallets** (self-custodial) or **managed wallets** (programmable with policies like multisig).
-  - See the [MetaMask example](#adding-eden-to-metamask) below for how to connect.
+  - See the [MetaMask example](#adding-eden-to-your-wallet) below for how to connect.
 
 - **Embedded wallets**: Wallets created and managed inside an app.
   - Can be **self-custodial** (keys with the user) or **managed** (automation/policies built in).
-  - See the [Porto example](#setting-up-eden-with-porto) below for how developers can integrate this flow.
+  - Eden-specific embedded wallet guidance is being updated as part of the gas sponsorship and batch transaction work.
 
-## Adding Eden testnet to MetaMask
+## Adding Eden to your wallet
 
-import { Steps } from 'nextra/components'
+You can add Eden to any EVM-compatible wallet that supports custom networks.
 
 <Steps>
 
@@ -31,206 +32,33 @@ Launch MetaMask in your browser and ensure you're logged in.
 
 Click the network dropdown (usually shows "Ethereum mainnet") and select "Add network".
 
-### Add Eden testnet to your wallet
+### Add Eden to your wallet
 
-import AddToWalletButton from '../../../components/AddToWalletButton.jsx'
+<AddToWalletButton label="Add Eden to wallet" />
 
-<AddToWalletButton label="Add Eden testnet to wallet" />
-
-You can add Eden testnet to any EVM-compatible wallet (MetaMask, Rainbow, etc) with the button above. This uses the standard EIP-3085/EIP-3326 methods supported by most browser wallets.
+This uses the standard EIP-3085/EIP-3326 methods supported by most browser wallets.
 
 ---
 
 If you prefer to add the network manually, use these details:
 
-- **Network Name:** Eden testnet
-- **New RPC URL:** https://rpc.testnet.eden.gateway.fm/
-- **Chain ID:** 3735928814
+- **Network Name:** Eden
+- **New RPC URL:** https://rpc.eden.gateway.fm/
+- **Chain ID:** 714
 - **Currency Symbol:** TIA
-- **Block Explorer URL:** https://eden-testnet.blockscout.com/
-
-Or these for mainnet:
-
-- **Network Name:** Eden mainnet
-- **New RPC URL:** TODO
-- **Chain ID:** TODO
-- **Currency Symbol:** TIA
-- **Block Explorer URL:** TODO
+- **Block Explorer URL:** https://eden.blockscout.com/
 
 <Callout type="info">
-  Use an RPC endpoint from the RPCs list ([testnet](/networks/testnet#rpcs) or
-  [mainnet](/networks/mainnet#rpcs)). Some endpoints may be temporarily unavailable, if one fails,
-  try another from the list.
+  The public Gateway RPC is rate limited. Higher limits are available by registering with Gateway.fm.
 </Callout>
 
 ### Save and switch
 
-Click "Save" and MetaMask will automatically switch to Eden testnet.
+Click "Save" and MetaMask will automatically switch to Eden.
 
-### Get testnet TIA
+### Fund your wallet
 
-If you're using the testnet, visit the [Eden testnet faucet](/networks/testnet#faucet) to get testnet TIA for transactions.
-
-</Steps>
-
-## Setting up Eden testnet with Porto
-
-<Callout type="info" emoji="🚧">
-  This section is a work in progress. It currently uses Ethereum Sepolia testnet.
-</Callout>
-
-[Porto](https://porto.sh/) is a way for developers to build apps with passkeys instead of passwords and wallets. This section walks through building an app with a wallet component from Porto.
-
-<Steps>
-
-### Create the app
-
-```bash copy
-npm create vite@latest eden-porto -- --template react-ts
-cd eden-porto
-```
-
-### Define Eden testnet (custom chain for now)
-
-```ts copy filename="src/chains.ts"
-import { defineChain } from 'viem'
-
-export const eden = defineChain({
-  id: 3735928814,
-  name: 'Eden testnet',
-  network: 'eden-testnet',
-  nativeCurrency: { name: 'TIA', symbol: 'TIA', decimals: 18 },
-  rpcUrls: {
-    default: { http: ['https://rpc.testnet.eden.gateway.fm/'] }
-  },
-  blockExplorers: {
-    default: {
-      name: 'Eden Explorer',
-      url: 'https://eden-testnet.blockscout.com/'
-    }
-  },
-  testnet: true
-})
-
-/**
- * TODO (when Eden is live on Chainlist / viem):
- *   - Replace the above with:
- *       import { eden } from 'wagmi/chains'
- *     (or 'viem/chains', depending on where it lands)
- *   - Everything else can stay the same.
- */
-```
-
-### Configure wagmi + porto (works now for login)
-
-```ts copy filename="src/wagmi.ts"
-// src/wagmi.ts
-import { createConfig, createStorage, http } from 'wagmi'
-import { porto } from 'porto/wagmi'
-import { baseSepolia } from 'wagmi/chains'
-import { eden } from './chains'
-
-// ✅ Porto needs at least one Porto-supported chain *today*.
-// We use Base Sepolia now. When Eden is supported, flip this constant to `eden`.
-export const PORTO_LOGIN_CHAIN = baseSepolia
-// TODO (when Eden is supported by Porto): export const PORTO_LOGIN_CHAIN = eden
-
-export const config = createConfig({
-  // Keep both chains so you can hit Eden’s RPC for reads even before Porto supports it.
-  chains: [eden, baseSepolia],
-  connectors: [porto()],
-  storage: createStorage({ storage: localStorage }),
-  transports: {
-    [eden.id]: http('https://rpc.testnet.eden.gateway.fm/'),
-    [baseSepolia.id]: http() // or pass your own Base Sepolia RPC
-  }
-})
-```
-
-### Providers
-
-Edit `src/main.tsx`:
-
-```tsx copy filename="src/main.tsx"
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { WagmiProvider } from 'wagmi'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { config } from './wagmi'
-import App from './App'
-import './index.css'
-
-const queryClient = new QueryClient()
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
-    </WagmiProvider>
-  </React.StrictMode>
-)
-```
-
-### Set up minimal UI
-
-```tsx copy filename="srx/App.tsx"
-import { useAccount, useConnect } from 'wagmi'
-import { PORTO_LOGIN_CHAIN } from './wagmi'
-
-export default function App() {
-  const { address, isConnected } = useAccount()
-  const { connect, connectors, status, error } = useConnect()
-
-  if (isConnected) {
-    return (
-      <div style={{ padding: 16 }}>
-        <div>Connected: {address}</div>
-      </div>
-    )
-  }
-
-  const portoConnector = connectors.find(c => c.id === 'xyz.ithaca.porto') ?? connectors[0]
-
-  return (
-    <div style={{ padding: 16 }}>
-      <button
-        onClick={() =>
-          connect({
-            connector: portoConnector,
-            chainId: PORTO_LOGIN_CHAIN.id
-          })
-        }
-        disabled={status === 'pending'}
-      >
-        {status === 'pending' ? 'Connecting…' : 'Sign in with Porto'}
-      </button>
-
-      {error && <div style={{ color: 'crimson', marginTop: 12 }}>{error.message}</div>}
-
-      <div style={{ marginTop: 12, fontSize: 12, opacity: 0.8 }}>
-        {/* TODO (when Eden is supported): set PORTO_LOGIN_CHAIN = eden in src/wagmi.ts */}
-        Currently targeting: {PORTO_LOGIN_CHAIN.name} (chainId {PORTO_LOGIN_CHAIN.id})
-      </div>
-    </div>
-  )
-}
-```
-
-### Install missing dependencies
-
-```bash copy
-npm install wagmi viem @tanstack/react-query porto
-```
-
-### Run it
-
-```bash copy
-npm run dev
-```
-
-Congratulations! Your users can now connect with just a passkey.
+Use the [Eden bridge](https://eden.zone/) to deposit TIA to Eden before sending transactions.
 
 </Steps>
 
@@ -250,10 +78,10 @@ If you see "Network already exists", the network is already configured in MetaMa
 
 ### RPC endpoint issues
 
-If you get connection errors, try different RPC endpoints from the RPC list ([testnet](/networks/testnet#rpcs) or [mainnet](/networks/mainnet#rpcs)).
+If you get connection errors, check the public RPC at [https://rpc.eden.gateway.fm/](https://rpc.eden.gateway.fm/).
 
 ### Wrong chain ID
 
-Ensure you're using the correct chain ID: 3735928814 for testnet, 42420 for mainnet.
+Ensure you're using the correct chain ID: 714.
 
 That's it! You're ready to use Eden with your wallet.

@@ -28,23 +28,27 @@ Create a new file `src/config.ts`:
 import { createPublicClient, http, defineChain } from 'viem'
 
 export const eden = defineChain({
-  id: 3735928814,
+  id: 714,
   name: 'Eden',
   nativeCurrency: {
     decimals: 18,
-    name: 'Eden',
+    name: 'TIA',
     symbol: 'TIA'
   },
   rpcUrls: {
     default: {
-      http: ['https://rpc.testnet.eden.gateway.fm/']
+      http: ['https://rpc.eden.gateway.fm/'],
+      webSocket: ['wss://rpc.eden.gateway.fm/ws']
     }
+  },
+  blockExplorers: {
+    default: { name: 'Blockscout', url: 'https://eden.blockscout.com/' }
   }
 })
 
 export const publicClient = createPublicClient({
   chain: eden,
-  transport: http()
+  transport: http('https://rpc.eden.gateway.fm/')
 })
 ```
 
