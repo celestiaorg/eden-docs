@@ -31,6 +31,8 @@ jobs:
 
       - name: Build with Next.js
         run: yarn build
+        env:
+          NEXT_PUBLIC_BASE_PATH: /eden-docs
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

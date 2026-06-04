@@ -13,8 +13,13 @@ const withNextra = nextra({
   }
 })
 
+// Set NEXT_PUBLIC_BASE_PATH (e.g. "/eden-docs") when deploying under a subpath
+// such as GitHub Pages. Leave unset for local dev and root-domain deploys.
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
+
 export default withNextra({
   output: 'export',
+  basePath,
   images: {
     unoptimized: true
   },

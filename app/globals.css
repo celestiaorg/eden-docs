@@ -13,7 +13,7 @@
 /* Custom Font Faces */
 @font-face {
   font-family: 'League Spartan';
-  src: url('/League Spartan/LeagueSpartan-Regular.ttf') format('truetype');
+  src: url('../public/League Spartan/LeagueSpartan-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -21,7 +21,7 @@
 
 @font-face {
   font-family: 'League Spartan';
-  src: url('/League Spartan/LeagueSpartan-Medium.ttf') format('truetype');
+  src: url('../public/League Spartan/LeagueSpartan-Medium.ttf') format('truetype');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -29,7 +29,7 @@
 
 @font-face {
   font-family: 'League Spartan';
-  src: url('/League Spartan/LeagueSpartan-SemiBold.ttf') format('truetype');
+  src: url('../public/League Spartan/LeagueSpartan-SemiBold.ttf') format('truetype');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
@@ -37,7 +37,7 @@
 
 @font-face {
   font-family: 'League Spartan';
-  src: url('/League Spartan/LeagueSpartan-Bold.ttf') format('truetype');
+  src: url('../public/League Spartan/LeagueSpartan-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -45,7 +45,7 @@
 
 @font-face {
   font-family: 'League Spartan';
-  src: url('/League Spartan/LeagueSpartan-ExtraBold.ttf') format('truetype');
+  src: url('../public/League Spartan/LeagueSpartan-ExtraBold.ttf') format('truetype');
   font-weight: 800;
   font-style: normal;
   font-display: swap;
@@ -53,7 +53,7 @@
 
 @font-face {
   font-family: 'Aeonik';
-  src: url('/Aeonik/fonnts.com-Aeonik-Regular.ttf') format('truetype');
+  src: url('../public/Aeonik/fonnts.com-Aeonik-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -61,7 +61,7 @@
 
 @font-face {
   font-family: 'Aeonik';
-  src: url('/Aeonik/fonnts.com-Aeonik-Bold.ttf') format('truetype');
+  src: url('../public/Aeonik/fonnts.com-Aeonik-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
