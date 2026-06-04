@@ -1,4 +1,4 @@
-# Why Eden over a generic EVM chain
+# What Eden gives developers
 
 import { Callout } from 'nextra/components'
 
@@ -6,78 +6,87 @@ import { Callout } from 'nextra/components'
   This page is a work in progress.
 </Callout>
 
-Eden is not a fork of an existing EVM chain — it is built from scratch on the [Evolve stack](https://github.com/evstack), purpose-designed to remove the constraints that come with running a general-purpose EVM network. This page covers what that means in practice.
+Eden is fully Ethereum Virtual Machine (EVM) compatible.
+Your Solidity contracts, Hardhat and Foundry configs, and Ethers/Viem scripts work without changes.
+In addition, Eden adds exciting protocol-level features that standard EVM chains don't have.
 
-## The core architectural difference
+## Native batch and sponsored gas transactions
 
-A generic EVM chain (Ethereum, most L2s, most alt-L1s) bundles three concerns together: execution, consensus, and data availability. Eden decouples them:
-
-| Layer             | Generic EVM                      | Eden                                                          |
-| ----------------- | -------------------------------- | ------------------------------------------------------------- |
-| Execution         | EVM node (shared)                | `ev-reth` — dedicated EVM node with protocol-level extensions |
-| Consensus         | Validator set (staked tokens)    | Single sequencer via Engine API                               |
-| Data availability | On-chain or external blob market | Celestia mainnet                                              |
-
-Decoupling DA from execution means the sequencer does not compete for blockspace with anyone else, and the cost of posting transaction data scales with actual usage rather than with auction dynamics.
-
-## What the Evolve stack adds over vanilla EVM
-
-### No validator overhead
-
-Generic EVM chains require a validator set to produce and attest to blocks. Validators need economic incentives — typically token emissions — which creates ongoing inflation and dilutes holders. Eden runs a single sequencer backed by Celestia for DA security. There is no validator set to bootstrap, no token inflation to fund, and no validator cut taken from transaction revenue.
-
-### Sequencer revenue stays with the operator
-
-On most chains, base fees are burned or split between a protocol treasury and validators. On Eden, EIP-1559 base fees are redirected at the protocol level to a designated address configured in the chainspec. Operators retain the economic value their sequencer generates rather than subsidizing a validator set or a burn mechanism.
-
-### Custom contract size limit
-
-Ethereum and most EVM chains cap deployed bytecode at 24 KB (EIP-170). Eden raises this to 128 KB by default, configurable at the chainspec level with staged activation heights. This removes a real constraint for complex on-chain protocols, game logic, and large library deployments without needing proxy patterns or split deployments as a workaround.
-
-### Native batch transactions with sponsored gas
-
-Eden introduces a custom transaction type (`0x76`) that does not exist on any standard EVM chain:
-
-- **Batch calls**: Multiple `Call` structs execute atomically within a single transaction. Either all succeed or all revert — no partial execution, no multi-tx coordination.
-- **Sponsored gas**: A dual-signature scheme separates the executor (who provides intent) from the sponsor (who pays gas). This enables gasless UX flows natively at the protocol level, without relying on ERC-4337 bundlers or off-chain relayers.
-
-### Direct Engine API transaction injection
-
-Standard EVM nodes accept transactions through the public mempool: transactions broadcast to the network, sit in the mempool, and are included by the next block producer. Eden's sequencer injects transactions directly through the Engine API via payload attributes, bypassing mempool dynamics entirely. Block construction is deterministic and ordering is controlled explicitly by the sequencer rather than by fee auction.
-
-### Configurable EIP-1559 parameters
-
-Base fee adjustment parameters (`baseFeeMaxChangeDenominator`, elasticity multiplier, initial base fee) are configurable per-chain in Eden's chainspec rather than hardcoded in the client. This lets the fee market be tuned to actual usage patterns rather than being fixed to Ethereum's mainnet defaults — which were calibrated for a very different throughput regime.
-
-### Flexible block timing
-
-Ethereum requires each block's timestamp to be strictly greater than its parent. Eden relaxes this to `>=`, enabling multiple blocks to share a timestamp. This is a prerequisite for Evolve's concurrent block production model and allows the sequencer to maximize throughput without artificial timing constraints.
-
-## Summary comparison
-
-| Capability         | Generic EVM                     | Eden                           |
-| ------------------ | ------------------------------- | ------------------------------ |
-| DA layer           | On-chain / shared blob market   | Celestia (dedicated namespace) |
-| Validator set      | Required (staked, inflationary) | None                           |
-| Sequencer revenue  | Split / burned                  | Retained by operator           |
-| Max contract size  | 24 KB                           | 128 KB                         |
-| Batch transactions | No (ERC-4337 workaround)        | Yes, native (`0x76`)           |
-| Sponsored gas      | No (off-chain relayer)          | Yes, native (dual-signature)   |
-| Block inclusion    | Mempool auction                 | Direct Engine API injection    |
-| Base fee params    | Hardcoded                       | Configurable per chainspec     |
-| Block timestamp    | Strictly increasing             | Non-decreasing                 |
-
-## What this means for builders
-
-If you are deploying an existing EVM app, the differences above are largely transparent — Eden is fully EVM-compatible and standard tooling (Hardhat, Foundry, Ethers, Viem) works unchanged.
-
-Where you notice the difference:
-
-- **Complex contracts** that hit the 24 KB ceiling on other chains can deploy without restructuring.
-- **Gasless UX** can be implemented without a separate relayer infrastructure using the native sponsored transaction type.
-- **Multi-step operations** that currently require multiple transactions and careful error handling can be collapsed into a single atomic batch.
-- **Predictable fee costs** due to configurable fee market parameters tuned for Eden's actual throughput rather than inherited Ethereum mainnet defaults.
+Eden supports [Evolve's `0x76` transaction type](https://github.com/evstack/ev-reth/#8-evnode-transaction-type-0x76) that lets you execute multiple calls atomically in a single transaction, and optionally have gas paid for by another party, without deploying or using a single contract.
 
 <Callout type="info">
-  The `0x76` batch transaction type requires wallet or SDK support to construct. Standard EOA transactions work normally without any changes.
+  Constructing `0x76` transactions requires wallet or SDK support.
+  Some client tools and examples are [found here](https://github.com/evstack/ev-reth/tree/main/clients).
 </Callout>
+
+### Batch transactions
+
+Each transaction type `0x76` carries a list of `Call` structs.
+The EVM executes them in sequence, and the whole batch either succeeds or reverts.
+There is no partial execution and no need to handle intermediate failure states across separate transactions.
+
+**What this enables:**
+
+- Multi-step flows (approve + swap + stake, mint + list + transfer) collapse into one atomic unit instead of a sequence of transactions the user has to sign and the frontend has to track.
+- Contracts don't need to defensively handle "was the prior step actually done?".
+  The batch guarantees atomicity at the protocol level.
+- Gas overhead per operation drops because you pay the base transaction cost once, not once per step.
+
+## Sponsored transactions
+
+The same `0x76` transaction type supports a dual-signature scheme that separates the executor from the gas payer:
+
+- The **executor** signs the calls (provides intent and value).
+- The **sponsor** signs to pay gas.
+  Gas refunds route to the sponsor.
+
+This is gasless UX at the protocol level without the need for [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) account abstraction, bundler infrastructure, paymaster contracts, off-chain relayer to run, or trust.
+The user does not need ETH (or TIA) in their wallet to submit a transaction as the app or a third party can cover gas directly.
+
+**What this enables:**
+
+- Onboarding flows where users don't hold the native token yet become straightforward.
+- Apps can abstract gas entirely from their UX without building or depending on a separate relayer stack.
+- Sponsorship logic lives outside the contract, thus no modifications to your existing Solidity needed.
+
+## 128 KB contract size limit
+
+Ethereum's [EIP-170](https://eips.ethereum.org/EIPS/eip-170) caps deployed bytecode at 24 KB.
+Eden raises this to 128 KB.
+
+The 24 KB limit is a real constraint on Ethereum and most EVM chains as complex protocols split logic across multiple contracts and use proxy patterns not because the architecture calls for it, but because the bytecode won't fit.
+That adds deployment complexity, increases surface area for proxy-related bugs, and forces indirection that makes contracts harder to audit.
+
+On Eden, you can deploy contracts that would hit the ceiling on other chains without restructuring them.
+This is particularly relevant for:
+
+- Game logic and state machines that encode a lot of behavior
+- Large libraries where splitting introduces coordination overhead
+- Protocols where a single-contract design is architecturally cleaner and safer
+
+## No mempool, no MEV
+
+Transactions on Eden are injected directly into blocks by the sequencer via Engine API as there is no public mempool where pending transactions sit and can be observed, reordered, or sandwiched.
+
+**What this enables:**
+
+- Contracts that assume fair ordering (AMMs, auctions, games) don't need to defend against frontrunning at the contract level.
+- Oracle updates, liquidations, and other time-sensitive operations execute in the order submitted without being displaced by priority gas auctions.
+- Users aren't paying an implicit MEV tax on swaps and other competitive operations.
+
+## Predictable gas costs
+
+Eden's fee market parameters (base fee adjustment denominator, elasticity multiplier, and initial base fee) are configured for Eden's actual throughput rather than inherited from Ethereum mainnet (which was calibrated for much lower block targets).
+
+In practice this means base fees move more gradually and stay more predictable for users.
+Gas estimation is more reliable, and apps don't need to pad estimates as aggressively to avoid failed transactions during brief congestion spikes.
+
+## Summary
+
+| Capability                 | Standard EVM                    | Eden                             |
+| -------------------------- | ------------------------------- | -------------------------------- |
+| Atomic multi-call          | Multicall contract (workaround) | Native, protocol-level (`0x76`)  |
+| Sponsored gas / gasless UX | ERC-4337 bundler + paymaster    | Native, dual-signature (`0x76`)  |
+| Max contract bytecode      | 24 KB                           | 128 KB                           |
+| Transaction ordering       | Mempool (MEV-exposed)           | Sequencer-controlled, no mempool |
+| Fee market                 | Ethereum mainnet params         | Tuned for Eden's throughput      |
