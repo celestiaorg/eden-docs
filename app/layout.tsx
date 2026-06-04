@@ -7,8 +7,10 @@ import Image from 'next/image'
 import { Metadata } from 'next'
 import Providers from './providers'
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://crispy-eureka-2nvnerv.pages.github.io/'),
+  metadataBase: new URL('https://celestiaorg.github.io'),
   title: 'Eden docs',
   description: 'Documentation for Eden',
   openGraph: {
@@ -16,7 +18,7 @@ export const metadata: Metadata = {
     description: 'Documentation for Eden',
     images: [
       {
-        url: '/og-image.png',
+        url: `${basePath}/og-image.png`,
         width: 1200,
         height: 630,
         alt: 'Eden Documentation'
@@ -28,7 +30,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Eden docs',
     description: 'Documentation for Eden',
-    images: ['/og-image.png']
+    images: [`${basePath}/og-image.png`]
   }
 }
 
@@ -42,7 +44,7 @@ const navbar = (
     logoLink="/"
     logo={
       <Image
-        src="/celestia-eden-logo.svg"
+        src={`${basePath}/celestia-eden-logo.svg`}
         alt="Celestia Eden"
         width={140}
         height={32}
@@ -71,7 +73,13 @@ const footer = (
         rel="noopener noreferrer"
         style={{ display: 'flex', alignItems: 'center' }}
       >
-        <Image src="/eden-logo.svg" alt="Eden" width={60} height={20} style={{ height: 'auto' }} />
+        <Image
+          src={`${basePath}/eden-logo.svg`}
+          alt="Eden"
+          width={60}
+          height={20}
+          style={{ height: 'auto' }}
+        />
       </Link>
       <span style={{ color: '#35A35A', fontWeight: '500' }}>•</span>
       <span>Welcome to Eden</span>
@@ -86,11 +94,11 @@ export default async function RootLayout({ children }) {
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <Head>
         {/* SVG preferred */}
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href={`${basePath}/favicon.svg`} type="image/svg+xml" />
         {/* PNG fallback */}
-        <link rel="icon" href="/favicon.png" sizes="32x32" type="image/png" />
+        <link rel="icon" href={`${basePath}/favicon.png`} sizes="32x32" type="image/png" />
         {/* Optional for iOS */}
-        <link rel="apple-touch-icon" href="/favicon.png" />
+        <link rel="apple-touch-icon" href={`${basePath}/favicon.png`} />
       </Head>
       <body>
         <Providers>
