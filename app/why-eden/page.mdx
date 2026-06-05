@@ -49,7 +49,9 @@ The user does not need TIA in their wallet to submit a transaction as the app or
 ## 128 KB contract size limit
 
 Ethereum's [EIP-170](https://eips.ethereum.org/EIPS/eip-170) caps deployed bytecode at 24 KB.
-TODO CONFIRM & LINK! Eden's chainspec raises this to 128 KB (`contractSizeLimit: 131072`).
+Eden's chainspec raises this to 128 KB via ev-reth's
+[`contractSizeLimit` setting](https://docs.ev.xyz/getting-started/evm/setup-ev-reth#chainspec)
+(`131072` bytes), and the raised limit is active on mainnet.
 
 The 24 KB limit is a real constraint on Ethereum and most EVM chains as complex protocols split logic across multiple contracts and use proxy patterns not because the architecture calls for it, but because the bytecode won't fit.
 That adds deployment complexity, increases surface area for proxy-related bugs, and forces indirection that makes contracts harder to audit.
