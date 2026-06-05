@@ -10,16 +10,14 @@ Eden is fully Ethereum Virtual Machine (EVM) compatible.
 Your Solidity contracts, Hardhat and Foundry configs, and Ethers/Viem scripts work without changes.
 In addition, Eden adds exciting protocol-level features that standard EVM chains don't have.
 
-## Native batch and sponsored gas transactions
+## Batch transactions
 
-Eden supports [Evolve's `0x76` transaction type](https://github.com/evstack/ev-reth/#8-evnode-transaction-type-0x76) that lets you execute multiple calls atomically in a single transaction, and optionally have gas paid for by another party, without deploying or using a single contract.
+Eden supports [Evolve's `0x76` transaction type](https://github.com/evstack/ev-reth/#8-evnode-transaction-type-0x76) that lets you execute multiple calls atomically in a single transaction, without deploying or relying on any contract.
 
 <Callout type="info">
   Constructing `0x76` transactions requires wallet or SDK support. Some client tools and examples
   are [found here](https://github.com/evstack/ev-reth/tree/main/clients).
 </Callout>
-
-### Batch transactions
 
 Each transaction type `0x76` carries a list of `Call` structs.
 The EVM executes them in sequence, and the whole batch either succeeds or reverts.
@@ -37,11 +35,10 @@ There is no partial execution and no need to handle intermediate failure states 
 The same `0x76` transaction type supports a dual-signature scheme that separates the executor from the gas payer:
 
 - The **executor** signs the calls (provides intent and value).
-- The **sponsor** signs to pay gas.
-  Gas refunds route to the sponsor.
+- The **sponsor** signs to pay gas (refunds route to the sponsor).
 
-This is gasless UX at the protocol level without the need for [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) account abstraction, bundler infrastructure, paymaster contracts, off-chain relayer to run, or trust.
-The user does not need ETH (or TIA) in their wallet to submit a transaction as the app or a third party can cover gas directly.
+This is gasless UX at the protocol level without the need for [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) account abstraction, bundler infrastructure, paymaster contracts, or off-chain relayers.
+The user does not need TIA in their wallet to submit a transaction as the app or a third party can cover gas directly.
 
 **What this enables:**
 
@@ -52,7 +49,7 @@ The user does not need ETH (or TIA) in their wallet to submit a transaction as t
 ## 128 KB contract size limit
 
 Ethereum's [EIP-170](https://eips.ethereum.org/EIPS/eip-170) caps deployed bytecode at 24 KB.
-Eden raises this to 128 KB.
+TODO CONFIRM & LINK! Eden's chainspec raises this to 128 KB (`contractSizeLimit: 131072`).
 
 The 24 KB limit is a real constraint on Ethereum and most EVM chains as complex protocols split logic across multiple contracts and use proxy patterns not because the architecture calls for it, but because the bytecode won't fit.
 That adds deployment complexity, increases surface area for proxy-related bugs, and forces indirection that makes contracts harder to audit.
@@ -64,15 +61,19 @@ This is particularly relevant for:
 - Large libraries where splitting introduces coordination overhead
 - Protocols where a single-contract design is architecturally cleaner and safer
 
-## No mempool, no MEV
+## No public mempool, sequencer-controlled ordering
 
-Transactions on Eden are injected directly into blocks by the sequencer via Engine API as there is no public mempool where pending transactions sit and can be observed, reordered, or sandwiched.
+Eden has no p2p-gossiped public mempool.
+Transactions are submitted via `eth_sendRawTransaction` and enter the sequencer's private txpool before being included in blocks.
+Ordering is determined by the sequencer — there is no observable pending state for third parties to frontrun.
 
-**What this enables:**
+MEV is not eliminated; ordering authority is centralized in the sequencer, and trust in correct ordering rests with the sequencer operator.
 
-- Contracts that assume fair ordering (AMMs, auctions, games) don't need to defend against frontrunning at the contract level.
-- Oracle updates, liquidations, and other time-sensitive operations execute in the order submitted without being displaced by priority gas auctions.
-- Users aren't paying an implicit MEV tax on swaps and other competitive operations.
+**What this means in practice:**
+
+- Contracts that assume fair ordering (AMMs, auctions, games) don't need to defend against public frontrunning at the contract level.
+- Oracle updates, liquidations, and other time-sensitive operations are not displaced by priority gas auctions.
+- Users aren't paying an implicit public MEV tax on swaps and other competitive operations.
 
 ## Predictable gas costs
 
@@ -83,10 +84,10 @@ Gas estimation is more reliable, and apps don't need to pad estimates as aggress
 
 ## Summary
 
-| Capability                 | Standard EVM                    | Eden                             |
-| -------------------------- | ------------------------------- | -------------------------------- |
-| Atomic multi-call          | Multicall contract (workaround) | Native, protocol-level (`0x76`)  |
-| Sponsored gas / gasless UX | ERC-4337 bundler + paymaster    | Native, dual-signature (`0x76`)  |
-| Max contract bytecode      | 24 KB                           | 128 KB                           |
-| Transaction ordering       | Mempool (MEV-exposed)           | Sequencer-controlled, no mempool |
-| Fee market                 | Ethereum mainnet params         | Tuned for Eden's throughput      |
+| Capability                 | Standard EVM                    | Eden                                    |
+| -------------------------- | ------------------------------- | --------------------------------------- |
+| Atomic multi-call          | Multicall contract (workaround) | Native, protocol-level (`0x76`)         |
+| Sponsored gas / gasless UX | ERC-4337 bundler + paymaster    | Native, dual-signature (`0x76`)         |
+| Max contract bytecode      | 24 KB                           | 128 KB                                  |
+| Transaction ordering       | Public mempool (MEV-exposed)    | Sequencer-controlled, no public mempool |
+| Fee market                 | Ethereum mainnet params         | Tuned for Eden's throughput             |
