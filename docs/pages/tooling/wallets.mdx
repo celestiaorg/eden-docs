@@ -1,0 +1,92 @@
+import AddToWalletButton from '../../components/AddToWalletButton.jsx'
+
+# Wallets
+
+Eden is an EVM-compatible chain. You can use MetaMask, WalletConnect, Rabby, or any other EVM wallet to interact with Eden.
+
+## Types of wallets
+
+There are generally two ways to interact with Eden:
+
+- **External wallets**: Wallets you already control, such as MetaMask, WalletConnect, or Rabby.
+  - Full custody of your keys.
+  - Can be **user wallets** (self-custodial) or **managed wallets** (programmable with policies like multisig).
+  - See the [MetaMask example](#adding-eden-to-your-wallet) below for how to connect.
+
+- **Embedded wallets**: Wallets created and managed inside an app.
+  - Can be **self-custodial** (keys with the user) or **managed** (automation/policies built in).
+  - Eden-specific embedded wallet guidance is being updated as part of the gas sponsorship and batch transaction work.
+
+## Adding Eden to your wallet
+
+You can add Eden to any EVM-compatible wallet that supports custom networks.
+
+::::steps
+
+### Open MetaMask
+
+Launch MetaMask in your browser and ensure you're logged in.
+
+### Add network
+
+Click the network dropdown (usually shows "Ethereum mainnet") and select "Add network".
+
+### Add Eden to your wallet
+
+<AddToWalletButton label="Add Eden to wallet" />
+
+This uses the standard EIP-3085/EIP-3326 methods supported by most browser wallets.
+
+You can also add Eden from Chainlist:
+
+- **Mainnet:** [chainlist.org/chain/714](https://chainlist.org/chain/714)
+- **Testnet:** [chainlist.org/chain/3735928814](https://chainlist.org/chain/3735928814)
+
+---
+
+If you prefer to add the network manually, use these details:
+
+- **Network Name:** Eden
+- **New RPC URL:** https://rpc.eden.gateway.fm/
+- **Chain ID:** 714
+- **Currency Symbol:** TIA
+- **Block Explorer URL:** https://eden.blockscout.com/
+
+:::info
+The public Gateway RPC is rate limited. Higher limits are available by registering with
+Gateway.fm.
+:::
+
+### Save and switch
+
+Click "Save" and MetaMask will automatically switch to Eden.
+
+### Fund your wallet
+
+Use the [Eden bridge](https://eden.zone/) to deposit TIA to Eden before sending transactions.
+
+::::
+
+## Other wallets
+
+Most EVM wallets support custom network addition. The process is similar:
+
+1. Find the "Add Network" or "Custom RPC" option
+2. Enter the Eden network details above
+3. Save and connect
+
+## Troubleshooting
+
+### Network already exists
+
+If you see "Network already exists", the network is already configured in MetaMask.
+
+### RPC endpoint issues
+
+If you get connection errors, check the public RPC at [https://rpc.eden.gateway.fm/](https://rpc.eden.gateway.fm/).
+
+### Wrong chain ID
+
+Ensure you're using the correct chain ID: 714.
+
+That's it! You're ready to use Eden with your wallet.

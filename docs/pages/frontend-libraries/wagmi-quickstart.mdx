@@ -1,0 +1,225 @@
+# wagmi quickstart
+
+Learn how to build a frontend application using [wagmi](https://wagmi.sh/), a popular React library for interacting with EVM networks and connecting your MetaMask wallet to Eden.
+
+## Prerequisites
+
+- Node.js 20.x LTS (recommended) or at least 18.18.0+
+- npm 9.x or 10.x (comes with Node)
+- [Eden added to MetaMask](/tooling/wallets)
+
+::::steps
+
+### Scaffold & install
+
+```bash
+npm create vite@latest eden-wallet -- --template react-ts
+cd eden-wallet
+```
+
+### Eden chain + wagmi config
+
+```ts
+// src/wagmi.ts
+import { createConfig, http } from 'wagmi'
+import { metaMask } from 'wagmi/connectors'
+
+export const eden = {
+  id: 714,
+  name: 'Eden',
+  nativeCurrency: { name: 'TIA', symbol: 'TIA', decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: ['https://rpc.eden.gateway.fm/'],
+      webSocket: ['wss://rpc.eden.gateway.fm/ws']
+    }
+  },
+  blockExplorers: {
+    default: { name: 'Blockscout', url: 'https://eden.blockscout.com/' }
+  }
+} as const
+
+export const config = createConfig({
+  chains: [eden],
+  connectors: [metaMask()],
+  transports: { [eden.id]: http('https://rpc.eden.gateway.fm/') }
+})
+```
+
+### Wrap the app with WagmiProvider
+
+```tsx
+// src/main.tsx
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { WagmiProvider } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { config } from './wagmi'
+import './index.css'
+import App from './App.tsx'
+
+const queryClient = new QueryClient()
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </WagmiProvider>
+  </StrictMode>
+)
+```
+
+### Minimal wallet UI (connect / disconnect / chain switch)
+
+```tsx
+// src/App.tsx
+import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi'
+import { eden } from './wagmi'
+
+export default function App() {
+  const { address, chainId, status } = useAccount()
+  const { connect, connectors, isPending: isConnecting } = useConnect()
+  const { disconnect } = useDisconnect()
+  const { switchChain, isPending: isSwitching } = useSwitchChain()
+
+  const isOnEden = chainId === eden.id
+  const metaMask = connectors.find(c => c.id === 'metaMask') ?? connectors[0]
+
+  return (
+    <div
+      style={{
+        height: '100vh',
+        fontFamily: 'ui-sans-serif, system-ui',
+        background: '#f3f4f6',
+        padding: '2rem',
+        boxSizing: 'border-box'
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          marginBottom: '2rem'
+        }}
+      >
+        {!address ? (
+          <button
+            onClick={() => connect({ connector: metaMask })}
+            disabled={isConnecting}
+            style={{
+              padding: '0.85rem 1.5rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              background: '#2563eb',
+              color: 'white',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: '1rem'
+            }}
+          >
+            {isConnecting ? 'Connecting…' : 'Connect MetaMask'}
+          </button>
+        ) : (
+          <div
+            style={{
+              background: 'white',
+              padding: '1.5rem',
+              borderRadius: '0.5rem',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1.5rem'
+            }}
+          >
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              <span
+                style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+                onClick={() => {
+                  navigator.clipboard.writeText(address || '')
+                  alert('Address copied!')
+                }}
+                title={address}
+              >
+                {address?.slice(0, 6)}...{address?.slice(-4)}
+              </span>
+              <span
+                style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  padding: '0.25rem 0.5rem',
+                  background: '#f3f4f6',
+                  borderRadius: '0.25rem'
+                }}
+              >
+                Chain: {chainId ?? '—'}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              {!isOnEden && (
+                <button
+                  onClick={() => switchChain({ chainId: eden.id })}
+                  disabled={isSwitching}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.375rem',
+                    border: 'none',
+                    background: '#f59e0b',
+                    color: 'white',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  {isSwitching ? 'Switching…' : 'Switch to Eden'}
+                </button>
+              )}
+
+              <button
+                onClick={() => disconnect()}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  background: '#dc2626',
+                  color: 'white',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  fontSize: '0.875rem'
+                }}
+              >
+                Disconnect
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+```
+
+### Install wagmi and viem
+
+```bash
+npm i wagmi viem
+```
+
+### Run it
+
+```bash
+npm run dev
+```
+
+::::
+
+Congratulations! You've successfully set up your Eden wallet with wagmi on a frontend.

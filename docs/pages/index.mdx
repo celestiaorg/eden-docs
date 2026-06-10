@@ -1,0 +1,82 @@
+# Welcome to Eden
+
+Eden is an EVM network built using the [Evolve stack](https://github.com/evstack) and powered by Celestia for data availability.
+
+## Overview
+
+- EVM chain optimized for high throughput
+- Built with Evolve Stack
+- Built for EVM applications on Celestia
+- Uses Celestia for data availability
+
+## Target users
+
+- EVM builders of all stripes (game, consumer, social, etc.)
+- Teams porting apps from other EVM chains
+
+## Features
+
+- **EVM-compatible** - existing Solidity contracts, Hardhat/Foundry projects, and Ethers/Viem scripts work without changes
+- **Single sequencer** - fast, predictable block production
+- **Native TIA** - deposits through the Eden bridge
+
+Eden also extends the EVM with powerful capabilities standard chains don't offer. [See what Eden gives developers](/why-eden).
+
+## How to start
+
+::::steps
+
+### Join the chat
+
+Join the [Telegram group](http://t.me/celestiacommunity) to get connected, ask questions, and see what others are launching.
+
+### Deploy on Eden
+
+Use familiar EVM tooling to deploy contracts and interact with the chain. See the [Eden mainnet](/networks/mainnet) page for RPC, explorer, and contract info.
+
+### Get help & iterate
+
+Use the Telegram group for technical support and questions and keep shipping!
+
+::::
+
+## The stack behind Eden
+
+Eden is powered by the **Evolve stack**:
+| Component | Description |
+| --- | --- |
+| `ev-node` | Modular node engine connecting execution to Celestia DA |
+| `ev-reth` | High-performance EVM implementation |
+| `ev-toolbox` | Tools for testing and deployment |
+
+## FAQs
+
+:::details[Is Eden its own network?]
+Yes. Eden is a standalone EVM chain that uses Celestia for DA.
+:::
+
+:::details[Is this part of Celestia mainnet?]
+Eden posts data to Celestia mainnet, but runs its own execution environment. Celestia only handles
+consensus and data availability.
+:::
+
+:::details[Do I need TIA?]
+Yes. Eden uses TIA as its native gas token. Use the Eden bridge to deposit TIA before sending
+transactions.
+:::
+
+:::details[Can I launch my own network using Eden?]
+No — Eden is for apps, not networks. But if you want to launch your own chain, check out the
+Evolve stack.
+:::
+
+:::details[How is this different from other EVM chains?]
+Eden adds protocol-level features that standard EVM chains don't offer: native batch transactions,
+sponsored gas, and a 128 KB contract size limit. See [Why Eden](/why-eden) for the full breakdown.
+:::
+
+## Resources
+
+- Eden bridge: [https://eden.zone/](https://eden.zone/)
+- Eden Explorer: [https://eden.blockscout.com/](https://eden.blockscout.com/)
+- Telegram: [t.me/edenbuilders](http://t.me/celestiacommunity)
