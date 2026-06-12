@@ -142,3 +142,6 @@ logs
 # Temporary files
 *.tmp
 *.temp
+
+# wrangler local state
+.wrangler/

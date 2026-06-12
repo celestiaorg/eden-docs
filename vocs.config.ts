@@ -2,11 +2,16 @@ import { defineConfig } from 'vocs/config'
 
 export default defineConfig({
   srcDir: 'docs',
+  // Fully prerender every page so the deploy is plain static assets; the
+  // /mcp endpoint is served by worker/index.js (the Cloudflare Pages
+  // _worker.js), which reads the static markdown this build emits.
+  renderStrategy: 'full-static',
   title: 'Eden docs',
   description: 'Documentation for Eden',
   logoUrl: '/celestia-eden-logo.svg',
   iconUrl: '/favicon.svg',
-  baseUrl: 'https://celestiaorg.github.io',
+  // Used verbatim for sitemap/robots absolute URLs.
+  baseUrl: 'https://eden-docs.pages.dev',
   editLink: {
     link: 'https://github.com/celestiaorg/eden-docs/edit/main/docs/pages/:path',
     text: 'Edit on GitHub',
@@ -17,7 +22,13 @@ export default defineConfig({
   ],
   accentColor: '#35A35A',
   colorScheme: 'light dark',
-  mcp: { enabled: true },
+  mcp: {
+    enabled: true,
+    // MCP endpoint served by worker/index.js, deployed as _worker.js of the
+    // Cloudflare Pages site. Read by the patched AskAi "Copy MCP URL"
+    // button — `url` is our patch's extension, hence the cast.
+    url: 'https://eden-docs.pages.dev/mcp',
+  } as { enabled: boolean },
   sidebar: [
     { text: 'Welcome', link: '/' },
     {

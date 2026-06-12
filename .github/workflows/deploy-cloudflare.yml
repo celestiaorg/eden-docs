@@ -1,0 +1,58 @@
+# The only deploy: serves the full static site AND the /mcp endpoint from one
+# origin (eden-docs.pages.dev). Requires CLOUDFLARE_API_TOKEN and
+# CLOUDFLARE_ACCOUNT_ID repo secrets.
+#
+# Pushes to main deploy to production; pull requests deploy a Pages preview
+# at <branch>.eden-docs.pages.dev (secrets are unavailable on fork PRs, so
+# preview deploys only run for same-repo branches).
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-cloudflare-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build site (full-static)
+        run: pnpm build
+
+      # Clean ".md" URLs (used by the "View as Markdown" button and AI agents)
+      # and the MCP endpoint served by the Pages _worker.js.
+      - name: Add markdown mirror and MCP worker
+        run: |
+          cp -R dist/public/assets/md/. dist/public/
+          cp worker/index.js dist/public/_worker.js
+
+      # On main this is the production deploy; any other branch name creates
+      # a preview deployment at <branch>.eden-docs.pages.dev.
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy --branch ${{ github.head_ref || github.ref_name }}

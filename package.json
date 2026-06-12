@@ -10,13 +10,15 @@
   "scripts": {
     "dev": "vocs dev",
     "build": "vocs build",
+    "deploy": "pnpm build && cp -R dist/public/assets/md/. dist/public/ && cp worker/index.js dist/public/_worker.js && wrangler pages deploy --branch main",
     "preview": "vocs preview"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "wrangler": "^4.99.0"
   },
   "resolutions": {
     "bn.js": "5.2.3"
