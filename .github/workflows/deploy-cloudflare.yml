@@ -38,6 +38,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Set Vocs base URL
+        shell: bash
+        run: |
+          branch="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+
+          if [[ "$branch" == "main" ]]; then
+            echo "VOCS_BASE_URL=https://eden-docs.pages.dev" >> "$GITHUB_ENV"
+          else
+            alias="$(printf '%s' "$branch" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]/-/g')"
+            echo "VOCS_BASE_URL=https://${alias}.eden-docs.pages.dev" >> "$GITHUB_ENV"
+          fi
+
       - name: Build site (full-static)
         run: pnpm build
 
@@ -51,6 +63,7 @@ jobs:
       # On main this is the production deploy; any other branch name creates
       # a preview deployment at <branch>.eden-docs.pages.dev.
       - name: Deploy
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

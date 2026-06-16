@@ -1,5 +1,8 @@
 import { defineConfig } from 'vocs/config'
 
+const defaultBaseUrl = 'https://eden-docs.pages.dev'
+const baseUrl = (process.env.VOCS_BASE_URL ?? defaultBaseUrl).replace(/\/+$/, '')
+
 export default defineConfig({
   srcDir: 'docs',
   // Fully prerender every page so the deploy is plain static assets; the
@@ -10,8 +13,8 @@ export default defineConfig({
   description: 'Documentation for Eden',
   logoUrl: '/celestia-eden-logo.svg',
   iconUrl: '/favicon.svg',
-  // Used verbatim for sitemap/robots absolute URLs.
-  baseUrl: 'https://eden-docs.pages.dev',
+  // Used verbatim for the emitted <base> tag and absolute metadata URLs.
+  baseUrl,
   editLink: {
     link: 'https://github.com/celestiaorg/eden-docs/edit/main/docs/pages/:path',
     text: 'Edit on GitHub',
@@ -27,7 +30,7 @@ export default defineConfig({
     // MCP endpoint served by worker/index.js, deployed as _worker.js of the
     // Cloudflare Pages site. Read by the patched AskAi "Copy MCP URL"
     // button — `url` is our patch's extension, hence the cast.
-    url: 'https://eden-docs.pages.dev/mcp',
+    url: `${baseUrl}/mcp`,
   } as { enabled: boolean },
   sidebar: [
     { text: 'Welcome', link: '/' },
