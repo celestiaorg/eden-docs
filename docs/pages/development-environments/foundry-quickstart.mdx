@@ -1,0 +1,204 @@
+# Eden Foundry quickstart
+
+A minimal guide to deploying and interacting with smart contracts on **Celestia Eden** using [Foundry](https://book.getfoundry.sh/).
+
+## Prerequisites
+
+- [Foundry](https://book.getfoundry.sh/getting-started/installation) installed (`foundryup`)
+- A funded Eden address. Use the [Eden bridge](https://eden.zone/) to deposit TIA.
+
+::::steps
+
+### Initialize a project
+
+```bash
+forge init eden-forge && cd eden-forge
+```
+
+### Configure `foundry.toml`
+
+```toml
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+optimizer = true
+optimizer_runs = 200
+
+[rpc_endpoints]
+eden = "https://rpc.eden.gateway.fm/"
+```
+
+:::info
+The public Gateway RPC is rate limited. Higher limits are available by registering with
+Gateway.fm.
+:::
+
+### Use the example contract
+
+The `forge init Counter` command automatically creates an example `Counter.sol` contract in `src/Counter.sol`.
+
+The `forge init` command automatically creates an example deploy script in `script/Counter.s.sol`.
+
+### Manage keys securely
+
+Use Foundry's encrypted keystore and add your private key when prompted:
+
+```bash
+cast wallet import eden-deployer --interactive
+```
+
+:::warning
+Your private key will be used to sign transactions on the blockchain. Never share your private key
+with anyone, and always use secure key management practices. Never store private keys in plain
+text files like `.env`.
+:::
+
+### Deploy your contract
+
+Deploy with:
+
+```bash
+forge script script/Counter.s.sol:CounterScript \
+  --rpc-url eden \
+  --chain-id 714 \
+  --broadcast \
+  --account eden-deployer
+```
+
+### Interact with the contract
+
+First save the contract from the output as a variable:
+
+```bash
+export DEPLOYED_ADDRESS=<0x...contract_address>
+```
+
+Now you can interact with your contract using `cast` commands in your CLI:
+
+```bash
+# read state
+cast call $DEPLOYED_ADDRESS "number()(uint256)" --rpc-url eden
+
+# send tx (increment count)
+cast send $DEPLOYED_ADDRESS "increment()" --rpc-url eden --account eden-deployer
+
+# set a specific number
+cast send $DEPLOYED_ADDRESS "setNumber(uint256)" 42 --rpc-url eden --account eden-deployer
+```
+
+Or programmatically by creating custom scripts as in the following example:
+
+```solidity
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.13;
+
+import {Script} from "forge-std/Script.sol";
+import {console2} from "forge-std/console2.sol";
+import {Counter} from "../src/Counter.sol";
+
+contract InteractCounter is Script {
+    // TODO: Put your deployed contract address here
+    address constant COUNTER_ADDRESS = 0x...your_contract_address;
+
+    Counter public counter;
+
+    function setUp() public {
+        counter = Counter(COUNTER_ADDRESS);
+    }
+
+    function run() public {
+        vm.startBroadcast();
+
+        console2.log("=== Counter Contract Interaction ===");
+        console2.log("Contract Address:", address(counter));
+
+        // Read current number
+        uint256 currentNumber = counter.number();
+        console2.log("Current number:", currentNumber);
+
+        // Increment the counter
+        console2.log("Incrementing counter...");
+        counter.increment();
+
+        // Read the new number
+        uint256 newNumber = counter.number();
+        console2.log("New number after increment:", newNumber);
+
+        // Set a specific number
+        uint256 targetNumber = 42;
+        console2.log("Setting number to:", targetNumber);
+        counter.setNumber(targetNumber);
+
+        // Read the final number
+        uint256 finalNumber = counter.number();
+        console2.log("Final number:", finalNumber);
+
+        console2.log("=== Interaction Complete ===");
+
+        vm.stopBroadcast();
+    }
+}
+```
+
+### Explorer
+
+Check addresses and transactions at [https://eden.blockscout.com/](https://eden.blockscout.com/)
+
+### Contract verification
+
+Use the `verify-contract` command to verify your contract. When using the code below, replace the contract address with the address of your deployed contract.
+
+```bash
+forge verify-contract \
+    --rpc-url https://rpc.eden.gateway.fm/ \
+    --verifier blockscout \
+    --verifier-url 'https://eden.blockscout.com/api/' \
+    --compiler-version 0.8.28 \
+    $DEPLOYED_ADDRESS \
+    src/Counter.sol:Counter
+```
+
+::::
+
+## Troubleshooting
+
+### Check network status
+
+```bash
+# Test RPC connectivity
+curl -s https://rpc.eden.gateway.fm/ -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
+```
+
+### Complier version mismatch
+
+If you have a compiler version mismatch:
+
+```log
+Error: No matching artifact found for Counter with compiler version 0.8.28. This could be due to:
+- Compiler version mismatch - the contract was compiled with a different Solidity version
+```
+
+You can check the version used to compile your contract by running:
+
+```bash
+forge build --sizes
+```
+
+Then run the command with the correct version:
+
+```bash
+forge verify-contract \
+    --rpc-url https://rpc.eden.gateway.fm/ \
+    --verifier blockscout \
+    --verifier-url 'https://eden.blockscout.com/api/' \
+    --compiler-version 0.8.30 \
+    $DEPLOYED_ADDRESS \
+    src/Counter.sol:Counter
+```
+
+### Common issues
+
+- **Gas estimation failures**: Ensure your Eden wallet has enough TIA to pay transaction fees.
+
+That's it, you're live on Eden!

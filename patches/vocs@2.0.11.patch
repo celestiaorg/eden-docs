@@ -1,0 +1,52 @@
+diff --git a/dist/react/internal/AskAi.js b/dist/react/internal/AskAi.js
+index 4ad54dc5e326aa7026d3453a6f08d3fb9a2fc7a1..7938bc50e912111ffd3d366c45339e7de08d67e2 100644
+--- a/dist/react/internal/AskAi.js
++++ b/dist/react/internal/AskAi.js
+@@ -88,10 +88,14 @@ export function AskAi(props) {
+         window.open(markdownUrl, '_blank');
+     }, [markdownUrl]);
+     const mcpUrl = React.useMemo(() => {
++        // Allow `mcp.url` in the config to point at an external MCP server,
++        // for static deployments where /api/mcp does not exist on this origin.
++        if (mcp && 'url' in mcp && mcp.url)
++            return mcp.url;
+         if (typeof window === 'undefined')
+             return '';
+         return `${window.location.origin}/api/mcp`;
+-    }, []);
++    }, [mcp]);
+     return (_jsxs(Menu.Root, { open: menuOpen, onOpenChange: setMenuOpen, children: [_jsxs(Menu.Trigger, { className: cx('vocs:flex vocs:items-center vocs:justify-between vocs:cursor-pointer vocs:pl-3 vocs:pr-2 vocs:text-sm vocs:text-secondary vocs:hover:text-primary vocs:w-full vocs:h-full vocs:bg-surface vocs:hover:bg-surfaceTint vocs:border vocs:border-primary vocs:rounded-xl vocs:transition-colors vocs:duration-100', className), children: [_jsx("div", { className: "vocs:flex vocs:items-center vocs:gap-2", children: "Ask AI..." }), _jsxs("div", { className: "vocs:flex vocs:items-center vocs:gap-0.5", children: [_jsx("div", { className: "vocs:bg-primary vocs:text-xs vocs:flex vocs:items-center vocs:justify-center vocs:h-5 vocs:w-auto vocs:px-0.75 vocs:border vocs:border-primary vocs:rounded-sm", children: modifierKey }), _jsx("div", { className: "vocs:bg-primary vocs:text-xs vocs:flex vocs:items-center vocs:justify-center vocs:h-5 vocs:w-auto vocs:px-0.75 vocs:border vocs:border-primary vocs:rounded-sm", children: "I" })] })] }), _jsx(Menu.Portal, { children: _jsx(Menu.Positioner, { side: "top", align: "start", sideOffset: 4, className: "vocs:z-100", children: _jsxs(Menu.Popup, { className: "vocs:bg-surface vocs:w-(--anchor-width) vocs:border vocs:border-primary vocs:p-2 vocs:rounded-lg vocs:shadow-lg/5 vocs:origin-(--transform-origin) vocs:transition-all vocs:duration-75 vocs:scale-100 vocs:opacity-100 vocs:data-starting-style:opacity-0 vocs:data-starting-style:scale-90", children: [_jsxs(Menu.Group, { children: [_jsx(Menu.GroupLabel, { className: "vocs:flex vocs:items-center vocs:gap-1.5 vocs:px-2 vocs:py-1.5 vocs:text-secondary vocs:text-xs vocs:font-medium", children: "Open in..." }), llmProviders.map((provider) => (_jsxs(Menu.Item, { className: "vocs:flex vocs:items-center vocs:gap-2 vocs:px-2 vocs:py-1.5 vocs:text-primary/80 vocs:hover:text-heading vocs:hover:bg-accenta3 vocs:rounded-md vocs:text-sm vocs:cursor-pointer vocs:transition-colors", onClick: () => {
+                                             // On mobile, use location.href to trigger Universal Links / App Links
+                                             // which will open the native app if installed
+diff --git a/dist/waku/internal/middleware/md-router.js b/dist/waku/internal/middleware/md-router.js
+index 45d5e404c70e80a443b3221e0928baaa58bb88be..e7c4e046f85bc75858c2a786f1c0601e7c87197e 100644
+--- a/dist/waku/internal/middleware/md-router.js
++++ b/dist/waku/internal/middleware/md-router.js
+@@ -80,13 +80,24 @@ export async function fetchMarkdown(url, assetPath, cookie) {
+     const headers = {};
+     if (cookie)
+         headers['cookie'] = cookie;
+-    const response = await globalThis.fetch(assetUrl, { headers });
+-    if (!response.ok)
++    try {
++        const response = await globalThis.fetch(assetUrl, { headers });
++        if (!response.ok)
++            return null;
++        return response.text();
++    }
++    catch {
++        // The public origin may not be reachable from inside the server
++        // (e.g. running in a container); treat as "no markdown available".
+         return null;
+-    return response.text();
++    }
+ }
+ export function middleware() {
+     return async (context, next) => {
++        // Markdown negotiation only applies to reads; without this, POSTs to
++        // /api/mcp from terminal/AI user agents get swallowed.
++        if (context.req.method !== 'GET' && context.req.method !== 'HEAD')
++            return next();
+         const url = new URL(context.req.url);
+         const userAgent = context.req.header('user-agent') ?? '';
+         const isOgBot = ogBotUserAgents.some((agent) => userAgent.includes(agent));

@@ -1,0 +1,120 @@
+# Onchain primer for web2 devs
+
+This document introduces essential blockchain concepts for web2 developers. It explains why blockchains are used, how they work at a high level, and the basic components needed to build on an EVM chain, especially for DeFi use cases.
+
+## 1. Why blockchains
+
+A blockchain is a globally shared "database" with built-in consensus and execution. Instead of one company running the database, many nodes maintain the same copy and agree on updates. Smart contracts run directly on this shared machine, making the data and logic accessible to anyone. For a web2 developer, it is like a database plus an application server that nobody controls and everyone can read from and write to.
+
+Blockchains provide properties that traditional systems cannot achieve without trusted intermediaries.
+
+- **Data ownership.** Users hold their own keys and assets. Control does not rely on custodians.
+- **Censorship resistance.** Any valid transaction can be included. No central operator can deny access.
+- **New financial primitives.** Programmable settlement enables decentralized exchanges, lending markets, perpetuals, and other financial structures.
+- **Composability.** Smart contracts interoperate like APIs. Protocols can be combined without permission, leading to rapid innovation. Because of this, small teams can build large-scale protocols. DevOps overhead is reduced since applications run directly onchain, making it common for small 3-5 person teams to launch and maintain systems handling billions in value.
+
+## 2. Onchain in the stack
+
+Blockchains add a shared execution and data layer to the traditional application stack.
+
+- Onchain logic executes in smart contracts, with state stored onchain.
+- Offchain systems provide access to offchain data, indexing, and user interfaces.
+
+## 3. Accounts and wallets
+
+All onchain interactions come from accounts, managed by wallets.
+
+- **Externally owned accounts (EOAs).** Controlled by a private key. Used to sign and send transactions.
+- **Contract accounts (smart wallets).** Controlled by onchain logic. Support features such as recovery, spending policies, and multi-party authorization.
+- Wallets handle key management, signatures, and chain selection for the user.
+
+## 4. Consensus and finalization
+
+Consensus ensures the network agrees on the order of transactions and resulting state.
+
+- **Consensus.** Validators or miners propose and agree on blocks.
+- **Confirmations.** As more blocks are added to the chain, the risk of reorganization (forking) decreases.
+- **Finalization.** A transaction is considered irreversible once finalization occurs. Applications should distinguish between pending, confirmed, and finalized states.
+
+## 5. Transactions and receipts
+
+A transaction is a signed request to change state, it is the core unit of all onchain interactions. Submitting a transaction follows this workflow:
+
+::::steps
+
+### Create and sign
+
+Build the transaction and sign it with your private key.
+
+### Submit
+
+Broadcast the signed transaction to the network. You'll receive a transaction hash while it's pending.
+
+### Inclusion in block
+
+Once a validator includes your transaction in a block, a receipt becomes available with execution status, gas used, and emitted logs (events).
+
+### Wait for confirmations
+
+Wait for additional blocks to be built on top, reducing reorganization risk and moving toward finality.
+
+::::
+
+## 6. Events and asynchronous communication
+
+Interaction with the chain is asynchronous. When you submit a transaction, execution does not complete immediately. The network processes the transaction in a block, and applications must react once results are available.
+
+Smart contracts emit events (logs) during execution. These are stored in the transaction receipt and can be indexed by offchain services.
+
+## 7. Gas
+
+Execution requires gas, paid in the native token.
+
+- Gas measures computation and storage used by a transaction.
+- Fees follow the EIP-1559 model: a base fee is burned, and a priority fee is paid to the validator.
+- Applications should estimate gas and set safe fee limits.
+- On this chain, the native token is **TIA**.
+
+## 8. Identity
+
+Users and contracts are identified by their addresses (in a `0x` format).
+
+## 9. Funding accounts
+
+To interact with the chain, users must hold assets.
+
+- **Gas.** A small amount of TIA is required to pay for each transaction.
+- **Protocol tokens.** Some applications require holding or spending their own tokens.
+- **Onboarding.** Applications should integrate onramps, bridges, or swaps to help users fund their accounts.
+- **Testnets.** Developers can use [testnets with free faucet tokens](/networks/testnet#faucet) to experiment and test applications without cost.
+
+## 10. Frontend integration
+
+Frontends connect users to onchain applications. They can be built with any framework, but often use a library like [Viem](/frontend-libraries/viem-quickstart) to interact with the chain.
+
+- **Viem.** A TypeScript client library that provides RPC calls, contract interaction, and transaction handling.
+- **Wallet connectors.** Libraries such as wagmi, OnchainKit, or ConnectKit standardize wallet integration.
+- The basic flow: connect wallet → read state → construct and sign transaction → submit → wait for receipt and finalization.
+
+## 11. Smart contract development
+
+Smart contracts are the "backend logic" of an onchain app.
+
+- Generally written in Solidity and deployed with frameworks like [Foundry](/development-environments/foundry-quickstart).
+- Contracts expose ABIs, which define how frontends encode calls and decode responses.
+- The blockchain will emit events for offchain indexers and applications.
+- Developers use local nodes or testnets before mainnet deployment.
+
+## 12. Minimal glossary
+
+- **ABI.** Contract interface used to encode calls and decode results or logs.
+- **Block.** A batch of transactions bundled together, ordered, and agreed on by consensus.
+- **Confirmation.** Additional blocks built on top of a block containing your transaction, reducing reorg (forking) risk.
+- **Event/log.** Data emitted by contracts during execution, stored in the transaction receipt, and used by offchain systems to react asynchronously.
+- **Finality.** Point at which a transaction cannot be reversed under the consensus rules.
+- **Gas.** Unit of cost for computation and storage; paid in the native token.
+- **Nonce.** Per-account counter to enforce transaction ordering and prevent replay.
+- **Receipt.** Object returned after execution showing transaction status, gas used, and events.
+- **RPC.** Node interface used when interacting with the chain.
+- **Signer.** Entity (key or contract) that produces signatures to authorize actions.
+- **Transaction hash.** Unique identifier returned when a transaction is broadcast; used to track progress.

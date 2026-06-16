@@ -1,0 +1,137 @@
+# viem quickstart
+
+Learn how to use viem to interact with Eden in a React application.
+
+## Prerequisites
+
+- Node.js 18+ and npm
+- Basic knowledge of React and TypeScript
+
+::::steps
+
+### Create a new React app
+
+```bash
+npm create vite@latest eden-viem-app -- --template react-ts
+cd eden-viem-app
+npm install viem
+```
+
+### Set up Eden configuration
+
+Create a new file `src/config.ts`:
+
+```typescript
+// src/config.ts
+import { createPublicClient, http, defineChain } from 'viem'
+
+export const eden = defineChain({
+  id: 714,
+  name: 'Eden',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'TIA',
+    symbol: 'TIA'
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://rpc.eden.gateway.fm/'],
+      webSocket: ['wss://rpc.eden.gateway.fm/ws']
+    }
+  },
+  blockExplorers: {
+    default: { name: 'Blockscout', url: 'https://eden.blockscout.com/' }
+  }
+})
+
+export const publicClient = createPublicClient({
+  chain: eden,
+  transport: http('https://rpc.eden.gateway.fm/')
+})
+```
+
+### Build a simple blockchain explorer
+
+Replace `src/App.tsx`:
+
+```tsx
+// src/App.tsx
+import { useEffect, useState } from 'react'
+import { formatEther } from 'viem'
+import { publicClient, eden } from './config'
+import './App.css'
+
+function App() {
+  const [blockNumber, setBlockNumber] = useState<bigint>()
+  const [gasPrice, setGasPrice] = useState<bigint>()
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [block, gas] = await Promise.all([
+          publicClient.getBlockNumber(),
+          publicClient.getGasPrice()
+        ])
+        setBlockNumber(block)
+        setGasPrice(gas)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+    const interval = setInterval(fetchData, 12000)
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <div className="page">
+      <h1>Eden Network Status</h1>
+      <div>
+        <h3>Chain</h3>
+        <p>
+          {eden.name} (ID: {eden.id})
+        </p>
+      </div>
+      <div>
+        <h3>Latest Block</h3>
+        <p>{loading ? '…' : blockNumber?.toString()}</p>
+      </div>
+      <div>
+        <h3>Gas Price</h3>
+        <p>
+          {loading ? '…' : gasPrice ? formatEther(gasPrice) : '0'} {eden.nativeCurrency.symbol}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export default App
+```
+
+### Add some basic styles
+
+Update `src/App.css`:
+
+```css
+/* src/App.css */
+.page {
+  padding-left: 2rem;
+  padding-top: 1rem;
+}
+```
+
+### Run the application
+
+```bash
+npm run dev
+```
+
+::::
+
+## Next steps
+
+- Add wallet connection using [viem's wallet actions](https://viem.sh/docs/actions/wallet/introduction)
+- Interact with smart contracts using [contract actions](https://viem.sh/docs/contract/readContract)
+- Check out the [wagmi quickstart](/frontend-libraries/wagmi-quickstart) for a more feature-rich React integration
