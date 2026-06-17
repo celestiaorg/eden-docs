@@ -51,6 +51,7 @@ export default defineConfig({
       collapsed: false,
       items: [
         { text: 'Foundry quickstart', link: '/development-environments/foundry-quickstart' },
+        { text: 'Supported EIPs', link: '/development-environments/supported-eips' },
       ],
     },
     {
