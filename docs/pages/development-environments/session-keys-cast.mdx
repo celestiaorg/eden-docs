@@ -82,9 +82,9 @@ deploy bytecode matching this hash.
 ```bash
 forge build --contracts examples/session-keys-cast
 
-export INIT_CODE=$(jq -r '.bytecode.object' \
+export INIT_CODE=$(jq -r '.bytecode.object | if startswith("0x") then . else "0x" + . end' \
   out/SessionKeyDeployTarget.sol/SessionKeyDeployTarget.json)
-export INIT_CODE_HASH=$(cast keccak $INIT_CODE)
+export INIT_CODE_HASH=$(cast keccak "$INIT_CODE")
 export EXPIRY=4102444800
 ```
 
@@ -125,7 +125,7 @@ deploys the approved bytecode internally.
 ```bash
 cast send $OWNER \
   "deploy(bytes)" \
-  $INIT_CODE \
+  "$INIT_CODE" \
   --rpc-url $RPC_URL \
   --private-key $SESSION_PK \
   --gas-limit 1000000
@@ -309,9 +309,9 @@ Build the deploy target and install the session grant with a type `0x04` EIP-770
 ```bash
 forge build --contracts examples/session-keys-cast
 
-export INIT_CODE=$(jq -r '.bytecode.object' \
+export INIT_CODE=$(jq -r '.bytecode.object | if startswith("0x") then . else "0x" + . end' \
   out/SessionKeyDeployTarget.sol/SessionKeyDeployTarget.json)
-export INIT_CODE_HASH=$(cast keccak $INIT_CODE)
+export INIT_CODE_HASH=$(cast keccak "$INIT_CODE")
 export EXPIRY=4102444800
 
 cast send $OWNER \
@@ -340,7 +340,7 @@ Send one unsponsored session-key deploy with `cast`:
 ```bash
 cast send $OWNER \
   "deploy(bytes)" \
-  $INIT_CODE \
+  "$INIT_CODE" \
   --rpc-url $RPC_URL \
   --private-key $SESSION_PK \
   --gas-limit 1000000
