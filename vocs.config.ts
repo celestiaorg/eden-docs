@@ -6,7 +6,7 @@ const baseUrl = (process.env.VOCS_BASE_URL ?? defaultBaseUrl).replace(/\/+$/, ''
 export default defineConfig({
   srcDir: 'docs',
   // Fully prerender every page so the deploy is plain static assets; the
-  // /mcp endpoint is served by worker/index.js (the Cloudflare Pages
+  // /api/mcp endpoint is served by worker/index.js (the Cloudflare Pages
   // _worker.js), which reads the static markdown this build emits.
   renderStrategy: 'full-static',
   title: 'Eden docs',
@@ -27,11 +27,7 @@ export default defineConfig({
   colorScheme: 'light dark',
   mcp: {
     enabled: true,
-    // MCP endpoint served by worker/index.js, deployed as _worker.js of the
-    // Cloudflare Pages site. Read by the patched AskAi "Copy MCP URL"
-    // button — `url` is our patch's extension, hence the cast.
-    url: `${baseUrl}/mcp`,
-  } as { enabled: boolean },
+  },
   sidebar: [
     { text: 'Welcome', link: '/' },
     {
