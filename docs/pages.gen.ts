@@ -6,6 +6,7 @@ import type { PathsForPages } from 'waku/router'
 // prettier-ignore
 type Page =
   | { path: '/development-environments/foundry-quickstart'; render: 'static' }
+  | { path: '/development-environments/session-keys-cast'; render: 'static' }
   | { path: '/frontend-libraries/viem-quickstart'; render: 'static' }
   | { path: '/frontend-libraries/wagmi-quickstart'; render: 'static' }
   | { path: '/guides/build-a-frontend'; render: 'static' }
