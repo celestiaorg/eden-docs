@@ -61,6 +61,7 @@ export default defineConfig({
       collapsed: false,
       items: [
         { text: 'viem quickstart', link: '/frontend-libraries/viem-quickstart' },
+        { text: 'viem transactions', link: '/frontend-libraries/viem-transactions' },
         { text: 'wagmi quickstart', link: '/frontend-libraries/wagmi-quickstart' },
       ],
     },

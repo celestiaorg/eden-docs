@@ -1,0 +1,257 @@
+# Send regular and sponsored transactions with viem
+
+This guide shows how to send a standard Eden transaction with viem, then how to send an
+Eden-sponsored transaction with the `@evstack/evnode-viem` client.
+
+Use Eden testnet while building the flow. For mainnet, switch the RPC URL, chain ID, and keys after
+the testnet path is working.
+
+:::warning
+Keep sponsor keys on a server or other controlled signing environment. Do not ship a sponsor
+private key in browser code.
+:::
+
+## Prerequisites
+
+- Node.js 20 or newer.
+- Foundry's `cast` CLI for key generation and transaction inspection.
+- A funded Eden testnet sender for the regular transaction.
+- A funded Eden testnet sponsor for the sponsored transaction.
+
+```bash
+npm init -y
+npm install viem @evstack/evnode-viem
+npm install --save-dev tsx
+```
+
+## Configure Eden
+
+Use Eden testnet by default:
+
+```bash
+export RPC_URL=https://rpc.testnet.eden.gateway.fm/
+export CHAIN_ID=3735928814
+```
+
+For local regular-transaction testing, you can run Anvil with Eden's mainnet chain ID:
+
+```bash
+anvil --hardfork prague --chain-id 714
+export RPC_URL=http://127.0.0.1:8545
+export CHAIN_ID=714
+```
+
+Create `src/eden.ts`:
+
+```ts
+// src/eden.ts
+import { defineChain, http } from 'viem'
+
+const rpcUrl = process.env.RPC_URL ?? 'https://rpc.testnet.eden.gateway.fm/'
+const chainId = Number(process.env.CHAIN_ID ?? '3735928814')
+
+export const eden = defineChain({
+  id: chainId,
+  name: chainId === 714 ? 'Eden' : 'Eden testnet',
+  nativeCurrency: { decimals: 18, name: 'TIA', symbol: 'TIA' },
+  rpcUrls: {
+    default: { http: [rpcUrl] }
+  },
+  blockExplorers: {
+    default: {
+      name: 'Blockscout',
+      url: chainId === 714 ? 'https://eden.blockscout.com/' : 'https://eden-testnet.blockscout.com/'
+    }
+  }
+})
+
+export const transport = http(rpcUrl)
+```
+
+## Send a regular transaction
+
+A regular transaction is the standard EVM flow: the signer submits the transaction and pays gas.
+
+Set a sender key and recipient address:
+
+```bash
+export SENDER_PK=<funded-sender-private-key>
+export RECIPIENT=<0x...recipient-address>
+```
+
+Create `src/send-regular.ts`:
+
+```ts
+// src/send-regular.ts
+import {
+  createPublicClient,
+  createWalletClient,
+  formatEther,
+  parseEther,
+  type Address,
+  type Hex
+} from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { eden, transport } from './eden.js'
+
+function required(name: string): string {
+  const value = process.env[name]
+  if (!value) throw new Error(`Missing ${name}`)
+  return value
+}
+
+const account = privateKeyToAccount(required('SENDER_PK') as Hex)
+const recipient = required('RECIPIENT') as Address
+const amount = parseEther(process.env.AMOUNT_TIA ?? '0.001')
+
+const publicClient = createPublicClient({ chain: eden, transport })
+const walletClient = createWalletClient({ account, chain: eden, transport })
+
+const before = await publicClient.getBalance({ address: recipient })
+const hash = await walletClient.sendTransaction({
+  chain: eden,
+  to: recipient,
+  value: amount
+})
+
+const receipt = await publicClient.waitForTransactionReceipt({ hash })
+const after = await publicClient.getBalance({ address: recipient })
+
+console.log(`sender=${account.address}`)
+console.log(`recipient=${recipient}`)
+console.log(`tx=${hash}`)
+console.log(`status=${receipt.status}`)
+console.log(`recipientDeltaTIA=${formatEther(after - before)}`)
+```
+
+Run it:
+
+```bash
+npx tsx src/send-regular.ts
+```
+
+Save the printed hash and verify it with `cast`:
+
+```bash
+export REGULAR_TX=<0x...printed-hash>
+
+cast tx $REGULAR_TX --rpc-url $RPC_URL
+cast receipt $REGULAR_TX --rpc-url $RPC_URL
+cast balance $RECIPIENT --rpc-url $RPC_URL --ether
+```
+
+The transaction should be a normal EVM transaction from `SENDER_PK`, and the recipient balance
+should increase by the value sent.
+
+## Send a sponsored transaction
+
+Eden sponsorship uses Evolve's `0x76` transaction type. The executor signs the call intent, and the
+sponsor signs as the fee payer. The sponsor pays gas; the executor still pays any native TIA value
+that the call transfers.
+
+This example sends a zero-value call so the executor does not need TIA. Replace `TARGET` and `data`
+with your app contract address and encoded calldata for a real app action.
+
+Set an executor key, a funded sponsor key, and a target address:
+
+```bash
+export EXECUTOR_PK=<executor-private-key>
+export SPONSOR_PK=<funded-sponsor-private-key>
+export TARGET=<0x...target-address>
+
+export EXECUTOR=$(cast wallet address --private-key $EXECUTOR_PK)
+export SPONSOR=$(cast wallet address --private-key $SPONSOR_PK)
+
+cast balance $EXECUTOR --rpc-url $RPC_URL --ether
+cast balance $SPONSOR --rpc-url $RPC_URL --ether
+cast nonce $EXECUTOR --rpc-url $RPC_URL
+cast nonce $SPONSOR --rpc-url $RPC_URL
+```
+
+Create `src/send-sponsored.ts`:
+
+```ts
+// src/send-sponsored.ts
+import { createClient, createPublicClient, type Address, type Hex } from 'viem'
+import { privateKeyToAccount, sign } from 'viem/accounts'
+import { createEvnodeClient } from '@evstack/evnode-viem'
+import { eden, transport } from './eden.js'
+
+function required(name: string): string {
+  const value = process.env[name]
+  if (!value) throw new Error(`Missing ${name}`)
+  return value
+}
+
+const executorPk = required('EXECUTOR_PK') as Hex
+const sponsorPk = required('SPONSOR_PK') as Hex
+const target = required('TARGET') as Address
+
+const executor = privateKeyToAccount(executorPk)
+const sponsor = privateKeyToAccount(sponsorPk)
+
+const client = createClient({ transport })
+const publicClient = createPublicClient({ chain: eden, transport })
+
+const evnode = createEvnodeClient({
+  client,
+  executor: {
+    address: executor.address,
+    signHash: async (hash) => sign({ hash, privateKey: executorPk })
+  },
+  sponsor: {
+    address: sponsor.address,
+    signHash: async (hash) => sign({ hash, privateKey: sponsorPk })
+  }
+})
+
+const intent = await evnode.createIntent({
+  calls: [{ to: target, value: 0n, data: '0x' }]
+})
+
+const hash = await evnode.sponsorAndSend({ intent })
+const receipt = await publicClient.waitForTransactionReceipt({ hash })
+
+console.log(`executor=${executor.address}`)
+console.log(`sponsor=${sponsor.address}`)
+console.log(`tx=${hash}`)
+console.log(`status=${receipt.status}`)
+```
+
+Run it:
+
+```bash
+npx tsx src/send-sponsored.ts
+```
+
+Save the printed hash and inspect it with `cast`:
+
+```bash
+export SPONSORED_TX=<0x...printed-hash>
+
+cast tx $SPONSORED_TX --rpc-url $RPC_URL
+cast receipt $SPONSORED_TX --rpc-url $RPC_URL
+cast balance $EXECUTOR --rpc-url $RPC_URL --ether
+cast balance $SPONSOR --rpc-url $RPC_URL --ether
+```
+
+The transaction should show type `0x76`, the executor as the sender, and the sponsor as the fee
+payer. The executor balance should not be charged gas for this zero-value call; the sponsor balance
+should pay the fee.
+
+:::info
+`cast` is useful for regular transactions and for inspecting sponsored transactions after they are
+broadcast. To construct Eden-sponsored `0x76` transactions, use an Eden-compatible client such as
+`@evstack/evnode-viem`.
+:::
+
+## Troubleshooting
+
+- `Missing SENDER_PK`, `Missing EXECUTOR_PK`, or `Missing SPONSOR_PK`: export the required private
+  key before running the script.
+- `insufficient funds`: fund the sender for regular transactions, or fund the sponsor for sponsored
+  gas. If the sponsored call transfers native TIA value, fund the executor for that value too.
+- `invalid chain id`: make sure `CHAIN_ID` matches the RPC. Eden mainnet is `714`; Eden testnet is
+  `3735928814`.
+- Stuck or rate-limited requests: the public Gateway.fm RPC is rate limited. Retry later or use a
+  registered Gateway.fm endpoint.
