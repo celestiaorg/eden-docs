@@ -1,0 +1,371 @@
+# Session keys with cast
+
+This guide shows how to test an EIP-7702 session key flow with Foundry's `cast`.
+It uses a minimal delegate contract that lets an owner EOA authorize one session key to deploy a
+specific contract bytecode.
+
+:::warning
+This is a developer test harness, not a production account implementation. Use an audited EIP-7702
+delegate/account contract before handling real user assets.
+:::
+
+## What this verifies
+
+- An EOA can delegate to account code with an EIP-7702 type `0x04` transaction.
+- The delegated code can store a scoped session key in the EOA's storage.
+- The session key can later call the EOA and deploy allowed bytecode from the delegated account code.
+- Eden can sponsor that later session-key call with a type `0x76` transaction, where the session key
+  is the executor and the app gas payer is the fee payer.
+
+`cast` is enough for the EIP-7702 setup and the unsponsored session-key transaction. For the
+gas-sponsored transaction, use an Eden-compatible ev-reth client. Current Foundry `cast --tempo`
+builds a Tempo-flavored type `0x76` payload, not the ev-reth `EvNodeTransaction` format Eden uses
+for batching and fee-payer sponsorship.
+
+:::info
+Eden's type `0x76` transaction does not carry an EIP-7702 authorization list. Install the 7702
+delegation first with a type `0x04` transaction, then send later session-key calls through `0x76`.
+:::
+
+## Verified Eden testnet transactions
+
+These transactions were produced from the Eden testnet command sequence in this guide:
+
+- [Install 7702 delegation and session grant](https://eden-testnet.blockscout.com/tx/0xf0a5ad7167bc0aebbfe7140afd53a28ea2d9a6fa77468984be99eb74d7d78bb8): type `0x04`.
+- [Deploy with the session key](https://eden-testnet.blockscout.com/tx/0xa644e5ec1b8a1ad39f41c6ff8faac6b29021dae30befa074a72d08a191cf04f8): unsponsored session-key call.
+- [Deploy with the sponsored session key](https://eden-testnet.blockscout.com/tx/0xf2d386fd9f47b5916cf54aff957f98b6c0896d6fb06aad54c6c7d55203e9034d): Eden type `0x76`, with the session key as executor and the sponsor as `feePayer`.
+
+## Prerequisites
+
+- [Foundry](https://book.getfoundry.sh/getting-started/installation) installed with
+  EIP-7702 support for `cast send --auth`.
+- `jq` for reading Forge artifact JSON.
+- The example contracts in [`examples/session-keys-cast`](https://github.com/celestiaorg/eden-docs/tree/main/examples/session-keys-cast).
+- For local testing, run Anvil with Prague enabled.
+- For Eden gas sponsorship, the `@evstack/evnode-viem` package.
+
+```bash
+anvil --hardfork prague --chain-id 714
+```
+
+In another terminal, set the local test accounts:
+
+```bash
+export RPC_URL=http://127.0.0.1:8545
+export OWNER_PK=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+export SESSION_PK=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+export OWNER=$(cast wallet address --private-key $OWNER_PK)
+export SESSION=$(cast wallet address --private-key $SESSION_PK)
+```
+
+## Deploy the delegate implementation
+
+Deploy the code the owner EOA will delegate to:
+
+```bash
+forge create examples/session-keys-cast/EdenSessionAccount.sol:EdenSessionAccount \
+  --rpc-url $RPC_URL \
+  --private-key $OWNER_PK \
+  --broadcast
+```
+
+Save the deployed implementation address:
+
+```bash
+export DELEGATE_IMPL=<0x...deployedTo>
+```
+
+## Build the deploy target
+
+Compile the example target and hash its creation bytecode. The session key will only be able to
+deploy bytecode matching this hash.
+
+```bash
+forge build --contracts examples/session-keys-cast
+
+export INIT_CODE=$(jq -r '.bytecode.object | if startswith("0x") then . else "0x" + . end' \
+  out/SessionKeyDeployTarget.sol/SessionKeyDeployTarget.json)
+export INIT_CODE_HASH=$(cast keccak "$INIT_CODE")
+export EXPIRY=4102444800
+```
+
+## Install the 7702 delegation and session key
+
+This sends an EIP-7702 type `0x04` transaction. The `--auth` flag authorizes the owner EOA to
+delegate to `DELEGATE_IMPL`, and the transaction calls the owner EOA to install the session grant.
+
+```bash
+cast send $OWNER \
+  "installSession(address,uint64,bytes32,uint256)" \
+  $SESSION \
+  $EXPIRY \
+  $INIT_CODE_HASH \
+  2 \
+  --auth $DELEGATE_IMPL \
+  --rpc-url $RPC_URL \
+  --private-key $OWNER_PK \
+  --gas-limit 1000000
+```
+
+Verify that the EOA now has a delegation indicator and the session grant is stored:
+
+```bash
+cast code $OWNER --rpc-url $RPC_URL
+cast call $OWNER "sessionKey()(address)" --rpc-url $RPC_URL
+cast call $OWNER "deploysRemaining()(uint256)" --rpc-url $RPC_URL
+cast call $OWNER "allowedInitCodeHash()(bytes32)" --rpc-url $RPC_URL
+```
+
+The code should start with `0xef0100`, followed by the delegate implementation address.
+
+## Deploy with the session key
+
+The session key now calls the owner EOA. The delegated account code checks the session policy and
+deploys the approved bytecode internally.
+
+```bash
+cast send $OWNER \
+  "deploy(bytes)" \
+  "$INIT_CODE" \
+  --rpc-url $RPC_URL \
+  --private-key $SESSION_PK \
+  --gas-limit 1000000
+```
+
+Check the deployed contract:
+
+```bash
+export DEPLOYED=$(cast call $OWNER "lastDeployment()(address)" --rpc-url $RPC_URL)
+
+cast code $DEPLOYED --rpc-url $RPC_URL
+cast call $DEPLOYED "meaning()(uint256)" --rpc-url $RPC_URL
+cast call $OWNER "deploysRemaining()(uint256)" --rpc-url $RPC_URL
+```
+
+The `meaning()` call should return `42`. Because the install command above grants `2` deploys,
+`deploysRemaining()` should return `1` after this unsponsored deploy.
+
+## Sponsor the session-key call on Eden
+
+For gas-sponsored UX on Eden, do not move this flow to legacy account abstraction. Keep the same
+7702 session-key account code, and send the session-key call as an Eden type `0x76` transaction:
+
+- executor: the session key
+- sponsor: the app gas payer
+- call target: the owner EOA
+- calldata: `deploy(bytes)` or another session-approved function
+
+The TypeScript below uses the ev-reth client shape. It signs the call with the session key, adds a
+fee-payer signature from the sponsor, and submits the serialized type `0x76` transaction with
+`eth_sendRawTransaction`.
+
+In a scratch package or your app, install the client dependencies:
+
+```bash
+npm install viem @evstack/evnode-viem
+npm install --save-dev tsx
+```
+
+Set the sponsor key before running the script. On testnet, this can be any funded throwaway key. In
+production, this should be the app gas payer.
+
+```bash
+export SPONSOR_PK=<app-gas-payer-private-key>
+```
+
+Save this as `sponsored-session.ts`:
+
+```ts
+import { createClient, encodeFunctionData, http, parseAbi, type Address, type Hex } from 'viem'
+import { privateKeyToAccount, sign } from 'viem/accounts'
+import { createEvnodeClient } from '@evstack/evnode-viem'
+
+const rpcUrl = process.env.RPC_URL!
+const owner = process.env.OWNER as Address
+const initCode = process.env.INIT_CODE as Hex
+const sessionPk = process.env.SESSION_PK as Hex
+const sponsorPk = process.env.SPONSOR_PK as Hex
+
+const client = createClient({ transport: http(rpcUrl) })
+const session = privateKeyToAccount(sessionPk)
+const sponsor = privateKeyToAccount(sponsorPk)
+
+const evnode = createEvnodeClient({
+  client,
+  executor: {
+    address: session.address,
+    signHash: async (hash) => sign({ hash, privateKey: sessionPk }),
+  },
+  sponsor: {
+    address: sponsor.address,
+    signHash: async (hash) => sign({ hash, privateKey: sponsorPk }),
+  },
+})
+
+const abi = parseAbi(['function deploy(bytes initCode)'])
+const data = encodeFunctionData({
+  abi,
+  functionName: 'deploy',
+  args: [initCode],
+})
+
+const intent = await evnode.createIntent({
+  calls: [{ to: owner, value: 0n, data }],
+  gasLimit: 1_000_000n,
+})
+
+console.log(await evnode.sponsorAndSend({ intent }))
+```
+
+Run the script and save the printed transaction hash:
+
+```bash
+npx tsx sponsored-session.ts
+
+export SPONSORED_TX=<0x...printed-hash>
+```
+
+Then use `cast` to inspect and verify the sponsored transaction:
+
+```bash
+cast tx $SPONSORED_TX --rpc-url $RPC_URL
+
+export DEPLOYED=$(cast call $OWNER "lastDeployment()(address)" --rpc-url $RPC_URL)
+cast call $DEPLOYED "meaning()(uint256)" --rpc-url $RPC_URL
+cast call $OWNER "deploysRemaining()(uint256)" --rpc-url $RPC_URL
+```
+
+The transaction should show `type 0x76`, `from` as the session key, and `feePayer` as the sponsor.
+The `meaning()` call should return `42`.
+
+## Revoke the session
+
+Only the owner EOA can revoke because `revokeSession()` requires `msg.sender == address(this)`.
+
+```bash
+cast send $OWNER \
+  "revokeSession()" \
+  --rpc-url $RPC_URL \
+  --private-key $OWNER_PK \
+  --gas-limit 1000000
+```
+
+## Eden testnet example commands
+
+This is the same flow as above, written as one Eden testnet command sequence. It uses three
+throwaway keys:
+
+- `OWNER_PK`: the EOA that will receive the 7702 delegation.
+- `SESSION_PK`: the scoped session key.
+- `SPONSOR_PK`: the app gas payer for the sponsored `0x76` transaction.
+
+Generate keys, set the Eden testnet RPC, and print the addresses:
+
+```bash
+export RPC_URL=https://rpc.testnet.eden.gateway.fm/
+
+cast wallet new
+cast wallet new
+cast wallet new
+
+export OWNER_PK=<first-private-key>
+export SESSION_PK=<second-private-key>
+export SPONSOR_PK=<third-private-key>
+
+export OWNER=$(cast wallet address --private-key $OWNER_PK)
+export SESSION=$(cast wallet address --private-key $SESSION_PK)
+export SPONSOR=$(cast wallet address --private-key $SPONSOR_PK)
+
+printf "OWNER=%s\nSESSION=%s\nSPONSOR=%s\n" "$OWNER" "$SESSION" "$SPONSOR"
+```
+
+Fund `OWNER`, `SESSION`, and `SPONSOR` from the [Eden testnet faucet](/networks/testnet), then
+check balances and nonces:
+
+```bash
+cast balance $OWNER --rpc-url $RPC_URL --ether
+cast balance $SESSION --rpc-url $RPC_URL --ether
+cast balance $SPONSOR --rpc-url $RPC_URL --ether
+
+cast nonce $OWNER --rpc-url $RPC_URL
+cast nonce $SESSION --rpc-url $RPC_URL
+cast nonce $SPONSOR --rpc-url $RPC_URL
+```
+
+Deploy the delegate implementation:
+
+```bash
+export DELEGATE_IMPL=$(forge create \
+  examples/session-keys-cast/EdenSessionAccount.sol:EdenSessionAccount \
+  --rpc-url $RPC_URL \
+  --private-key $OWNER_PK \
+  --broadcast \
+  --json | jq -r '.deployedTo')
+
+echo $DELEGATE_IMPL
+```
+
+Build the deploy target and install the session grant with a type `0x04` EIP-7702 transaction:
+
+```bash
+forge build --contracts examples/session-keys-cast
+
+export INIT_CODE=$(jq -r '.bytecode.object | if startswith("0x") then . else "0x" + . end' \
+  out/SessionKeyDeployTarget.sol/SessionKeyDeployTarget.json)
+export INIT_CODE_HASH=$(cast keccak "$INIT_CODE")
+export EXPIRY=4102444800
+
+cast send $OWNER \
+  "installSession(address,uint64,bytes32,uint256)" \
+  $SESSION \
+  $EXPIRY \
+  $INIT_CODE_HASH \
+  2 \
+  --auth $DELEGATE_IMPL \
+  --rpc-url $RPC_URL \
+  --private-key $OWNER_PK \
+  --gas-limit 1000000
+```
+
+Verify the delegated EOA and installed session:
+
+```bash
+cast code $OWNER --rpc-url $RPC_URL
+cast call $OWNER "sessionKey()(address)" --rpc-url $RPC_URL
+cast call $OWNER "allowedInitCodeHash()(bytes32)" --rpc-url $RPC_URL
+cast call $OWNER "deploysRemaining()(uint256)" --rpc-url $RPC_URL
+```
+
+Send one unsponsored session-key deploy with `cast`:
+
+```bash
+cast send $OWNER \
+  "deploy(bytes)" \
+  "$INIT_CODE" \
+  --rpc-url $RPC_URL \
+  --private-key $SESSION_PK \
+  --gas-limit 1000000
+
+export DEPLOYED=$(cast call $OWNER "lastDeployment()(address)" --rpc-url $RPC_URL)
+cast call $DEPLOYED "meaning()(uint256)" --rpc-url $RPC_URL
+cast call $OWNER "deploysRemaining()(uint256)" --rpc-url $RPC_URL
+```
+
+Send the second deploy as a sponsored Eden `0x76` transaction with the `sponsored-session.ts`
+script above:
+
+```bash
+npx tsx sponsored-session.ts
+
+export SPONSORED_TX=<0x...printed-hash>
+
+cast tx $SPONSORED_TX --rpc-url $RPC_URL
+
+export DEPLOYED=$(cast call $OWNER "lastDeployment()(address)" --rpc-url $RPC_URL)
+cast call $DEPLOYED "meaning()(uint256)" --rpc-url $RPC_URL
+cast call $OWNER "deploysRemaining()(uint256)" --rpc-url $RPC_URL
+```
+
+Do not use Foundry's current `cast --tempo` flags for Eden sponsorship unless the payload format has
+been confirmed against ev-reth. In the Foundry build tested for this guide, `cast --tempo` did not
+match Eden's `EvNodeTransaction` fields.

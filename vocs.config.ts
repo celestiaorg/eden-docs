@@ -47,6 +47,7 @@ export default defineConfig({
       collapsed: false,
       items: [
         { text: 'Foundry quickstart', link: '/development-environments/foundry-quickstart' },
+        { text: 'Session keys with cast', link: '/development-environments/session-keys-cast' },
       ],
     },
     {
