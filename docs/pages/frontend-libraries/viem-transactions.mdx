@@ -18,8 +18,8 @@ These transactions were produced from the Eden testnet flow in this guide:
 - [Send a regular transaction](https://eden-testnet.blockscout.com/tx/0x5bc87faf62a18087c1c32df1f98c848dd718c4d3c2aa3227b34dbdf76193a1b8):
   type `0x02`, chain ID `3735928814`, with a `0.001` TIA recipient delta verified by `cast`.
 - Send sponsored transactions:
-  - `0x4776ece6dcfdaf35f7bc46e79ab3321055c73f761d8232afaa62565829f48721`
-  - `0x2b6e28053be6423e05a957b954990cc35971b48eb20d280fea148357fb2d09c0`
+  - [`0x4776ece6dcfdaf35f7bc46e79ab3321055c73f761d8232afaa62565829f48721`](https://eden-testnet.blockscout.com/tx/0x4776ece6dcfdaf35f7bc46e79ab3321055c73f761d8232afaa62565829f48721)
+  - [`0x2b6e28053be6423e05a957b954990cc35971b48eb20d280fea148357fb2d09c0`](https://eden-testnet.blockscout.com/tx/0x2b6e28053be6423e05a957b954990cc35971b48eb20d280fea148357fb2d09c0)
 
   Eden RPC and `cast` show receipt status `1`, type `0x76`, an unfunded executor as `from`, and
   the sponsor as `feePayer`. The second sponsored run is included in canonical block `184343012`;
@@ -27,9 +27,9 @@ These transactions were produced from the Eden testnet flow in this guide:
   `147000` wei of gas.
 
 :::info
-Eden testnet Blockscout may not display type `0x76` transactions by hash yet. Verify sponsored
-transactions with `cast tx`, `cast receipt`, or direct RPC calls until explorer indexing supports
-this transaction type.
+Eden testnet Blockscout transaction links may not display type `0x76` transactions by hash yet.
+Verify sponsored transactions with `cast tx`, `cast receipt`, or direct RPC calls until explorer
+indexing supports this transaction type.
 :::
 
 ## Prerequisites
