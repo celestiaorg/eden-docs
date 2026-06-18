@@ -7,3 +7,4 @@ minimumReleaseAgeExclude:
   - vocs@2.0.15
 overrides:
   esbuild: 0.28.1
+  undici: 7.28.0
