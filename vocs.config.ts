@@ -36,7 +36,7 @@ export default defineConfig({
     },
     {
       text: 'Use the docs with AI',
-      link: '/mcp',
+      link: '/use-the-docs-with-ai',
     },
     {
       text: 'Networks',
