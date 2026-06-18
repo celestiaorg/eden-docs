@@ -3,7 +3,7 @@ allowBuilds:
   esbuild: true
   sharp: false
   workerd: true
+minimumReleaseAgeExclude:
+  - vocs@2.0.15
 overrides:
   esbuild: 0.28.1
-patchedDependencies:
-  vocs@2.0.11: patches/vocs@2.0.11.patch

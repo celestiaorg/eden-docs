@@ -4,8 +4,8 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "vite": "^8.0.0",
-    "vocs": "2.0.11",
-    "waku": "1.0.0-beta.0"
+    "vocs": "2.0.15",
+    "waku": "1.0.0-beta.3"
   },
   "scripts": {
     "dev": "vocs dev",
