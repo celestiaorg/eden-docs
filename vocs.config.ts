@@ -35,6 +35,10 @@ export default defineConfig({
       link: '/why-eden',
     },
     {
+      text: 'Use the docs with AI',
+      link: '/use-the-docs-with-ai',
+    },
+    {
       text: 'Networks',
       collapsed: false,
       items: [
