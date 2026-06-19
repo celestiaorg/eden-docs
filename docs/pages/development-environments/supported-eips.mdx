@@ -1,0 +1,61 @@
+# Supported EIPs
+
+Eden tracks the default Osaka/Fusaka EIP set exposed by the upstream ev-reth client configuration.
+This list covers the Osaka/Fusaka EIPs and does not repeat older EIPs inherited from earlier
+Ethereum hardforks.
+
+The `clients/` package in ev-reth is the TypeScript transaction client. Protocol support is derived
+from ev-reth's node chainspec and executor wiring into Reth and revm: ev-reth [accepts Reth's
+built-in chainspecs][evreth-chainspec], Reth [activates Osaka on top of Prague][reth-osaka-builder],
+revm models Osaka as [`SpecId::OSAKA`][revm-spec-osaka] in its hardfork ordering, and ev-reth
+applies Osaka blob and transaction gas-limit parameters when Osaka is active.
+
+| EIP | Description | Source |
+| --- | ----------- | ------ |
+| [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594) | PeerDAS blob sidecar and cell-proof format. | [Reth payload Osaka sidecar gating][reth-payload-osaka], [Reth txpool EIP-7594 default][reth-txpool-eip7594] |
+| [EIP-7642](https://eips.ethereum.org/EIPS/eip-7642) | `eth/69` networking format that drops pre-merge fields. | [Reth eth-wire EIP-7642 status handling][reth-eth69-message], [Reth eth/69 status type][reth-eth69-status] |
+| [EIP-7823](https://eips.ethereum.org/EIPS/eip-7823) | Sets upper bounds for MODEXP precompile inputs. | [revm Osaka MODEXP size check][revm-modexp-limit] |
+| [EIP-7825](https://eips.ethereum.org/EIPS/eip-7825) | Caps a transaction gas limit at `16,777,216`. | [ev-reth Osaka gas-limit cap][evreth-executor-osaka], [revm EIP-7825 constant][revm-eip7825] |
+| [EIP-7883](https://eips.ethereum.org/EIPS/eip-7883) | Increases MODEXP precompile gas costs. | [revm Osaka MODEXP gas path][revm-modexp-osaka], [revm Osaka precompile set][revm-osaka-precompiles] |
+| [EIP-7892](https://eips.ethereum.org/EIPS/eip-7892) | Defines Blob Parameter Only hardfork scheduling. | [Reth scheduled BPO params][reth-bpo-schedule], [alloy BPO constants][alloy-eip7892] |
+| [EIP-7910](https://eips.ethereum.org/EIPS/eip-7910) | Adds the `eth_config` JSON-RPC method. | [Reth `eth_config` RPC handler][reth-eth-config], [alloy EIP-7910 types][alloy-eip7910] |
+| [EIP-7917](https://eips.ethereum.org/EIPS/eip-7917) | Adds deterministic proposer lookahead as consensus-layer behavior, with no ev-reth/revm execution hook. | [Official Osaka/Fusaka EIP list][eip7607] |
+| [EIP-7918](https://eips.ethereum.org/EIPS/eip-7918) | Bounds blob base fee by execution gas cost. | [alloy Osaka blob params][alloy-eip7840-osaka], [alloy Osaka excess blob gas calculation][alloy-eip7840-fee] |
+| [EIP-7934](https://eips.ethereum.org/EIPS/eip-7934) | Adds an RLP execution block size limit. | [Reth EIP-7934 block-size constant][reth-max-rlp-block], [Reth Osaka block-size validation][reth-osaka-size-validation] |
+| [EIP-7935](https://eips.ethereum.org/EIPS/eip-7935) | Sets the upstream default block gas limit to 60 million. | [Reth named-chain payload default][reth-gas-limit-default] |
+| [EIP-7939](https://eips.ethereum.org/EIPS/eip-7939) | Adds the CLZ opcode for counting leading zero bits. | [revm CLZ opcode][revm-clz-opcode], [revm Osaka-gated CLZ implementation][revm-clz-impl] |
+| [EIP-7951](https://eips.ethereum.org/EIPS/eip-7951) | Adds the secp256r1/P256VERIFY precompile. | [revm P256VERIFY Osaka precompile][revm-p256verify], [revm Osaka precompile set][revm-osaka-precompiles] |
+
+## Notes
+
+- EIP-7917 is consensus-layer behavior, so the ev-reth execution code does not expose a direct
+  implementation hook for it.
+- EIP-7935 is part of the default Osaka/Fusaka set. Eden mainnet currently documents a
+  `50,000,000` block gas limit, so the final production chainspec should be confirmed before using
+  the 60 million default as Eden-specific behavior.
+
+[evreth-chainspec]: https://github.com/evstack/ev-reth/blob/1477caa14546069fd52de0803df6490b78855dc7/crates/node/src/chainspec.rs#L17-L68
+[evreth-executor-osaka]: https://github.com/evstack/ev-reth/blob/1477caa14546069fd52de0803df6490b78855dc7/crates/node/src/executor.rs#L126-L143
+[reth-osaka-builder]: https://github.com/paradigmxyz/reth/blob/v2.2.0/crates/chainspec/src/spec.rs#L1192-L1202
+[revm-spec-osaka]: https://docs.rs/revm-primitives/23.0.0/src/revm_primitives/hardfork.rs.html#74-94
+[reth-payload-osaka]: https://github.com/paradigmxyz/reth/blob/v2.2.0/crates/ethereum/payload/src/lib.rs#L250-L353
+[reth-txpool-eip7594]: https://github.com/paradigmxyz/reth/blob/v2.2.0/crates/transaction-pool/src/validate/eth.rs#L1181-L1195
+[reth-eth69-message]: https://github.com/paradigmxyz/reth/blob/v2.2.0/crates/net/eth-wire-types/src/message.rs#L114-L120
+[reth-eth69-status]: https://github.com/paradigmxyz/reth/blob/v2.2.0/crates/net/eth-wire-types/src/status.rs#L321-L329
+[revm-modexp-limit]: https://docs.rs/revm-precompile/34.0.0/src/revm_precompile/modexp.rs.html#216-223
+[revm-eip7825]: https://docs.rs/revm-primitives/23.0.0/src/revm_primitives/eip7825.rs.html#1-12
+[revm-modexp-osaka]: https://docs.rs/revm-precompile/34.0.0/src/revm_precompile/modexp.rs.html#160-165
+[revm-osaka-precompiles]: https://docs.rs/revm-precompile/34.0.0/src/revm_precompile/lib.rs.html#214-220
+[reth-bpo-schedule]: https://github.com/paradigmxyz/reth/blob/v2.2.0/crates/chainspec/src/spec.rs#L136-L139
+[alloy-eip7892]: https://docs.rs/alloy-eips/2.0.5/src/alloy_eips/eip7892.rs.html#6-22
+[reth-eth-config]: https://github.com/paradigmxyz/reth/blob/v2.2.0/crates/rpc/rpc-eth-api/src/helpers/config.rs#L21-L32
+[alloy-eip7910]: https://docs.rs/alloy-eips/2.0.5/src/alloy_eips/eip7910.rs.html#1-35
+[eip7607]: https://eips.ethereum.org/EIPS/eip-7607
+[alloy-eip7840-osaka]: https://docs.rs/alloy-eips/2.0.5/src/alloy_eips/eip7840.rs.html#70-79
+[alloy-eip7840-fee]: https://docs.rs/alloy-eips/2.0.5/src/alloy_eips/eip7840.rs.html#128-151
+[reth-max-rlp-block]: https://github.com/paradigmxyz/reth/blob/v2.2.0/crates/consensus/common/src/validation.rs#L13-L18
+[reth-osaka-size-validation]: https://github.com/paradigmxyz/reth/blob/v2.2.0/crates/consensus/common/src/validation.rs#L193-L228
+[reth-gas-limit-default]: https://github.com/paradigmxyz/reth/blob/v2.2.0/crates/node/core/src/cli/config.rs#L10-L49
+[revm-clz-opcode]: https://docs.rs/revm-bytecode/10.0.0/src/revm_bytecode/opcode.rs.html#430
+[revm-clz-impl]: https://docs.rs/revm-interpreter/35.0.1/src/revm_interpreter/instructions/bitwise.rs.html#21-27
+[revm-p256verify]: https://docs.rs/revm-precompile/34.0.0/src/revm_precompile/secp256r1.rs.html#15-22

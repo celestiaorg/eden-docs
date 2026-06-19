@@ -52,6 +52,7 @@ export default defineConfig({
       items: [
         { text: 'Foundry quickstart', link: '/development-environments/foundry-quickstart' },
         { text: 'Session keys with cast', link: '/development-environments/session-keys-cast' },
+        { text: 'Supported EIPs', link: '/development-environments/supported-eips' },
       ],
     },
     {
