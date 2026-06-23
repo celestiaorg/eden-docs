@@ -33,7 +33,7 @@ These transactions were produced from the Eden testnet command sequence in this 
 
 - [Install 7702 delegation and session grant](https://eden-testnet.blockscout.com/tx/0xf0a5ad7167bc0aebbfe7140afd53a28ea2d9a6fa77468984be99eb74d7d78bb8): type `0x04`.
 - [Deploy with the session key](https://eden-testnet.blockscout.com/tx/0xa644e5ec1b8a1ad39f41c6ff8faac6b29021dae30befa074a72d08a191cf04f8): unsponsored session-key call.
-- [Deploy with the sponsored session key](https://eden-testnet.blockscout.com/tx/0xf2d386fd9f47b5916cf54aff957f98b6c0896d6fb06aad54c6c7d55203e9034d): Eden type `0x76`, with the session key as executor and the sponsor as `feePayer`.
+- [Deploy with the sponsored session key](https://eden-testnet.blockscout.com/tx/0xf2d386fd9f47b5916cf54aff957f98b6c0896d6fb06aad54c6c7d55203e9034d): Eden type `0x76`, with the session key as executor and the owner test account as `feePayer`.
 
 ## Prerequisites
 
@@ -241,6 +241,7 @@ The `meaning()` call should return `42`.
 ## Revoke the session
 
 Only the owner EOA can revoke because `revokeSession()` requires `msg.sender == address(this)`.
+This clears the stored session grant. It does not remove the EIP-7702 delegation from the EOA.
 
 ```bash
 cast send $OWNER \
@@ -258,6 +259,9 @@ throwaway keys:
 - `OWNER_PK`: the EOA that will receive the 7702 delegation.
 - `SESSION_PK`: the scoped session key.
 - `SPONSOR_PK`: the app gas payer for the sponsored `0x76` transaction.
+
+The verified sponsored transaction above reused the funded owner test account as the fee payer. The
+commands below use a separate sponsor key, which is the shape you should use for app gas sponsorship.
 
 Generate keys, set the Eden testnet RPC, and print the addresses:
 

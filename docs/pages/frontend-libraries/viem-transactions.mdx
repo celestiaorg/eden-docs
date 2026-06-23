@@ -41,6 +41,7 @@ indexing supports this transaction type.
 
 ```bash
 npm init -y
+mkdir -p src
 npm install viem @evstack/evnode-viem
 npm install --save-dev tsx
 ```
@@ -173,7 +174,9 @@ that the call transfers.
 This example sends a zero-value call so the executor does not need TIA. Replace `TARGET` and `data`
 with your app contract address and encoded calldata for a real app action.
 
-Set an executor key, a funded sponsor key, and a target address:
+Set an executor key, a funded sponsor key, and a target address. For this zero-data smoke test, use
+an EOA as the target. If you use a contract, make sure it accepts empty calldata or replace `data`
+with encoded calldata for a function it exposes.
 
 ```bash
 export EXECUTOR_PK=<executor-private-key>
