@@ -19,7 +19,7 @@ const TOOLS = [
   {
     name: 'list_pages',
     description: 'List all documentation pages with their titles and paths.',
-    inputSchema: { type: 'object', properties: {} },
+    inputSchema: { type: 'object', properties: {} }
   },
   {
     name: 'read_page',
@@ -29,11 +29,11 @@ const TOOLS = [
       properties: {
         pagePath: {
           type: 'string',
-          description: 'The page path (e.g., "/why-eden" or "/networks/mainnet")',
-        },
+          description: 'The page path (e.g., "/why-eden" or "/networks/mainnet")'
+        }
       },
-      required: ['pagePath'],
-    },
+      required: ['pagePath']
+    }
   },
   {
     name: 'search_docs',
@@ -41,17 +41,18 @@ const TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {
-        query: { type: 'string', description: 'The search query' },
+        query: { type: 'string', description: 'The search query' }
       },
-      required: ['query'],
-    },
-  },
+      required: ['query']
+    }
+  }
 ]
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Accept, Authorization, Mcp-Session-Id, Mcp-Protocol-Version',
+  'Access-Control-Allow-Headers':
+    'Content-Type, Accept, Authorization, Mcp-Session-Id, Mcp-Protocol-Version'
 }
 
 /** Fetch a static docs asset from the site bundled alongside this worker. */
@@ -100,7 +101,7 @@ async function callTool(env, name, args) {
     if (text === null) {
       return {
         content: [{ type: 'text', text: `Page not found: ${args?.pagePath}` }],
-        isError: true,
+        isError: true
       }
     }
     return { content: [{ type: 'text', text }] }
@@ -110,12 +111,12 @@ async function callTool(env, name, args) {
     const query = String(args?.query ?? '').toLowerCase()
     const pages = await getPages(env)
     const contents = await Promise.all(
-      pages.map(async (page) => ({ page, text: await readPageMarkdown(env, page.path) })),
+      pages.map(async page => ({ page, text: await readPageMarkdown(env, page.path) }))
     )
     const results = []
     for (const { page, text } of contents) {
       if (!text || !text.toLowerCase().includes(query)) continue
-      const matchLine = text.split('\n').find((line) => line.toLowerCase().includes(query))
+      const matchLine = text.split('\n').find(line => line.toLowerCase().includes(query))
       results.push({ path: page.path, snippet: matchLine?.trim().slice(0, 200) || '' })
     }
     return { content: [{ type: 'text', text: JSON.stringify(results, null, 2) }] }
@@ -135,11 +136,9 @@ async function handleRpc(env, message) {
     if (method === 'initialize') {
       const requested = params?.protocolVersion
       result = {
-        protocolVersion: PROTOCOL_VERSIONS.includes(requested)
-          ? requested
-          : PROTOCOL_VERSIONS[1],
+        protocolVersion: PROTOCOL_VERSIONS.includes(requested) ? requested : PROTOCOL_VERSIONS[1],
         capabilities: { tools: {} },
-        serverInfo: SERVER_INFO,
+        serverInfo: SERVER_INFO
       }
     } else if (method === 'ping') {
       result = {}
@@ -151,7 +150,7 @@ async function handleRpc(env, message) {
       return {
         jsonrpc: '2.0',
         id,
-        error: { code: -32601, message: `Method not found: ${method}` },
+        error: { code: -32601, message: `Method not found: ${method}` }
       }
     }
     return { jsonrpc: '2.0', id, result }
@@ -161,8 +160,8 @@ async function handleRpc(env, message) {
       id,
       error: {
         code: typeof error?.code === 'number' ? error.code : -32603,
-        message: error?.message ?? String(error),
-      },
+        message: error?.message ?? String(error)
+      }
     }
   }
 }
@@ -183,7 +182,7 @@ export default {
     if (request.method === 'GET') {
       return new Response('SSE not supported; POST JSON-RPC messages instead', {
         status: 405,
-        headers: { ...CORS_HEADERS, Allow: 'POST, DELETE, OPTIONS' },
+        headers: { ...CORS_HEADERS, Allow: 'POST, DELETE, OPTIONS' }
       })
     }
     if (request.method === 'DELETE') {
@@ -199,13 +198,13 @@ export default {
     } catch {
       return Response.json(
         { jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } },
-        { status: 400, headers: CORS_HEADERS },
+        { status: 400, headers: CORS_HEADERS }
       )
     }
 
     const messages = Array.isArray(body) ? body : [body]
-    const responses = (await Promise.all(messages.map((m) => handleRpc(env, m)))).filter(
-      (r) => r !== null,
+    const responses = (await Promise.all(messages.map(m => handleRpc(env, m)))).filter(
+      r => r !== null
     )
 
     // Only notifications: acknowledge with no body.
@@ -214,7 +213,7 @@ export default {
     }
 
     return Response.json(Array.isArray(body) ? responses : responses[0], {
-      headers: CORS_HEADERS,
+      headers: CORS_HEADERS
     })
-  },
+  }
 }

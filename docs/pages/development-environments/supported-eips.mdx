@@ -10,21 +10,21 @@ built-in chainspecs][evreth-chainspec], Reth [activates Osaka on top of Prague][
 revm models Osaka as [`SpecId::OSAKA`][revm-spec-osaka] in its hardfork ordering, and ev-reth
 applies Osaka blob and transaction gas-limit parameters when Osaka is active.
 
-| EIP | Description | Source |
-| --- | ----------- | ------ |
-| [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594) | PeerDAS blob sidecar and cell-proof format. | [Reth payload Osaka sidecar gating][reth-payload-osaka], [Reth txpool EIP-7594 default][reth-txpool-eip7594] |
-| [EIP-7642](https://eips.ethereum.org/EIPS/eip-7642) | `eth/69` networking format that drops pre-merge fields. | [Reth eth-wire EIP-7642 status handling][reth-eth69-message], [Reth eth/69 status type][reth-eth69-status] |
-| [EIP-7823](https://eips.ethereum.org/EIPS/eip-7823) | Sets upper bounds for MODEXP precompile inputs. | [revm Osaka MODEXP size check][revm-modexp-limit] |
-| [EIP-7825](https://eips.ethereum.org/EIPS/eip-7825) | Caps a transaction gas limit at `16,777,216`. | [ev-reth Osaka gas-limit cap][evreth-executor-osaka], [revm EIP-7825 constant][revm-eip7825] |
-| [EIP-7883](https://eips.ethereum.org/EIPS/eip-7883) | Increases MODEXP precompile gas costs. | [revm Osaka MODEXP gas path][revm-modexp-osaka], [revm Osaka precompile set][revm-osaka-precompiles] |
-| [EIP-7892](https://eips.ethereum.org/EIPS/eip-7892) | Defines Blob Parameter Only hardfork scheduling. | [Reth scheduled BPO params][reth-bpo-schedule], [alloy BPO constants][alloy-eip7892] |
-| [EIP-7910](https://eips.ethereum.org/EIPS/eip-7910) | Adds the `eth_config` JSON-RPC method. | [Reth `eth_config` RPC handler][reth-eth-config], [alloy EIP-7910 types][alloy-eip7910] |
-| [EIP-7917](https://eips.ethereum.org/EIPS/eip-7917) | Adds deterministic proposer lookahead as consensus-layer behavior, with no ev-reth/revm execution hook. | [Official Osaka/Fusaka EIP list][eip7607] |
-| [EIP-7918](https://eips.ethereum.org/EIPS/eip-7918) | Bounds blob base fee by execution gas cost. | [alloy Osaka blob params][alloy-eip7840-osaka], [alloy Osaka excess blob gas calculation][alloy-eip7840-fee] |
-| [EIP-7934](https://eips.ethereum.org/EIPS/eip-7934) | Adds an RLP execution block size limit. | [Reth EIP-7934 block-size constant][reth-max-rlp-block], [Reth Osaka block-size validation][reth-osaka-size-validation] |
-| [EIP-7935](https://eips.ethereum.org/EIPS/eip-7935) | Sets the upstream default block gas limit to 60 million. | [Reth named-chain payload default][reth-gas-limit-default] |
-| [EIP-7939](https://eips.ethereum.org/EIPS/eip-7939) | Adds the CLZ opcode for counting leading zero bits. | [revm CLZ opcode][revm-clz-opcode], [revm Osaka-gated CLZ implementation][revm-clz-impl] |
-| [EIP-7951](https://eips.ethereum.org/EIPS/eip-7951) | Adds the secp256r1/P256VERIFY precompile. | [revm P256VERIFY Osaka precompile][revm-p256verify], [revm Osaka precompile set][revm-osaka-precompiles] |
+| EIP                                                 | Description                                                                                             | Source                                                                                                                  |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594) | PeerDAS blob sidecar and cell-proof format.                                                             | [Reth payload Osaka sidecar gating][reth-payload-osaka], [Reth txpool EIP-7594 default][reth-txpool-eip7594]            |
+| [EIP-7642](https://eips.ethereum.org/EIPS/eip-7642) | `eth/69` networking format that drops pre-merge fields.                                                 | [Reth eth-wire EIP-7642 status handling][reth-eth69-message], [Reth eth/69 status type][reth-eth69-status]              |
+| [EIP-7823](https://eips.ethereum.org/EIPS/eip-7823) | Sets upper bounds for MODEXP precompile inputs.                                                         | [revm Osaka MODEXP size check][revm-modexp-limit]                                                                       |
+| [EIP-7825](https://eips.ethereum.org/EIPS/eip-7825) | Caps a transaction gas limit at `16,777,216`.                                                           | [ev-reth Osaka gas-limit cap][evreth-executor-osaka], [revm EIP-7825 constant][revm-eip7825]                            |
+| [EIP-7883](https://eips.ethereum.org/EIPS/eip-7883) | Increases MODEXP precompile gas costs.                                                                  | [revm Osaka MODEXP gas path][revm-modexp-osaka], [revm Osaka precompile set][revm-osaka-precompiles]                    |
+| [EIP-7892](https://eips.ethereum.org/EIPS/eip-7892) | Defines Blob Parameter Only hardfork scheduling.                                                        | [Reth scheduled BPO params][reth-bpo-schedule], [alloy BPO constants][alloy-eip7892]                                    |
+| [EIP-7910](https://eips.ethereum.org/EIPS/eip-7910) | Adds the `eth_config` JSON-RPC method.                                                                  | [Reth `eth_config` RPC handler][reth-eth-config], [alloy EIP-7910 types][alloy-eip7910]                                 |
+| [EIP-7917](https://eips.ethereum.org/EIPS/eip-7917) | Adds deterministic proposer lookahead as consensus-layer behavior, with no ev-reth/revm execution hook. | [Official Osaka/Fusaka EIP list][eip7607]                                                                               |
+| [EIP-7918](https://eips.ethereum.org/EIPS/eip-7918) | Bounds blob base fee by execution gas cost.                                                             | [alloy Osaka blob params][alloy-eip7840-osaka], [alloy Osaka excess blob gas calculation][alloy-eip7840-fee]            |
+| [EIP-7934](https://eips.ethereum.org/EIPS/eip-7934) | Adds an RLP execution block size limit.                                                                 | [Reth EIP-7934 block-size constant][reth-max-rlp-block], [Reth Osaka block-size validation][reth-osaka-size-validation] |
+| [EIP-7935](https://eips.ethereum.org/EIPS/eip-7935) | Sets the upstream default block gas limit to 60 million.                                                | [Reth named-chain payload default][reth-gas-limit-default]                                                              |
+| [EIP-7939](https://eips.ethereum.org/EIPS/eip-7939) | Adds the CLZ opcode for counting leading zero bits.                                                     | [revm CLZ opcode][revm-clz-opcode], [revm Osaka-gated CLZ implementation][revm-clz-impl]                                |
+| [EIP-7951](https://eips.ethereum.org/EIPS/eip-7951) | Adds the secp256r1/P256VERIFY precompile.                                                               | [revm P256VERIFY Osaka precompile][revm-p256verify], [revm Osaka precompile set][revm-osaka-precompiles]                |
 
 ## Notes
 
