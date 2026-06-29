@@ -194,24 +194,24 @@ const evnode = createEvnodeClient({
   client,
   executor: {
     address: session.address,
-    signHash: async (hash) => sign({ hash, privateKey: sessionPk }),
+    signHash: async hash => sign({ hash, privateKey: sessionPk })
   },
   sponsor: {
     address: sponsor.address,
-    signHash: async (hash) => sign({ hash, privateKey: sponsorPk }),
-  },
+    signHash: async hash => sign({ hash, privateKey: sponsorPk })
+  }
 })
 
 const abi = parseAbi(['function deploy(bytes initCode)'])
 const data = encodeFunctionData({
   abi,
   functionName: 'deploy',
-  args: [initCode],
+  args: [initCode]
 })
 
 const intent = await evnode.createIntent({
   calls: [{ to: owner, value: 0n, data }],
-  gasLimit: 1_000_000n,
+  gasLimit: 1_000_000n
 })
 
 console.log(await evnode.sponsorAndSend({ intent }))
