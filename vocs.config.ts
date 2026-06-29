@@ -94,7 +94,8 @@ export default defineConfig({
       collapsed: false,
       items: [
         { text: 'Build a frontend', link: '/guides/build-a-frontend' },
-        { text: 'Run a full node', link: '/guides/run-a-full-node' },
+        { text: 'Run a full node (mainnet)', link: '/guides/run-a-full-node' },
+        { text: 'Run a full node (testnet)', link: '/guides/run-a-full-node-testnet' },
         { text: 'Onchain primer for web2 devs', link: '/guides/web2toweb3' },
       ],
     },
