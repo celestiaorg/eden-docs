@@ -25,7 +25,6 @@
     "wrangler": "^4.99.0"
   },
   "overrides": {
-    "bn.js": "5.2.3",
     "esbuild": "0.28.1",
     "undici": "7.28.0"
   },
