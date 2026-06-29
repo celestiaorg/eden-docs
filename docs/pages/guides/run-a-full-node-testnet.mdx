@@ -111,8 +111,10 @@ Genesis sync for testnet is a two-phase process due to a Celestia namespace migr
 at block **2217057**. Snapshot restore avoids this complexity entirely.
 :::
 
-This method starts from block 0. `jwt-init` runs first to generate the shared JWT secret
-authenticating ev-reth and ev-node over the Engine API.
+This method starts from block 0. `jwt-init` is a one-shot init container that generates a shared
+JWT secret on first run. The secret authenticates the Engine API connection between ev-node
+(consensus) and ev-reth (execution) — ev-reth rejects Engine API calls not signed with the
+matching secret, so both services must share the same file before either starts.
 
 Edit `compose.yaml` to remove the snapshot init containers:
 

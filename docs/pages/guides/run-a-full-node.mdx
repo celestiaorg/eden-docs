@@ -108,8 +108,10 @@ docker compose logs -f ev-node
 
 This method starts from block 0. Sync time depends on your connection and hardware.
 
-`jwt-init` runs first to generate a shared JWT secret used to authenticate communication between
-ev-reth and ev-node over the Engine API.
+`jwt-init` is a one-shot init container that generates a shared JWT secret on first run. The secret
+authenticates the Engine API connection between ev-node (consensus) and ev-reth (execution) —
+ev-reth rejects Engine API calls not signed with the matching secret, so both services must share
+the same file before either starts.
 
 Edit `compose.yaml` to remove the snapshot init containers:
 
@@ -180,6 +182,9 @@ Prometheus metrics are available at:
 | Chain name      | `eden-mainnet`   |
 | DA layer        | Celestia mainnet |
 | DA start height | `9409947`        |
+
+The DA start height is the Celestia mainnet block from which Eden begins reading blobs. It is a
+fixed chain parameter set at genesis and does not change.
 
 ## Network peers
 
