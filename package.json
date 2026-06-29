@@ -12,7 +12,9 @@
     "build": "vocs build",
     "deploy": "bun run build && cp -R dist/public/assets/md/. dist/public/ && cp worker/index.js dist/public/_worker.js && wrangler pages deploy --branch main",
     "preview": "vocs preview",
-    "fmt": "prettier --write ."
+    "fmt": "prettier --write .",
+    "fmt:check": "prettier --check .",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",

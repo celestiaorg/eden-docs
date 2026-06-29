@@ -9,7 +9,7 @@ name: Deploy to Cloudflare Pages
 
 on:
   push:
-    branches: ["main"]
+    branches: ['main']
   pull_request:
   workflow_dispatch:
 
@@ -24,19 +24,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 11
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Set Vocs base URL
         shell: bash
@@ -51,7 +43,7 @@ jobs:
           fi
 
       - name: Build site (full-static)
-        run: pnpm build
+        run: bun run build
 
       # Clean ".md" URLs (used by the "View as Markdown" button and AI agents)
       # and the MCP endpoint served by the Pages _worker.js.
