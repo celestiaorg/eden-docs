@@ -221,11 +221,11 @@ const evnode = createEvnodeClient({
   client,
   executor: {
     address: executor.address,
-    signHash: async (hash) => sign({ hash, privateKey: executorPk })
+    signHash: async hash => sign({ hash, privateKey: executorPk })
   },
   sponsor: {
     address: sponsor.address,
-    signHash: async (hash) => sign({ hash, privateKey: sponsorPk })
+    signHash: async hash => sign({ hash, privateKey: sponsorPk })
   }
 })
 

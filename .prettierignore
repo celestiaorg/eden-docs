@@ -2,5 +2,5 @@ node_modules/
 .next/
 out/
 public/
-yarn.lock
-package-lock.json
+bun.lock
+bun.lockb
