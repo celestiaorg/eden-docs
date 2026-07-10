@@ -24,3 +24,34 @@ jobs:
 
       - name: Type check
         run: bun run typecheck
+
+      - name: Check pages.gen.ts is up to date
+        run: |
+          # The waku route typegen only runs inside `vocs dev` (the plugin is
+          # apply: 'serve'), so boot the dev server briefly to regenerate.
+          # Deleting the file first guarantees a write — the plugin skips the
+          # write when content is unchanged, so the file reappearing is the
+          # signal that generation finished.
+          rm docs/pages.gen.ts
+          setsid bun run dev > /tmp/vocs-dev.log 2>&1 &
+          dev_pgid=$!
+          for _ in $(seq 1 120); do
+            [ -s docs/pages.gen.ts ] && break
+            if ! kill -0 "$dev_pgid" 2>/dev/null; then
+              echo 'dev server exited before regenerating docs/pages.gen.ts:'
+              cat /tmp/vocs-dev.log
+              exit 1
+            fi
+            sleep 1
+          done
+          sleep 1
+          kill -- "-$dev_pgid" 2>/dev/null || true
+          if [ ! -s docs/pages.gen.ts ]; then
+            echo 'timed out waiting for the typegen to write docs/pages.gen.ts:'
+            cat /tmp/vocs-dev.log
+            exit 1
+          fi
+          if ! git diff --exit-code docs/pages.gen.ts; then
+            echo "::error file=docs/pages.gen.ts::docs/pages.gen.ts is out of date with docs/pages/. Run 'bun run dev' locally and commit the regenerated file."
+            exit 1
+          fi
