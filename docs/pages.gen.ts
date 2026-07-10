@@ -24,6 +24,7 @@ type Page =
   | { path: '/tooling/indexers/quickstart'; render: 'static' }
   | { path: '/tooling/oracles'; render: 'static' }
   | { path: '/tooling/wallets'; render: 'static' }
+  | { path: '/use-the-docs-with-ai'; render: 'static' }
   | { path: '/why-eden'; render: 'static' }
 
 // prettier-ignore
