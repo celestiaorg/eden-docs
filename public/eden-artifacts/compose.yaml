@@ -1,5 +1,5 @@
 ---
-name: eden-testnet
+name: eden-${NETWORK}
 
 services:
   jwt-init:
@@ -27,7 +27,7 @@ services:
       - ev-reth-data:/root/reth
       - ./init-1-ev-reth-snapshot.sh:/init-1-ev-reth-snapshot.sh
     entrypoint: [/bin/sh, /init-1-ev-reth-snapshot.sh]
-    restart: 'no'
+    restart: "no"
     depends_on:
       init-1-ev-node:
         condition: service_completed_successfully
@@ -42,7 +42,7 @@ services:
       - jwttoken:/root/jwt:ro
       - ./init-1-ev-node.sh:/init-1-ev-node.sh
     entrypoint: [/bin/sh, /init-1-ev-node.sh]
-    restart: 'no'
+    restart: "no"
 
   init-2-snapshot-ev-node:
     image: *alpine
@@ -54,7 +54,7 @@ services:
       - jwttoken:/root/jwt:ro
       - ./init-2-ev-node-snapshot.sh:/init-2-ev-node-snapshot.sh
     entrypoint: [/bin/bash, /init-2-ev-node-snapshot.sh]
-    restart: 'no'
+    restart: "no"
     depends_on:
       init-1-ev-node:
         condition: service_completed_successfully
@@ -91,7 +91,7 @@ services:
         --ws --ws.addr 0.0.0.0 --ws.port ${EV_RETH_WS_PORT} \
         --port ${EV_RETH_DISCOVERY_PORT} \
         --disable-discovery \
-        --trusted-peers enode://e3e0025a64440eff4879b216766550d7237291cb94b79bb641b1e25933b08c9a3aada6583e25b320aebe84b643b85e14be934a8725eb6aacb74d6f65abfbeb74@fullnode-1-eden-testnet.binarybuilders.services:30313,enode://477544b9c4bc4136b9d25759b38be971c29dcf669105e02e8630f1e0407f58dc740137d3f21d02451d5f7b08bbbf31909cbd876af99818a34e64892e73498906@fullnode-2-eden-testnet.binarybuilders.services:30313 \
+        --trusted-peers ${EV_RETH_TRUSTED_PEERS} \
         --txpool.pending-max-count 200000 \
         --txpool.pending-max-size 200 \
         --txpool.queued-max-count 200000 \
@@ -108,10 +108,10 @@ services:
           -X,
           POST,
           -H,
-          'Content-Type: application/json',
+          "Content-Type: application/json",
           --data,
           '{"jsonrpc":"2.0","method":"web3_clientVersion","params":[],"id":1}',
-          'http://localhost:${EV_RETH_RPC_PORT}'
+          "http://localhost:${EV_RETH_RPC_PORT}",
         ]
       interval: 5s
       timeout: 5s
@@ -140,7 +140,7 @@ services:
       - --evnode.instrumentation.prometheus
       - --evnode.instrumentation.prometheus_listen_addr=:${EV_NODE_PROMETHEUS_PORT}
       - --evnode.p2p.listen_address=/ip4/0.0.0.0/tcp/7676
-      - --evnode.p2p.peers=/ip4/157.180.53.133/tcp/7686/p2p/12D3KooWMCfKiRXrd3o1m8TBDknmjZFqnmgFpP6gfjhBBVwnuCXK,/ip4/157.180.53.70/tcp/7686/p2p/12D3KooWEpRjbVZuQVZNxaifZDZ3dGLV6Dj7fT5Eox95PQhgWsJ7
+      - --evnode.p2p.peers=${EV_NODE_P2P_PEERS}
       # - --evnode.log.level=debug
     environment:
       - DA_HEADER_NAMESPACE=${DA_HEADER_NAMESPACE}
@@ -149,7 +149,7 @@ services:
       - EVM_ETH_URL=http://${EV_RETH_ADDRESS}:${EV_RETH_RPC_PORT}
       - EVM_JWT_SECRET_FILE=/root/jwt/jwt.hex
     healthcheck:
-      test: [CMD, curl, 'localhost:${EV_NODE_RPC_PORT}/health/live']
+      test: [CMD, curl, "localhost:${EV_NODE_RPC_PORT}/health/live"]
       interval: 5s
       timeout: 5s
       retries: 3

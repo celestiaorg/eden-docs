@@ -18,7 +18,7 @@ log() {
 }
 
 EV_RETH_DATA_PATH=/root/reth
-BASE_URL=https://fsn1.your-objectstorage.com/6774130f-22e6-9d15-1103-96c8ec9b555b/private/mainnet
+BASE_URL="${SNAPSHOT_BASE_URL}"
 
 if [[ ! -f ${EV_RETH_DATA_PATH}/_created_by_init_script ]]; then
 	apk add --no-cache lz4

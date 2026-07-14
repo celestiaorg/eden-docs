@@ -31,18 +31,19 @@ Steps are identical across networks unless called out below.
 
 ## Download the artifacts
 
-The Eden deployment packages live in the
-[`eden-docs` repository](https://github.com/celestiaorg/eden-docs), so artifact version updates are
-atomic with the documentation.
-
-Clone the repository and enter the artifacts directory for your network:
+The Eden deployment packages are hosted alongside this documentation, so artifact version updates
+are atomic with the docs. A helper script downloads everything needed for your network into an
+`eden-fullnode` working directory:
 
 ```bash
-git clone --depth 1 https://github.com/celestiaorg/eden-docs
-cd eden-docs/public/eden-artifacts/mainnet   # or: testnet
+curl -fsSL https://eden-docs.pages.dev/eden-artifacts/get-fullnode.sh | bash -s -- mainnet
+# testnet: curl -fsSL https://eden-docs.pages.dev/eden-artifacts/get-fullnode.sh | bash -s -- testnet
+# no argument defaults to mainnet
+
+cd eden-fullnode
 ```
 
-The directory contains:
+Your working directory should now contain:
 
 ```
 compose.yaml
@@ -67,6 +68,10 @@ light node RPC address:
 
 The DA namespace variables (`DA_HEADER_NAMESPACE`, `DA_DATA_NAMESPACE`) are pre-set to the correct
 values for the network — do not change them (testnet genesis sync is the one exception; see below).
+
+`compose.yaml` is identical across networks — it reads `NETWORK`, `EV_RETH_TRUSTED_PEERS`, and
+`EV_NODE_P2P_PEERS` from `.env` to select the project name and peer list. Leave these as-is; see
+[Network peers](#network-peers) below for the pre-configured values.
 
 Default port assignments for reference (identical on both networks):
 
@@ -262,7 +267,8 @@ parameter set at genesis and does not change.
 
 ## Network peers
 
-These peers are pre-configured in `compose.yaml` and do not need to be changed.
+These peers are pre-configured in `.env` (as `EV_RETH_TRUSTED_PEERS` and `EV_NODE_P2P_PEERS`) and do
+not need to be changed.
 
 ### Mainnet
 
