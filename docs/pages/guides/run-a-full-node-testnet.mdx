@@ -104,17 +104,19 @@ docker compose logs -f init-2-snapshot-ev-node
 docker compose logs -f ev-node
 ```
 
-### Method B: Sync from genesis (legacy, not recommended)
+### Method B: Sync from genesis (not supported)
 
-:::warning
+:::warning[Genesis sync not supported]
 Genesis sync for testnet is a two-phase process due to a Celestia namespace migration that occurred
-at block **2217057**. Snapshot restore avoids this complexity entirely.
+at block **2217057**. Phase 1 requires the pre-migration DA namespace values that are not currently
+documented. **Use snapshot restore (Method A) instead.**
+
+If you specifically need to sync from genesis, contact the Eden team for the Phase 1 namespace
+values before proceeding.
 :::
 
-This method starts from block 0. `jwt-init` is a one-shot init container that generates a shared
-JWT secret on first run. The secret authenticates the Engine API connection between ev-node
-(consensus) and ev-reth (execution) — ev-reth rejects Engine API calls not signed with the
-matching secret, so both services must share the same file before either starts.
+This method is provided for reference only. It starts from block 0 and requires two separate
+namespace configurations to complete.
 
 Edit `compose.yaml` to remove the snapshot init containers:
 
@@ -138,9 +140,10 @@ Edit `compose.yaml` to remove the snapshot init containers:
          condition: service_started
    ```
 
-**Phase 1 — sync to block 2217057:**
+**Phase 1 — set pre-migration namespaces and sync to block 2217057:**
 
-Start the stack and monitor until ev-node reaches block 2217057:
+Open `.env` and set the pre-migration namespace values (contact the Eden team for these values),
+then start the stack and monitor until ev-node reaches block 2217057:
 
 ```bash
 docker compose up -d
@@ -155,7 +158,7 @@ docker compose down
 
 **Phase 2 — update namespaces and continue:**
 
-Open `.env` and set the updated namespace values:
+Open `.env` and set the post-migration namespace values:
 
 ```bash
 DA_HEADER_NAMESPACE=eden_testnet_header
@@ -203,11 +206,12 @@ Prometheus metrics are available at:
 
 ## Chain information
 
-| Parameter  | Value          |
-| ---------- | -------------- |
-| Chain ID   | `3735928814`   |
-| Chain name | `eden-testnet` |
-| DA layer   | Celestia Mocha |
+| Parameter       | Value          |
+| --------------- | -------------- |
+| Chain ID        | `3735928814`   |
+| Chain name      | `edennet-2`    |
+| DA layer        | Celestia Mocha |
+| DA start height | `7970386`      |
 
 ## Network peers
 

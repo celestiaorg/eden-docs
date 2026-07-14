@@ -35,10 +35,10 @@ if [[ ! -f ${EV_NODE_DATA_PATH}/_created_by_init_script ]]; then
 	fi
 	log "SUCCESS" "Snapshot metadata fetched successfully"
 
-	# Extract snapshot name using jq
+	# Extract snapshot name from HTML index
 	log "INFO" "Parsing snapshot information"
 	if ! snapshot_name=$(echo "${response}" | grep -o 'href="[^"]*ev-node-fullnode-data[^"]*\.tar\.lz4' | cut -d'"' -f2); then
-		log "ERROR" "Failed to parse JSON response with jq"
+		log "ERROR" "Failed to parse snapshot name from index"
 		exit 1
 	fi
 

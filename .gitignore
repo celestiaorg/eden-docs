@@ -24,9 +24,6 @@ _pagefind/
 logs/
 *.log
 
-# Bun
-bun.lock
-
 # OS generated files
 .DS_Store
 .DS_Store?

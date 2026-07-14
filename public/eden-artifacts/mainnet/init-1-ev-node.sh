@@ -53,7 +53,7 @@ if [ ! -f "${CONFIG_HOME}/config/node_key.json" ]; then
 		PASSPHRASE_FILE="${CONFIG_HOME}/signer_passphrase.txt"
 		echo "${EVM_SIGNER_PASSPHRASE}" >"${PASSPHRASE_FILE}"
 		chmod 600 "${PASSPHRASE_FILE}"
-		init_flags="${init_flags} --evnode.node.aggregator=true --evnode.signer.passphrase_file ${EVM_SIGNER_PASSPHRASE_FILE}"
+		init_flags="${init_flags} --evnode.node.aggregator=true --evnode.signer.passphrase_file ${PASSPHRASE_FILE}"
 	fi
 
 	INIT_COMMAND="evm init ${init_flags}"

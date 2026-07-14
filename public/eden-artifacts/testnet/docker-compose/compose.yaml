@@ -138,7 +138,7 @@ services:
       - --evnode.instrumentation.prometheus
       - --evnode.instrumentation.prometheus_listen_addr=:${EV_NODE_PROMETHEUS_PORT}
       - --evnode.p2p.listen_address=/ip4/0.0.0.0/tcp/7676
-      - --evnode.p2p.peers=/ip4/157.180.53.133/tcp/7686/p2p/12D3KooWMCfKiRXrd3o1m8TBDknmjZFqnmgFpP6gfjhBBVwnuCXK/p2p/12D3KooWMCfKiRXrd3o1m8TBDknmjZFqnmgFpP6gfjhBBVwnuCXK,/ip4/157.180.53.70/tcp/7686/p2p/12D3KooWEpRjbVZuQVZNxaifZDZ3dGLV6Dj7fT5Eox95PQhgWsJ7/p2p/12D3KooWEpRjbVZuQVZNxaifZDZ3dGLV6Dj7fT5Eox95PQhgWsJ7
+      - --evnode.p2p.peers=/ip4/157.180.53.133/tcp/7686/p2p/12D3KooWMCfKiRXrd3o1m8TBDknmjZFqnmgFpP6gfjhBBVwnuCXK,/ip4/157.180.53.70/tcp/7686/p2p/12D3KooWEpRjbVZuQVZNxaifZDZ3dGLV6Dj7fT5Eox95PQhgWsJ7
       # - --evnode.log.level=debug
     environment:
       - DA_HEADER_NAMESPACE=${DA_HEADER_NAMESPACE}
