@@ -12,8 +12,11 @@ Steps are identical across networks unless called out below.
 ## Prerequisites
 
 - Docker and Docker Compose v2 installed
-- A running [Celestia light node](https://docs.celestia.org/nodes/light-node) connected to the
-  matching Celestia network, with its RPC accessible from this machine
+- A Celestia DA RPC endpoint for the matching Celestia network. The `.env` file defaults to a
+  public community endpoint so this works out of the box, but for production use you should run
+  your own [Celestia light node via Docker](https://docs.celestia.org/operate/getting-started/docker/)
+  connected to the matching network — see [Configure the environment](#configure-the-environment)
+  below
 
 | Network | Celestia network |
 | ------- | ---------------- |
@@ -58,13 +61,23 @@ init-2-ev-node-snapshot.sh
 
 ## Configure the environment
 
-The `.env` file ships with defaults for its network. The only required change is your Celestia
-light node RPC address:
+The `.env` file ships with defaults for its network, including a `DA_ADDRESS` pointing at a public
+community Celestia RPC endpoint so the stack runs out of the box:
 
-| Network | `DA_ADDRESS` example                    |
-| ------- | --------------------------------------- |
-| Mainnet | `http://your-celestia-light-node:26658` |
-| Testnet | `http://celestia-mocha-light:26658`     |
+| Network | Default `DA_ADDRESS`                                         |
+| ------- | ------------------------------------------------------------ |
+| Mainnet | `http://celestia-mainnet-da-full-storage.itrocket.net:26658` |
+| Testnet | `http://celestia-testnet-consensus.itrocket.net:26658`       |
+
+These are free, third-party community endpoints with no uptime guarantee — fine for trying Eden
+out, but for a production node you should run your own Celestia node instead. The easiest way is a
+[Celestia light node via Docker](https://docs.celestia.org/operate/getting-started/docker/); once
+it's synced and its RPC is reachable from this machine, point `DA_ADDRESS` at it (e.g.
+`http://localhost:26658`).
+
+If the default `DA_ADDRESS` isn't responding, swap in another community endpoint for your
+network — [Mocha testnet](https://docs.celestia.org/operate/networks/mocha-testnet/#community-json-rpc-endpoints)
+or [Mainnet](https://docs.celestia.org/operate/networks/mainnet-beta/#archival-da-rpc-endpoints).
 
 The DA namespace variables (`DA_HEADER_NAMESPACE`, `DA_DATA_NAMESPACE`) are pre-set to the correct
 values for the network — do not change them (testnet genesis sync is the one exception; see below).
