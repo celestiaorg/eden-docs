@@ -1,17 +1,24 @@
-# Run a full node on Eden mainnet
+# Run a full node
 
-This guide walks through running an Eden mainnet full node using Docker Compose. The stack consists
-of two services:
+This guide walks through running an Eden full node — on **mainnet** or **testnet** — using Docker
+Compose. The stack consists of two services:
 
 - **ev-reth** — the EVM execution layer (handles RPC, transaction processing, and state)
 - **ev-node** — the consensus/DA layer (fetches blobs from Celestia and drives ev-reth via the
   Engine API)
 
+Steps are identical across networks unless called out below.
+
 ## Prerequisites
 
 - Docker and Docker Compose v2 installed
-- A running [Celestia light node](https://docs.celestia.org/nodes/light-node) connected to
-  Celestia **mainnet**, with its RPC accessible from this machine
+- A running [Celestia light node](https://docs.celestia.org/nodes/light-node) connected to the
+  matching Celestia network, with its RPC accessible from this machine
+
+| Network | Celestia network |
+| ------- | ---------------- |
+| Mainnet | Celestia mainnet |
+| Testnet | Celestia Mocha   |
 
 **Minimum hardware requirements:**
 
@@ -24,15 +31,15 @@ of two services:
 
 ## Download the artifacts
 
-The Eden mainnet deployment package lives in the
+The Eden deployment packages live in the
 [`eden-docs` repository](https://github.com/celestiaorg/eden-docs), so artifact version updates are
 atomic with the documentation.
 
-Clone the repository and enter the artifacts directory:
+Clone the repository and enter the artifacts directory for your network:
 
 ```bash
 git clone --depth 1 https://github.com/celestiaorg/eden-docs
-cd eden-docs/public/eden-artifacts/mainnet
+cd eden-docs/public/eden-artifacts/mainnet   # or: testnet
 ```
 
 The directory contains:
@@ -50,18 +57,18 @@ init-2-ev-node-snapshot.sh
 
 ## Configure the environment
 
-The `.env` file ships with mainnet defaults. The only required change is your Celestia light node
-RPC address:
+The `.env` file ships with defaults for its network. The only required change is your Celestia
+light node RPC address:
 
-```bash
-# Open .env and set:
-DA_ADDRESS=http://your-celestia-light-node:26658
-```
+| Network | `DA_ADDRESS` example                    |
+| ------- | --------------------------------------- |
+| Mainnet | `http://your-celestia-light-node:26658` |
+| Testnet | `http://celestia-mocha-light:26658`     |
 
-The DA namespace variables (`DA_HEADER_NAMESPACE`, `DA_DATA_NAMESPACE`) are pre-set to mainnet
-values — do not change them.
+The DA namespace variables (`DA_HEADER_NAMESPACE`, `DA_DATA_NAMESPACE`) are pre-set to the correct
+values for the network — do not change them (testnet genesis sync is the one exception; see below).
 
-Default port assignments for reference:
+Default port assignments for reference (identical on both networks):
 
 | Variable                  | Default | Service               |
 | ------------------------- | ------- | --------------------- |
@@ -81,10 +88,17 @@ access to these ports at your firewall if this machine is publicly reachable.
 ## Choose a sync method
 
 :::tip[Recommended]
-**Snapshot restore** avoids syncing from block 0, but the snapshots themselves are large — as of
-this writing, roughly 20 GB (ev-reth) + 80 GB (ev-node), and both grow over time. Downloading and
-extracting them can take anywhere from tens of minutes to several hours depending on your
-connection.:::
+**Snapshot restore** avoids syncing from block 0, but the snapshots themselves are large and grow
+over time. Downloading and extracting them can take anywhere from tens of minutes to several hours
+depending on your connection.
+:::
+
+Snapshot sizes as of this writing:
+
+| Network | ev-reth snapshot | ev-node snapshot |
+| ------- | ---------------- | ---------------- |
+| Mainnet | ~20 GB           | ~80 GB           |
+| Testnet | ~30 GB           | ~100 GB          |
 
 ### Method A: Restore from snapshot (recommended)
 
@@ -149,7 +163,53 @@ Edit `compose.yaml` to remove the snapshot init containers:
          condition: service_started
    ```
 
-Then start the stack:
+**Mainnet:** start the stack as-is:
+
+```bash
+docker compose up -d
+docker compose logs -f ev-node
+```
+
+**Testnet:**
+
+:::warning[Genesis sync not supported]
+Genesis sync for testnet is a two-phase process due to a Celestia namespace migration that occurred
+at block **2217057**. Phase 1 requires the pre-migration DA namespace values that are not currently
+documented. **Use snapshot restore (Method A) instead.**
+
+If you specifically need to sync testnet from genesis, contact the Eden team for the Phase 1
+namespace values before proceeding.
+:::
+
+The steps below are provided for reference only and require two separate namespace configurations
+to complete.
+
+**Phase 1 — set pre-migration namespaces and sync to block 2217057:**
+
+Open `.env` and set the pre-migration namespace values (contact the Eden team for these values),
+then start the stack and monitor until ev-node reaches block 2217057:
+
+```bash
+docker compose up -d
+docker compose logs -f ev-node
+```
+
+Once block 2217057 is reached, stop all services:
+
+```bash
+docker compose down
+```
+
+**Phase 2 — update namespaces and continue:**
+
+Open `.env` and set the post-migration namespace values:
+
+```bash
+DA_HEADER_NAMESPACE=eden_testnet_header
+DA_DATA_NAMESPACE=eden_testnet_data
+```
+
+Restart and sync to the latest block:
 
 ```bash
 docker compose up -d
@@ -190,19 +250,21 @@ Prometheus metrics are available at:
 
 ## Chain information
 
-| Parameter       | Value            |
-| --------------- | ---------------- |
-| Chain ID        | `714`            |
-| Chain name      | `eden-mainnet`   |
-| DA layer        | Celestia mainnet |
-| DA start height | `9409947`        |
+| Parameter       | Mainnet          | Testnet        |
+| --------------- | ---------------- | -------------- |
+| Chain ID        | `714`            | `3735928814`   |
+| Chain name      | `eden-mainnet`   | `edennet-2`    |
+| DA layer        | Celestia mainnet | Celestia Mocha |
+| DA start height | `9409947`        | `7970386`      |
 
-The DA start height is the Celestia mainnet block from which Eden begins reading blobs. It is a
-fixed chain parameter set at genesis and does not change.
+The DA start height is the Celestia block from which Eden begins reading blobs. It is a fixed chain
+parameter set at genesis and does not change.
 
 ## Network peers
 
 These peers are pre-configured in `compose.yaml` and do not need to be changed.
+
+### Mainnet
 
 **ev-reth peers:**
 
@@ -216,4 +278,20 @@ enode://0d56dff552c795daf4f44594857958f20e8396ac973a3054d716530c9e1b16b0e7c53827
 ```
 /ip4/46.224.9.205/tcp/7686/p2p/12D3KooWE3Yjr3Hru3UBbkCuG3aNF15CsjhRZZrB4gtXduZNCNqx
 /ip4/77.42.38.230/tcp/7686/p2p/12D3KooWF7jmMWgxfb6EfGQWVvRbQWiMNU8btqXDuPQQiU9SFySt
+```
+
+### Testnet
+
+**ev-reth peers:**
+
+```
+enode://e3e0025a64440eff4879b216766550d7237291cb94b79bb641b1e25933b08c9a3aada6583e25b320aebe84b643b85e14be934a8725eb6aacb74d6f65abfbeb74@fullnode-1-eden-testnet.binarybuilders.services:30313
+enode://477544b9c4bc4136b9d25759b38be971c29dcf669105e02e8630f1e0407f58dc740137d3f21d02451d5f7b08bbbf31909cbd876af99818a34e64892e73498906@fullnode-2-eden-testnet.binarybuilders.services:30313
+```
+
+**ev-node peers:**
+
+```
+/ip4/157.180.53.133/tcp/7686/p2p/12D3KooWMCfKiRXrd3o1m8TBDknmjZFqnmgFpP6gfjhBBVwnuCXK
+/ip4/157.180.53.70/tcp/7686/p2p/12D3KooWEpRjbVZuQVZNxaifZDZ3dGLV6Dj7fT5Eox95PQhgWsJ7
 ```
