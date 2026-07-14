@@ -1,4 +1,6 @@
 ---
+name: eden-testnet
+
 services:
   jwt-init:
     image: &alpine ghcr.io/linuxserver/baseimage-alpine:3.22
@@ -25,13 +27,13 @@ services:
       - ev-reth-data:/root/reth
       - ./init-1-ev-reth-snapshot.sh:/init-1-ev-reth-snapshot.sh
     entrypoint: [/bin/sh, /init-1-ev-reth-snapshot.sh]
-    restart: "no"
+    restart: 'no'
     depends_on:
       init-1-ev-node:
         condition: service_completed_successfully
 
   init-1-ev-node:
-    image: &image ghcr.io/evstack/ev-node-evm:v1.1.0
+    image: &image ghcr.io/evstack/ev-node-evm:v1.1.4
     env_file: .env
     volumes:
       - ev-node-data:/root/.evm
@@ -40,7 +42,7 @@ services:
       - jwttoken:/root/jwt:ro
       - ./init-1-ev-node.sh:/init-1-ev-node.sh
     entrypoint: [/bin/sh, /init-1-ev-node.sh]
-    restart: "no"
+    restart: 'no'
 
   init-2-snapshot-ev-node:
     image: *alpine
@@ -52,13 +54,13 @@ services:
       - jwttoken:/root/jwt:ro
       - ./init-2-ev-node-snapshot.sh:/init-2-ev-node-snapshot.sh
     entrypoint: [/bin/bash, /init-2-ev-node-snapshot.sh]
-    restart: "no"
+    restart: 'no'
     depends_on:
       init-1-ev-node:
         condition: service_completed_successfully
 
   ev-reth:
-    image: ghcr.io/evstack/ev-reth:v0.4.0
+    image: ghcr.io/evstack/ev-reth:v0.4.1
     depends_on:
       jwt-init:
         condition: service_completed_successfully
@@ -106,10 +108,10 @@ services:
           -X,
           POST,
           -H,
-          "Content-Type: application/json",
+          'Content-Type: application/json',
           --data,
           '{"jsonrpc":"2.0","method":"web3_clientVersion","params":[],"id":1}',
-          "http://localhost:${EV_RETH_RPC_PORT}",
+          'http://localhost:${EV_RETH_RPC_PORT}'
         ]
       interval: 5s
       timeout: 5s
@@ -147,7 +149,7 @@ services:
       - EVM_ETH_URL=http://${EV_RETH_ADDRESS}:${EV_RETH_RPC_PORT}
       - EVM_JWT_SECRET_FILE=/root/jwt/jwt.hex
     healthcheck:
-      test: [CMD, curl, "localhost:${EV_NODE_RPC_PORT}/health/live"]
+      test: [CMD, curl, 'localhost:${EV_NODE_RPC_PORT}/health/live']
       interval: 5s
       timeout: 5s
       retries: 3

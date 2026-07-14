@@ -81,8 +81,10 @@ access to these ports at your firewall if this machine is publicly reachable.
 ## Choose a sync method
 
 :::tip[Recommended]
-**Snapshot restore** gets your node operational within minutes rather than syncing from block 0.
-:::
+**Snapshot restore** avoids syncing from block 0, but the snapshots themselves are large — as of
+this writing, roughly 20 GB (ev-reth) + 80 GB (ev-node), and both grow over time. Downloading and
+extracting them can take anywhere from tens of minutes to several hours depending on your
+connection.:::
 
 ### Method A: Restore from snapshot (recommended)
 
@@ -103,6 +105,18 @@ docker compose logs -f init-1-snapshot-ev-reth
 docker compose logs -f init-2-snapshot-ev-node
 docker compose logs -f ev-node
 ```
+
+Each init container only downloads once: it marks its data volume with a completion file after a
+successful extraction and skips straight to a no-op on every later `docker compose up`. That means
+the downloaded snapshot lives in the named Docker volumes (`ev-reth-data`, `ev-node-data`), not in
+the container itself — restarting or recreating the containers (`docker compose down` followed by
+`docker compose up -d`) does **not** trigger a re-download.
+
+:::warning[Don't delete the data volumes]
+`docker compose down -v` (or `docker volume rm`) permanently deletes the synced snapshot along with
+the containers, forcing a full re-download on the next `up`. Use plain `docker compose down` to stop
+the stack — it leaves the volumes, and therefore the snapshot, intact.
+:::
 
 ### Method B: Sync from genesis
 

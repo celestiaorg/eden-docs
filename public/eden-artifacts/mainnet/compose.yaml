@@ -1,4 +1,6 @@
 ---
+name: eden-mainnet
+
 services:
   jwt-init:
     image: &alpine ghcr.io/linuxserver/baseimage-alpine:3.22
@@ -31,7 +33,7 @@ services:
         condition: service_completed_successfully
 
   init-1-ev-node:
-    image: &image ghcr.io/evstack/ev-node-evm:v1.1.1
+    image: &image ghcr.io/evstack/ev-node-evm:v1.1.4
     env_file: .env
     volumes:
       - ev-node-data:/root/.evm
@@ -58,7 +60,7 @@ services:
         condition: service_completed_successfully
 
   ev-reth:
-    image: ghcr.io/evstack/ev-reth:v0.4.0
+    image: ghcr.io/evstack/ev-reth:v0.4.1
     depends_on:
       jwt-init:
         condition: service_completed_successfully
