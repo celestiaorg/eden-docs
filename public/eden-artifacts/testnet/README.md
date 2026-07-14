@@ -18,7 +18,7 @@ Snapshots will be automatically fetched from Binary Builders Storage during the 
 
 #### a) Configure Celestia Connection
 
-Edit the `docker-compose/.env` file and set `DA_ADDRESS` to the address of your Celestia light node RPC:
+Edit the `.env` file and set `DA_ADDRESS` to the address of your Celestia light node RPC:
 
 ```bash
 DA_ADDRESS=http://your-celestia-node:26658
@@ -29,7 +29,6 @@ DA_ADDRESS=http://your-celestia-node:26658
 Start the `ev-node` and wait for synchronization to the latest block:
 
 ```bash
-cd docker-compose
 docker compose up -d
 docker compose logs -f ev-node
 ```
@@ -46,7 +45,7 @@ This method syncs the node from the beginning of the blockchain.
 
 #### a) Configure Celestia Connection
 
-Edit the `docker-compose/.env` file and set `DA_ADDRESS` to the address of your Celestia light node RPC:
+Edit the `.env` file and set `DA_ADDRESS` to the address of your Celestia light node RPC:
 
 ```bash
 DA_ADDRESS=http://your-celestia-node:26658
@@ -61,7 +60,6 @@ Remove `init-1-snapshot-ev-reth` and `init-2-snapshot-ev-node` services from the
 Run the Docker Compose stack:
 
 ```bash
-cd docker-compose
 docker compose up -d
 ```
 
