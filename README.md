@@ -14,6 +14,12 @@ to start the development server:
 bun dev
 ```
 
+to preview a built site locally:
+
+```bash
+bun run preview
+```
+
 to build the Cloudflare Pages artifact (output in `dist/public/`):
 
 ```bash
@@ -42,3 +48,24 @@ https://docs.eden.zone/api/mcp
 
 Do not configure or document a separate Worker for MCP. The MCP endpoint is
 bundled into the Pages deployment as `_worker.js`.
+
+## Deploy previews
+
+Conductor exposes a shared `Deploy preview` run option through
+`.conductor/settings.toml`. It runs `scripts/deploy-preview.sh`, which:
+
+- refuses detached HEAD, `main`, and dirty workspaces
+- pushes the current branch to `origin`
+- dispatches `.github/workflows/deploy-cloudflare.yml` from `main`
+- waits for the GitHub Actions run and prints the Cloudflare Pages preview URL
+
+You can run the same flow from a terminal:
+
+```bash
+bash scripts/deploy-preview.sh
+```
+
+The preview deploy path uses GitHub Actions and the repository Cloudflare
+secrets. It is separate from `bun run preview`, which only serves a local built
+site, and from `bun run deploy`, which is production-capable and should not be
+used for branch previews.

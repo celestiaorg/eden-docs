@@ -2,9 +2,9 @@
 # one origin (docs.eden.zone). Requires CLOUDFLARE_API_TOKEN and
 # CLOUDFLARE_ACCOUNT_ID repo secrets.
 #
-# Pushes to main deploy to production; pull requests deploy a Pages preview
-# at <branch>.eden-docs.pages.dev (secrets are unavailable on fork PRs, so
-# preview deploys only run for same-repo branches).
+# Pushes to main deploy to production; pull requests and manual dispatches
+# deploy Pages previews. Secrets are unavailable on fork PRs, so preview
+# deploys only run for same-repo branches.
 name: Deploy to Cloudflare Pages
 
 on:
@@ -12,17 +12,26 @@ on:
     branches: ['main']
   pull_request:
   workflow_dispatch:
+    inputs:
+      preview_ref:
+        description: 'Branch to deploy as a Cloudflare Pages preview'
+        required: true
+        type: string
 
 concurrency:
-  group: deploy-cloudflare-${{ github.ref }}
+  group: deploy-cloudflare-${{ github.event_name == 'workflow_dispatch' && inputs.preview_ref || github.ref }}
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      PAGES_PREVIEW_HOST: eden-docs-6l7.pages.dev
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.preview_ref || github.ref }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -30,32 +39,101 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Set Vocs base URL
+      - name: Set deployment target
+        id: deployment-target
         shell: bash
+        env:
+          PREVIEW_REF: ${{ inputs.preview_ref }}
         run: |
-          branch="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            branch="$PREVIEW_REF"
+          else
+            branch="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          fi
+
+          branch="${branch#refs/heads/}"
+
+          if [[ -z "$branch" ]]; then
+            echo "Could not determine branch to deploy" >&2
+            exit 1
+          fi
+
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "$branch" == "main" ]]; then
+            echo "Manual preview deployments cannot target main; pushes to main deploy production." >&2
+            exit 1
+          fi
+
+          echo "DEPLOY_BRANCH=$branch" >> "$GITHUB_ENV"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
           if [[ "$branch" == "main" ]]; then
             echo "VOCS_BASE_URL=https://docs.eden.zone" >> "$GITHUB_ENV"
+            echo "base_url=https://docs.eden.zone" >> "$GITHUB_OUTPUT"
           else
             alias="$(printf '%s' "$branch" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]/-/g')"
-            echo "VOCS_BASE_URL=https://${alias}.eden-docs.pages.dev" >> "$GITHUB_ENV"
+            echo "VOCS_BASE_URL=https://${alias}.${PAGES_PREVIEW_HOST}" >> "$GITHUB_ENV"
+            echo "base_url=https://${alias}.${PAGES_PREVIEW_HOST}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build site (full-static Pages artifact)
         run: bun run build
 
+      - name: Normalize preview URLs
+        if: steps.deployment-target.outputs.branch != 'main'
+        shell: bash
+        run: |
+          export PREVIEW_BASE_URL="${{ steps.deployment-target.outputs.base_url }}"
+
+          find dist/public -name '*.html' -print0 | xargs -0 perl -0pi -e '
+            s#<base href="https://docs\.eden\.zone"#<base href="$ENV{PREVIEW_BASE_URL}"#g;
+            s#(rel="canonical" href=")https://docs\.eden\.zone#$1$ENV{PREVIEW_BASE_URL}#g;
+            s#(property="og:url" content=")https://docs\.eden\.zone#$1$ENV{PREVIEW_BASE_URL}#g;
+          '
+
+          if [[ -f dist/public/sitemap.xml ]]; then
+            perl -0pi -e 's#https://docs\.eden\.zone#$ENV{PREVIEW_BASE_URL}#g' dist/public/sitemap.xml
+          fi
+
       - name: Verify Pages artifact
+        shell: bash
         run: |
           test -f dist/public/_worker.js
           test -f dist/public/why-eden.md
 
+          if [[ "${{ steps.deployment-target.outputs.branch }}" == "main" ]]; then
+            grep -q '<base href="https://docs.eden.zone"' dist/public/index.html
+          else
+            grep -q '<base href="${{ steps.deployment-target.outputs.base_url }}"' dist/public/index.html
+            ! grep -R '<base href="https://docs.eden.zone"' dist/public --include='*.html'
+          fi
+
       # On main this is the production deploy; any other branch name creates
-      # a preview deployment at <branch>.eden-docs.pages.dev.
+      # a preview deployment at <branch>.<pages-project>.pages.dev.
       - name: Deploy
+        id: deploy-pages
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy --branch ${{ github.head_ref || github.ref_name }}
+          command: pages deploy --branch ${{ steps.deployment-target.outputs.branch }}
+
+      - name: Summarize deployment
+        if: steps.deploy-pages.outcome == 'success'
+        shell: bash
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy-pages.outputs.deployment-url }}
+          DEPLOYMENT_ALIAS_URL: ${{ steps.deploy-pages.outputs.pages-deployment-alias-url }}
+        run: |
+          echo "## Cloudflare Pages deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Branch: \`${{ steps.deployment-target.outputs.branch }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Vocs base URL: ${{ steps.deployment-target.outputs.base_url }}" >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ -n "$DEPLOYMENT_ALIAS_URL" ]]; then
+            echo "- Preview alias: $DEPLOYMENT_ALIAS_URL" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [[ -n "$DEPLOYMENT_URL" ]]; then
+            echo "- Immutable deployment: $DEPLOYMENT_URL" >> "$GITHUB_STEP_SUMMARY"
+          fi

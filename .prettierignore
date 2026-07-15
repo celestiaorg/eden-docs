@@ -2,5 +2,6 @@ node_modules/
 .next/
 out/
 public/
+.context/
 bun.lock
 bun.lockb
