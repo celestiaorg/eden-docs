@@ -1,7 +1,27 @@
 import { defineConfig } from 'vocs/config'
 
 const defaultBaseUrl = 'https://docs.eden.zone'
-const baseUrl = (process.env.VOCS_BASE_URL ?? defaultBaseUrl).replace(/\/+$/, '')
+
+const cloudflarePreviewBaseUrl = (() => {
+  const branch = process.env.CF_PAGES_BRANCH
+  const pagesUrl = process.env.CF_PAGES_URL
+
+  if (!branch || branch === 'main' || !pagesUrl) return undefined
+
+  try {
+    const pagesHost = new URL(pagesUrl).hostname.split('.').slice(1).join('.')
+    const alias = branch.toLowerCase().replace(/[^a-z0-9]/g, '-')
+
+    return `https://${alias}.${pagesHost}`
+  } catch {
+    return undefined
+  }
+})()
+
+const baseUrl = (process.env.VOCS_BASE_URL ?? cloudflarePreviewBaseUrl ?? defaultBaseUrl).replace(
+  /\/+$/,
+  ''
+)
 
 export default defineConfig({
   srcDir: 'docs',
