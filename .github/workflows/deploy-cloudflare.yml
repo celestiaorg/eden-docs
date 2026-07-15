@@ -1,5 +1,5 @@
-# The only deploy: serves the full static site AND the /mcp endpoint from one
-# origin (docs.eden.zone). Requires CLOUDFLARE_API_TOKEN and
+# The only deploy: serves the full static site AND the /api/mcp endpoint from
+# one origin (docs.eden.zone). Requires CLOUDFLARE_API_TOKEN and
 # CLOUDFLARE_ACCOUNT_ID repo secrets.
 #
 # Pushes to main deploy to production; pull requests deploy a Pages preview
