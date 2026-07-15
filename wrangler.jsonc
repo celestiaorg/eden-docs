@@ -1,10 +1,10 @@
-// Cloudflare Pages project for the Eden docs (eden-docs.pages.dev).
+// Cloudflare Pages project for the Eden docs (docs.eden.zone).
 //
 // The vocs full-static build (dist/public) is the site; worker/index.js is
 // copied in as _worker.js (Pages "advanced mode") to serve the MCP endpoint
-// at /mcp on the same origin, passing everything else through to the static
-// assets. Deploy: bun run build, mirror markdown, copy _worker.js, then
-// `wrangler pages deploy` (see .github/workflows/deploy-cloudflare.yml).
+// at /api/mcp on the same origin, passing everything else through to the static
+// assets. Deploy: bun run build, then `wrangler pages deploy` (see
+// .github/workflows/deploy-cloudflare.yml).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "eden-docs",

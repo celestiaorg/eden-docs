@@ -1,6 +1,6 @@
 import { defineConfig } from 'vocs/config'
 
-const defaultBaseUrl = 'https://eden-docs.pages.dev'
+const defaultBaseUrl = 'https://docs.eden.zone'
 const baseUrl = (process.env.VOCS_BASE_URL ?? defaultBaseUrl).replace(/\/+$/, '')
 
 export default defineConfig({

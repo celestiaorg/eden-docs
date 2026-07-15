@@ -1,11 +1,11 @@
 /**
  * MCP server for the Eden docs, deployed as the `_worker.js` of the
  * Cloudflare Pages site (copied into dist/public at deploy time): it serves
- * the MCP endpoint at /api/mcp (plus /mcp for compatibility) and passes every
- * other request through to the static site. Tools mirror vocs's built-in MCP
- * server (list_pages / read_page / search_docs), but read the markdown the
- * vocs build emits as static assets — llms.txt for the page index and
- * /assets/md/<path>.md for page content — instead of the filesystem.
+ * the MCP endpoint at /api/mcp and passes every other request through to the
+ * static site. Tools mirror vocs's built-in MCP server (list_pages / read_page
+ * / search_docs), but read the markdown the vocs build emits as static assets
+ * — llms.txt for the page index and /assets/md/<path>.md for page content —
+ * instead of the filesystem.
  *
  * Implements the MCP Streamable HTTP transport statelessly: every request is
  * self-contained JSON-RPC over POST, responses are plain JSON (the spec
@@ -169,7 +169,7 @@ async function handleRpc(env, message) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url)
-    const isMcpPath = url.pathname === '/mcp' || url.pathname === '/api/mcp'
+    const isMcpPath = url.pathname === '/api/mcp'
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS_HEADERS })

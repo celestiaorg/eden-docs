@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": [
+    "/assets/*",
+    "/logos/*",
+    "/*.{css,js,ico,png,jpg,jpeg,svg,webp,woff,woff2,txt,xml}"
+  ]
+}
