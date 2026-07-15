@@ -1,0 +1,316 @@
+# Run a full node
+
+This guide walks through running an Eden full node — on **mainnet** or **testnet** — using Docker
+Compose. The stack consists of two services:
+
+- **ev-reth** — the EVM execution layer (handles RPC, transaction processing, and state)
+- **ev-node** — the consensus/DA layer (fetches blobs from Celestia and drives ev-reth via the
+  Engine API)
+
+Steps are identical across networks unless called out below.
+
+## Prerequisites
+
+- Docker and Docker Compose v2 installed
+- A Celestia DA RPC endpoint for the matching Celestia network. The `.env` file defaults to a
+  public community endpoint so this works out of the box, but for production use you should run
+  your own [Celestia light node via Docker](https://docs.celestia.org/operate/getting-started/docker/)
+  connected to the matching network — see [Configure the environment](#configure-the-environment)
+  below
+
+| Network | Celestia network |
+| ------- | ---------------- |
+| Mainnet | Celestia mainnet |
+| Testnet | Celestia Mocha   |
+
+**Minimum hardware requirements:**
+
+| Component | Minimum    | Recommended   |
+| --------- | ---------- | ------------- |
+| CPU       | 8 cores    | 16 cores      |
+| RAM       | 16 GB      | 32 GB         |
+| Storage   | 500 GB SSD | 1 TB NVMe SSD |
+| Network   | 1 Gbps     | 10 Gbps       |
+
+## Download the artifacts
+
+The Eden deployment packages are hosted alongside this documentation, so artifact version updates
+are atomic with the docs. A helper script downloads everything needed for your network into an
+`eden-fullnode` working directory:
+
+```bash
+curl -fsSL https://eden-docs.pages.dev/eden-artifacts/get-fullnode.sh | bash -s -- mainnet
+# testnet: curl -fsSL https://eden-docs.pages.dev/eden-artifacts/get-fullnode.sh | bash -s -- testnet
+# no argument defaults to mainnet
+
+cd eden-fullnode
+```
+
+Your working directory should now contain:
+
+```
+compose.yaml
+ev-node.genesis.json
+ev-reth.genesis.json
+entrypoint.fullnode.sh
+init-1-ev-node.sh
+init-1-ev-reth-snapshot.sh
+init-2-ev-node-snapshot.sh
+.env
+```
+
+## Configure the environment
+
+The `.env` file ships with defaults for its network, including a `DA_ADDRESS` pointing at a public
+community Celestia RPC endpoint so the stack runs out of the box:
+
+| Network | Default `DA_ADDRESS`                                         |
+| ------- | ------------------------------------------------------------ |
+| Mainnet | `http://celestia-mainnet-da-full-storage.itrocket.net:26658` |
+| Testnet | `http://celestia-testnet-consensus.itrocket.net:26658`       |
+
+These are free, third-party community endpoints with no uptime guarantee — fine for trying Eden
+out, but for a production node you should run your own Celestia node instead. The easiest way is a
+[Celestia light node via Docker](https://docs.celestia.org/operate/getting-started/docker/); once
+it's synced and its RPC is reachable from this machine, point `DA_ADDRESS` at it (e.g.
+`http://localhost:26658`).
+
+If the default `DA_ADDRESS` isn't responding, swap in another community endpoint for your
+network — [Mocha testnet](https://docs.celestia.org/operate/networks/mocha-testnet/#community-json-rpc-endpoints)
+or [Mainnet](https://docs.celestia.org/operate/networks/mainnet-beta/#archival-da-rpc-endpoints).
+
+The DA namespace variables (`DA_HEADER_NAMESPACE`, `DA_DATA_NAMESPACE`) are pre-set to the correct
+values for the network — do not change them (testnet genesis sync is the one exception; see below).
+
+`compose.yaml` is identical across networks — it reads `NETWORK`, `EV_RETH_TRUSTED_PEERS`, and
+`EV_NODE_P2P_PEERS` from `.env` to select the project name and peer list. Leave these as-is; see
+[Network peers](#network-peers) below for the pre-configured values.
+
+Default port assignments for reference (identical on both networks):
+
+| Variable                  | Default | Service               |
+| ------------------------- | ------- | --------------------- |
+| `EV_RETH_RPC_PORT`        | `8545`  | ev-reth HTTP RPC      |
+| `EV_RETH_WS_PORT`         | `8546`  | ev-reth WebSocket RPC |
+| `EV_RETH_ENGINE_PORT`     | `8551`  | ev-reth Engine API    |
+| `EV_RETH_DISCOVERY_PORT`  | `30303` | ev-reth P2P           |
+| `EV_RETH_PROMETHEUS_PORT` | `9001`  | ev-reth metrics       |
+| `EV_NODE_RPC_PORT`        | `7331`  | ev-node RPC           |
+| `EV_NODE_PROMETHEUS_PORT` | `26660` | ev-node metrics       |
+
+:::warning[Prometheus endpoints]
+Both ev-reth and ev-node bind their Prometheus metrics to `0.0.0.0` (all interfaces). Restrict
+access to these ports at your firewall if this machine is publicly reachable.
+:::
+
+## Choose a sync method
+
+:::tip[Recommended]
+**Snapshot restore** avoids syncing from block 0, but the snapshots themselves are large and grow
+over time. Downloading and extracting them can take anywhere from tens of minutes to several hours
+depending on your connection.
+:::
+
+Snapshot sizes as of this writing:
+
+| Network | ev-reth snapshot | ev-node snapshot |
+| ------- | ---------------- | ---------------- |
+| Mainnet | ~20 GB           | ~80 GB           |
+| Testnet | ~30 GB           | ~100 GB          |
+
+### Method A: Restore from snapshot (recommended)
+
+The default `compose.yaml` includes init containers (`init-1-snapshot-ev-reth`,
+`init-2-snapshot-ev-node`) that automatically download the latest database snapshots from Binary
+Builders storage before starting ev-reth and ev-node. No changes to `compose.yaml` are needed.
+
+Start the stack:
+
+```bash
+docker compose up -d
+```
+
+Monitor snapshot download progress, then follow ev-node sync:
+
+```bash
+docker compose logs -f init-1-snapshot-ev-reth
+docker compose logs -f init-2-snapshot-ev-node
+docker compose logs -f ev-node
+```
+
+Each init container only downloads once: it marks its data volume with a completion file after a
+successful extraction and skips straight to a no-op on every later `docker compose up`. That means
+the downloaded snapshot lives in the named Docker volumes (`ev-reth-data`, `ev-node-data`), not in
+the container itself — restarting or recreating the containers (`docker compose down` followed by
+`docker compose up -d`) does **not** trigger a re-download.
+
+:::warning[Don't delete the data volumes]
+`docker compose down -v` (or `docker volume rm`) permanently deletes the synced snapshot along with
+the containers, forcing a full re-download on the next `up`. Use plain `docker compose down` to stop
+the stack — it leaves the volumes, and therefore the snapshot, intact.
+:::
+
+### Method B: Sync from genesis
+
+This method starts from block 0. Sync time depends on your connection and hardware.
+
+`jwt-init` is a one-shot init container that generates a shared JWT secret on first run. The secret
+authenticates the Engine API connection between ev-node (consensus) and ev-reth (execution) —
+ev-reth rejects Engine API calls not signed with the matching secret, so both services must share
+the same file before either starts.
+
+Edit `compose.yaml` to remove the snapshot init containers:
+
+1. Delete the `init-1-snapshot-ev-reth` and `init-2-snapshot-ev-node` service blocks.
+
+2. In the `ev-reth` service, update `depends_on` to only require `jwt-init`:
+
+   ```yaml
+   ev-reth:
+     depends_on:
+       jwt-init:
+         condition: service_completed_successfully
+   ```
+
+3. In the `ev-node` service, update `depends_on` to only require `ev-reth`:
+
+   ```yaml
+   ev-node:
+     depends_on:
+       ev-reth:
+         condition: service_started
+   ```
+
+**Mainnet:** start the stack as-is:
+
+```bash
+docker compose up -d
+docker compose logs -f ev-node
+```
+
+**Testnet:**
+
+:::warning[Genesis sync not supported]
+Genesis sync for testnet is a two-phase process due to a Celestia namespace migration that occurred
+at block **2217057**. Phase 1 requires the pre-migration DA namespace values that are not currently
+documented. **Use snapshot restore (Method A) instead.**
+
+If you specifically need to sync testnet from genesis, contact the Eden team for the Phase 1
+namespace values before proceeding.
+:::
+
+The steps below are provided for reference only and require two separate namespace configurations
+to complete.
+
+**Phase 1 — set pre-migration namespaces and sync to block 2217057:**
+
+Open `.env` and set the pre-migration namespace values (contact the Eden team for these values),
+then start the stack and monitor until ev-node reaches block 2217057:
+
+```bash
+docker compose up -d
+docker compose logs -f ev-node
+```
+
+Once block 2217057 is reached, stop all services:
+
+```bash
+docker compose down
+```
+
+**Phase 2 — update namespaces and continue:**
+
+Open `.env` and set the post-migration namespace values:
+
+```bash
+DA_HEADER_NAMESPACE=eden_testnet_header
+DA_DATA_NAMESPACE=eden_testnet_data
+```
+
+Restart and sync to the latest block:
+
+```bash
+docker compose up -d
+docker compose logs -f ev-node
+```
+
+## Verify the node is running
+
+Check ev-reth is responding to RPC:
+
+```bash
+curl -s -X POST -H "Content-Type: application/json" \
+  --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+  http://localhost:8545
+```
+
+Check ev-node health:
+
+```bash
+curl -s http://localhost:7331/health/live
+```
+
+## Monitor sync progress
+
+```bash
+# Follow all service logs
+docker compose logs -f
+
+# Follow a specific service
+docker compose logs -f ev-node
+docker compose logs -f ev-reth
+```
+
+Prometheus metrics are available at:
+
+- ev-reth: `http://localhost:9001`
+- ev-node: `http://localhost:26660`
+
+## Chain information
+
+| Parameter       | Mainnet          | Testnet        |
+| --------------- | ---------------- | -------------- |
+| Chain ID        | `714`            | `3735928814`   |
+| Chain name      | `eden-mainnet`   | `edennet-2`    |
+| DA layer        | Celestia mainnet | Celestia Mocha |
+| DA start height | `9409947`        | `7970386`      |
+
+The DA start height is the Celestia block from which Eden begins reading blobs. It is a fixed chain
+parameter set at genesis and does not change.
+
+## Network peers
+
+These peers are pre-configured in `.env` (as `EV_RETH_TRUSTED_PEERS` and `EV_NODE_P2P_PEERS`) and do
+not need to be changed.
+
+### Mainnet
+
+**ev-reth peers:**
+
+```
+enode://52092f9a86c03664d88c5cfd93f914ccbe4d72ec7fb67103a8038771226e8b92b4502afbabe9b39390e96a4d5e47f963042a1e413f0066fed24ad4ed1e18da39@46.224.9.205:30313
+enode://0d56dff552c795daf4f44594857958f20e8396ac973a3054d716530c9e1b16b0e7c5382720d1511e36736becee9fe68c61dd51fec2ebf5aa989ee8db111c4f9e@77.42.38.230:30313
+```
+
+**ev-node peers:**
+
+```
+/ip4/46.224.9.205/tcp/7686/p2p/12D3KooWE3Yjr3Hru3UBbkCuG3aNF15CsjhRZZrB4gtXduZNCNqx
+/ip4/77.42.38.230/tcp/7686/p2p/12D3KooWF7jmMWgxfb6EfGQWVvRbQWiMNU8btqXDuPQQiU9SFySt
+```
+
+### Testnet
+
+**ev-reth peers:**
+
+```
+enode://e3e0025a64440eff4879b216766550d7237291cb94b79bb641b1e25933b08c9a3aada6583e25b320aebe84b643b85e14be934a8725eb6aacb74d6f65abfbeb74@fullnode-1-eden-testnet.binarybuilders.services:30313
+enode://477544b9c4bc4136b9d25759b38be971c29dcf669105e02e8630f1e0407f58dc740137d3f21d02451d5f7b08bbbf31909cbd876af99818a34e64892e73498906@fullnode-2-eden-testnet.binarybuilders.services:30313
+```
+
+**ev-node peers:**
+
+```
+/ip4/157.180.53.133/tcp/7686/p2p/12D3KooWMCfKiRXrd3o1m8TBDknmjZFqnmgFpP6gfjhBBVwnuCXK
+/ip4/157.180.53.70/tcp/7686/p2p/12D3KooWEpRjbVZuQVZNxaifZDZ3dGLV6Dj7fT5Eox95PQhgWsJ7
+```

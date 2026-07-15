@@ -12,6 +12,7 @@ type Page =
   | { path: '/frontend-libraries/viem-transactions'; render: 'static' }
   | { path: '/frontend-libraries/wagmi-quickstart'; render: 'static' }
   | { path: '/guides/build-a-frontend'; render: 'static' }
+  | { path: '/guides/run-a-full-node'; render: 'static' }
   | { path: '/guides/web2toweb3'; render: 'static' }
   | { path: '/'; render: 'static' }
   | { path: '/legal/disclaimer'; render: 'static' }

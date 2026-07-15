@@ -28,6 +28,15 @@ The public RPC confirmed chain ID `0x2ca` (`714`) and latest-block gas limit `0x
 Gateway.fm public RPCs have a rate limit of 30 requests per second per IP address. Higher limits
 are available through [admin.gateway.fm](https://admin.gateway.fm).
 
+## Celestia namespaces
+
+Eden mainnet posts data to Celestia under the following namespaces:
+
+| Name                   | Hex                                                                                                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `eden_mainnet_headers` | [`00000000000000000000000000000000000000e46be6c46b561c088e65`](https://celenium.io/namespace/00000000000000000000000000000000000000e46be6c46b561c088e65?tab=Blobs) |
+| `eden_mainnet_data`    | [`000000000000000000000000000000000000000a312b9016d7ca3339b6`](https://celenium.io/namespace/000000000000000000000000000000000000000a312b9016d7ca3339b6?tab=Blobs) |
+
 ## Explorer and apps
 
 | Resource       | URL                                                              |
@@ -68,3 +77,7 @@ The following RedStone oracle contracts are deployed on Eden mainnet.
 | EdenMainnetMultiFeedAdapterWithoutRoundsV1 (RedStone adapter) | [`0x4154f0e4dc70DFA4219309fBea34322225E17b68`](https://eden.blockscout.com/address/0x4154f0e4dc70DFA4219309fBea34322225E17b68) |
 
 See [Oracles](/tooling/oracles) for integration notes.
+
+## Run a node
+
+To run your own Eden mainnet full node, see the [Run a full node](/guides/run-a-full-node) guide.

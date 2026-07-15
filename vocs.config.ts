@@ -92,6 +92,7 @@ export default defineConfig({
       collapsed: false,
       items: [
         { text: 'Build a frontend', link: '/guides/build-a-frontend' },
+        { text: 'Run a full node', link: '/guides/run-a-full-node' },
         { text: 'Onchain primer for web2 devs', link: '/guides/web2toweb3' }
       ]
     },
