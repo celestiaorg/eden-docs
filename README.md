@@ -27,6 +27,7 @@ Production is served by Cloudflare Pages at `https://docs.eden.zone`.
 The GitHub Actions workflow in `.github/workflows/deploy-cloudflare.yml` is the
 normal deploy path. Pushes to `main` build and deploy the Pages project using
 the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets.
+Pull requests from same-repo branches also publish Cloudflare Pages previews.
 
 `bun run build` must produce the full Pages artifact:
 
