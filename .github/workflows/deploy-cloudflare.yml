@@ -42,15 +42,13 @@ jobs:
             echo "VOCS_BASE_URL=https://${alias}.eden-docs.pages.dev" >> "$GITHUB_ENV"
           fi
 
-      - name: Build site (full-static)
+      - name: Build site (full-static Pages artifact)
         run: bun run build
 
-      # Clean ".md" URLs (used by the "View as Markdown" button and AI agents)
-      # and the MCP endpoint served by the Pages _worker.js.
-      - name: Add markdown mirror and MCP worker
+      - name: Verify Pages artifact
         run: |
-          cp -R dist/public/assets/md/. dist/public/
-          cp worker/index.js dist/public/_worker.js
+          test -f dist/public/_worker.js
+          test -f dist/public/why-eden.md
 
       # On main this is the production deploy; any other branch name creates
       # a preview deployment at <branch>.eden-docs.pages.dev.
