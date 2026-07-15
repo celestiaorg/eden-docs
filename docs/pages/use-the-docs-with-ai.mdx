@@ -12,7 +12,7 @@ Eden network and tooling details close at hand while you build.
 | Property  | Value                                    |
 | --------- | ---------------------------------------- |
 | Name      | `eden-docs`                              |
-| URL       | `https://docs.eden.zone/api/mcp`         |
+| URL       | `https://docs.eden.zone/mcp`             |
 | Transport | Streamable HTTP                          |
 | Tools     | `list_pages`, `read_page`, `search_docs` |
 
@@ -24,7 +24,7 @@ phrase, private key, API key, or `.env` file.
 ## Codex
 
 ```bash
-codex mcp add eden-docs --url https://docs.eden.zone/api/mcp
+codex mcp add eden-docs --url https://docs.eden.zone/mcp
 ```
 
 Codex stores MCP servers in `~/.codex/config.toml`. To configure the server by
@@ -32,7 +32,7 @@ hand, add:
 
 ```toml
 [mcp_servers."eden-docs"]
-url = "https://docs.eden.zone/api/mcp"
+url = "https://docs.eden.zone/mcp"
 ```
 
 Inside Codex, run `/mcp` to confirm the server is connected.
@@ -40,7 +40,7 @@ Inside Codex, run `/mcp` to confirm the server is connected.
 ## Claude Code
 
 ```bash
-claude mcp add --transport http eden-docs https://docs.eden.zone/api/mcp
+claude mcp add --transport http eden-docs https://docs.eden.zone/mcp
 ```
 
 Inside Claude Code, run `/mcp` to confirm the server is connected.
@@ -54,7 +54,7 @@ use it everywhere:
 {
   "mcpServers": {
     "eden-docs": {
-      "url": "https://docs.eden.zone/api/mcp"
+      "url": "https://docs.eden.zone/mcp"
     }
   }
 }
@@ -69,7 +69,7 @@ Add this to `.vscode/mcp.json` for this workspace, or to your user MCP config:
   "servers": {
     "eden-docs": {
       "type": "http",
-      "url": "https://docs.eden.zone/api/mcp"
+      "url": "https://docs.eden.zone/mcp"
     }
   }
 }
@@ -83,7 +83,7 @@ Add this to `~/.codeium/windsurf/mcp_config.json`:
 {
   "mcpServers": {
     "eden-docs": {
-      "serverUrl": "https://docs.eden.zone/api/mcp"
+      "serverUrl": "https://docs.eden.zone/mcp"
     }
   }
 }
