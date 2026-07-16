@@ -25,5 +25,6 @@ jobs:
       - name: Check URLs
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --config ./lychee.config
-          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --config ./lychee.toml .
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
