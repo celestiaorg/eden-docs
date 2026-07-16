@@ -6,7 +6,7 @@ format = "detailed"
 root_dir = "docs/pages"
 # Fallback extensions to apply when a URL does not specify one.
 # This is common in documentation tools that cross-reference files without extensions.
-fallback_extensions = ["mdx","md", "html"]
+fallback_extensions = ["mdx", "md", "html"]
 
 # Exclude loopback IP address range and localhost from checking.
 exclude_loopback = true
@@ -26,11 +26,7 @@ include_verbatim = true
 
 extensions = ["md", "mdx", "html"]
 
-exclude_path = [
-  "^node_modules/",
-  "^dist/",
-  "^coverage/",
-]
+exclude_path = ["^node_modules/", "^dist/", "^coverage/"]
 
 # Skip any URLs with known OK error codes (403, etc.)
 # NOTE: they are not checked AT ALL.
