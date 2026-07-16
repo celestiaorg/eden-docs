@@ -1,0 +1,29 @@
+name: Check URLs with lychee
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  linkChecker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # Cache lychee results to reduce repeated requests and rate limiting.
+      - name: Restore lychee cache
+        uses: actions/cache@v4
+        with:
+          path: .lycheecache
+          key: lychee-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            lychee-${{ runner.os }}-
+
+      - name: Check URLs
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --config ./lychee.config
+          token: ${{ secrets.GITHUB_TOKEN }}

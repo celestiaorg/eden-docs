@@ -43,3 +43,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Link Check
+.lycheecache
