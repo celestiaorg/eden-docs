@@ -20,8 +20,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .lycheecache
-          key: lychee-${{ runner.os }}-${{ github.sha }}
+          key: lychee-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('lychee.toml', '.github/workflows/link-check.yml') }}
           restore-keys: |
+            lychee-${{ runner.os }}-${{ github.ref_name }}-
             lychee-${{ runner.os }}-
 
       - name: Check URLs
