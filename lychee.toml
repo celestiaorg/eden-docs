@@ -1,0 +1,45 @@
+verbose = "info"
+no_progress = true
+format = "detailed"
+
+# Internal *relative* links start at
+root_dir = "docs/pages"
+# Fallback extensions to apply when a URL does not specify one.
+# This is common in documentation tools that cross-reference files without extensions.
+fallback_extensions = ["mdx", "md", "html"]
+
+# Exclude loopback IP address range and localhost from checking.
+exclude_loopback = true
+
+# Cache
+cache = true
+max_cache_age = "2d"
+
+# Enable the checking of fragments in links, both anchor fragments and text fragments.
+# See <https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments>
+include_fragments = "full"
+
+
+# Check links inside `<code>` and `<pre>` blocks as well as Markdown code
+# blocks.
+include_verbatim = true
+
+extensions = ["md", "mdx", "html"]
+
+exclude_path = ["^node_modules/", "^dist/", "^coverage/"]
+
+# Skip any URLs with known OK error codes (403, etc.)
+# NOTE: they are not checked AT ALL.
+exclude = [
+  "^https://api\\.goldsky\\.com(/.*)?$",
+  "^https://rpc\\.(testnet\\.)?eden\\.gateway\\.fm(/.*)?$",
+  "^https://eden\\.blockscout\\.com/api/$",
+  "^https://docs\\.eden\\.zone/api/mcp$",
+  "celestia-mainnet-da-full-storage.itrocket.net",
+  "celestia-testnet-consensus.itrocket.net",
+]
+
+host_concurrency = 2
+host_request_interval = "200ms"
+
+accept = ["200", "429"]

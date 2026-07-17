@@ -2,8 +2,8 @@
 # Downloads the Eden full node Docker Compose artifacts for a given network.
 #
 # Usage:
-#   curl -fsSL https://eden-docs.pages.dev/eden-artifacts/get-fullnode.sh | bash
-#   curl -fsSL https://eden-docs.pages.dev/eden-artifacts/get-fullnode.sh | bash -s -- testnet
+#   curl -fsSL https://docs.eden.zone/eden-artifacts/get-fullnode.sh | bash -s -- mainnet
+#   curl -fsSL https://docs.eden.zone/eden-artifacts/get-fullnode.sh | bash -s -- testnet
 set -euo pipefail
 
 NETWORK="${1:-mainnet}"

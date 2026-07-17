@@ -39,9 +39,10 @@ are atomic with the docs. A helper script downloads everything needed for your n
 `eden-fullnode` working directory:
 
 ```bash
-curl -fsSL https://eden-docs.pages.dev/eden-artifacts/get-fullnode.sh | bash -s -- mainnet
-# testnet: curl -fsSL https://eden-docs.pages.dev/eden-artifacts/get-fullnode.sh | bash -s -- testnet
 # no argument defaults to mainnet
+curl -fsSL https://docs.eden.zone/eden-artifacts/get-fullnode.sh | bash -s
+# testnet:
+# curl -fsSL https://docs.eden.zone/eden-artifacts/get-fullnode.sh | bash -s -- testnet
 
 cd eden-fullnode
 ```
