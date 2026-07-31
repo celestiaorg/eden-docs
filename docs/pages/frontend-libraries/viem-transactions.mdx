@@ -28,9 +28,10 @@ These transactions were produced from the Eden testnet flow in this guide:
   `147000` wei of gas.
 
 :::info
-Eden testnet Blockscout indexes and displays type `0x76` transactions by hash. The explorer shows
-the transaction status, block, executor, fee payer, calls, gas limit, and gas used. You can also
-cross-check sponsored transactions with `cast tx`, `cast receipt`, or direct RPC calls.
+Eden testnet Blockscout indexes type `0x76` transactions by hash, but the web UI does not yet show
+every custom field. Use `cast tx`, `cast receipt`, direct RPC calls, or the Blockscout transaction
+API to verify the executor, fee payer, and full call list. The explorer's State tab may be slow or
+show incomplete balance changes for sponsored transactions.
 :::
 
 ## Prerequisites
