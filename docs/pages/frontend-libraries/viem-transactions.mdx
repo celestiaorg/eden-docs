@@ -20,6 +20,7 @@ These transactions were produced from the Eden testnet flow in this guide:
 - Send sponsored transactions:
   - [`0x4776ece6dcfdaf35f7bc46e79ab3321055c73f761d8232afaa62565829f48721`](https://eden-testnet.blockscout.com/tx/0x4776ece6dcfdaf35f7bc46e79ab3321055c73f761d8232afaa62565829f48721)
   - [`0x2b6e28053be6423e05a957b954990cc35971b48eb20d280fea148357fb2d09c0`](https://eden-testnet.blockscout.com/tx/0x2b6e28053be6423e05a957b954990cc35971b48eb20d280fea148357fb2d09c0)
+  - [`0x35310fd76c45f1441226c102f4dc1070b41ac66cb1e6ed3354da78aa69824a67`](https://eden-testnet.blockscout.com/tx/0x35310fd76c45f1441226c102f4dc1070b41ac66cb1e6ed3354da78aa69824a67)
 
   Eden RPC and `cast` show receipt status `1`, type `0x76`, an unfunded executor as `from`, and
   the sponsor as `feePayer`. The second sponsored run is included in canonical block `184343012`;
@@ -27,9 +28,9 @@ These transactions were produced from the Eden testnet flow in this guide:
   `147000` wei of gas.
 
 :::info
-Eden testnet Blockscout transaction links may not display type `0x76` transactions by hash yet.
-Verify sponsored transactions with `cast tx`, `cast receipt`, or direct RPC calls until explorer
-indexing supports this transaction type.
+Eden testnet Blockscout indexes and displays type `0x76` transactions by hash. The explorer shows
+the transaction status, block, executor, fee payer, calls, gas limit, and gas used. You can also
+cross-check sponsored transactions with `cast tx`, `cast receipt`, or direct RPC calls.
 :::
 
 ## Prerequisites
