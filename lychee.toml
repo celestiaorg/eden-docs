@@ -35,6 +35,7 @@ exclude = [
   "^https://rpc\\.(testnet\\.)?eden\\.gateway\\.fm(/.*)?$",
   "^https://eden\\.blockscout\\.com/api/$",
   "^https://docs\\.eden\\.zone/api/mcp$",
+  "^https://defillama\\.com/chain/eden$",
   "celestia-mainnet-da-full-storage.itrocket.net",
   "celestia-testnet-consensus.itrocket.net",
 ]
