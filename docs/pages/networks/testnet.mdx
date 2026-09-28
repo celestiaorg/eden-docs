@@ -14,10 +14,20 @@ You can add Eden testnet to your wallet directly from
 
 ## RPCs
 
-| Endpoint                               | Type                                               | Provider                         |
-| -------------------------------------- | -------------------------------------------------- | -------------------------------- |
-| `https://rpc.testnet.eden.gateway.fm/` | RPC: [ev-reth](https://github.com/evstack/ev-reth) | [Gateway.fm](https://gateway.fm) |
-| `wss://rpc.testnet.eden.gateway.fm/ws` | WS: [ev-reth](https://github.com/evstack/ev-reth)  | [Gateway.fm](https://gateway.fm) |
+| Endpoint                                                     | Type                                               | Provider                         | `eth_getProof`                                     |
+| ------------------------------------------------------------ | -------------------------------------------------- | -------------------------------- | -------------------------------------------------- |
+| `https://rpc.testnet.eden.gateway.fm/`                       | RPC: [ev-reth](https://github.com/evstack/ev-reth) | [Gateway.fm](https://gateway.fm) | Currently unavailable                              |
+| `wss://rpc.testnet.eden.gateway.fm/ws`                       | WS: [ev-reth](https://github.com/evstack/ev-reth)  | [Gateway.fm](https://gateway.fm) | Not verified                                       |
+| `https://ev-reth-eden-testnet.binarybuilders.services:8545/` | RPC: [ev-reth](https://github.com/evstack/ev-reth) | Binary Builders                  | Use `latest`; historical proofs are not guaranteed |
+
+Proof capabilities were checked on September 28, 2026. Gateway.fm's HTTP endpoint returns
+`-32601` (method unavailable) for `eth_getProof`. For account and storage proofs, use the
+Binary Builders HTTP endpoint with the `latest` block tag. Historical requests tested against
+that endpoint returned `distance to target block exceeds maximum proof window`. An explicit
+block number can fall outside the proof window as the chain advances between requests.
+
+Archive or pruned state retention has not been confirmed for these endpoints. Proof availability
+alone does not establish archive status.
 
 > **Gateway.fm rate limits:** 30 requests/second per IP. [Register at admin.gateway.fm](https://admin.gateway.fm) for 60 requests/second.
 

@@ -33,6 +33,8 @@ exclude_path = ["^node_modules/", "^dist/", "^coverage/"]
 exclude = [
   "^https://api\\.goldsky\\.com(/.*)?$",
   "^https://rpc\\.(testnet\\.)?eden\\.gateway\\.fm(/.*)?$",
+  # JSON-RPC endpoint accepts POST; link-checker GET requests return 405.
+  "^https://ev-reth-eden-testnet\\.binarybuilders\\.services:8545/?$",
   "^https://eden\\.blockscout\\.com/api/$",
   "^https://docs\\.eden\\.zone/api/mcp$",
   "^https://defillama\\.com/chain/eden$",
