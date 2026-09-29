@@ -30,19 +30,10 @@ are available through [admin.gateway.fm](https://admin.gateway.fm).
 
 ### Account and storage proofs
 
-Gateway.fm supports `eth_getProof` at `latest` and within the last **864,000 blocks**
-(about 24 hours at Eden's 100ms block time). Older requests return `-32602` with
-`distance to target block exceeds maximum proof window`. The window moves with the chain,
-so leave a margin when requesting a historical block near the limit.
+Gateway.fm's HTTP and WebSocket endpoints support `eth_getProof` for account and storage
+proofs at `latest` and within the last **864,000 blocks** (about 24 hours).
 
-Gateway.fm confirmed this configuration on September 29, 2026. It also reports a maximum
-configurable window of 1,209,600 blocks (about 33.6 hours) for its reth client; that larger
-window is **not enabled**. Archival storage does not bypass this proof-generation limit.
-Archive or pruned state retention has not been confirmed for these endpoints.
-
-Live checks on September 29, 2026 returned account and storage proofs over HTTP and WebSocket
-at `latest` and 863,000 blocks behind a sampled head. Requests 865,000 blocks behind the sampled
-head returned the proof-window error.
+Support was verified on September 29, 2026. Gateway.fm confirmed the 864,000-block window.
 
 ## Celestia namespaces
 
