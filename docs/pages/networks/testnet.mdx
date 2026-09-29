@@ -16,18 +16,29 @@ You can add Eden testnet to your wallet directly from
 
 | Endpoint                                                     | Type                                               | Provider                         | `eth_getProof`                                     |
 | ------------------------------------------------------------ | -------------------------------------------------- | -------------------------------- | -------------------------------------------------- |
-| `https://rpc.testnet.eden.gateway.fm/`                       | RPC: [ev-reth](https://github.com/evstack/ev-reth) | [Gateway.fm](https://gateway.fm) | Currently unavailable                              |
-| `wss://rpc.testnet.eden.gateway.fm/ws`                       | WS: [ev-reth](https://github.com/evstack/ev-reth)  | [Gateway.fm](https://gateway.fm) | Not verified                                       |
+| `https://rpc.testnet.eden.gateway.fm/`                       | RPC: [ev-reth](https://github.com/evstack/ev-reth) | [Gateway.fm](https://gateway.fm) | Latest and recent historical blocks                |
+| `wss://rpc.testnet.eden.gateway.fm/ws`                       | WS: [ev-reth](https://github.com/evstack/ev-reth)  | [Gateway.fm](https://gateway.fm) | Latest and recent historical blocks                |
 | `https://ev-reth-eden-testnet.binarybuilders.services:8545/` | RPC: [ev-reth](https://github.com/evstack/ev-reth) | Binary Builders                  | Use `latest`; historical proofs are not guaranteed |
 
-Proof capabilities were checked on September 28, 2026. Gateway.fm's HTTP endpoint returns
-`-32601` (method unavailable) for `eth_getProof`. For account and storage proofs, use the
-Binary Builders HTTP endpoint with the `latest` block tag. Historical requests tested against
-that endpoint returned `distance to target block exceeds maximum proof window`. An explicit
-block number can fall outside the proof window as the chain advances between requests.
+### Account and storage proofs
 
-Archive or pruned state retention has not been confirmed for these endpoints. Proof availability
-alone does not establish archive status.
+Gateway.fm supports `eth_getProof` at `latest` and within the last **864,000 blocks**
+(about 24 hours at Eden's 100ms block time). Older requests return `-32602` with
+`distance to target block exceeds maximum proof window`. The window moves with the chain,
+so leave a margin when requesting a historical block near the limit.
+
+Gateway.fm confirmed this configuration on September 29, 2026. It also reports a maximum
+configurable window of 1,209,600 blocks (about 33.6 hours) for its reth client; that larger
+window is **not enabled**. Archival storage does not bypass this proof-generation limit.
+Archive or pruned state retention has not been confirmed for these endpoints.
+
+Live checks on September 29, 2026 returned account and storage proofs from Gateway.fm over
+HTTP and WebSocket at `latest` and 863,000 blocks behind a sampled head. Requests 865,000
+blocks behind the sampled head returned the proof-window error.
+
+For Binary Builders, use `latest`. Its HTTP endpoint returned account and storage proofs at
+`latest`, but sampled historical requests, including 100 blocks behind the head, returned the
+proof-window error. Its configured proof window and archive status remain unconfirmed.
 
 > **Gateway.fm rate limits:** 30 requests/second per IP. [Register at admin.gateway.fm](https://admin.gateway.fm) for 60 requests/second.
 
