@@ -28,6 +28,13 @@ The public RPC confirmed chain ID `0x2ca` (`714`) and latest-block gas limit `0x
 Gateway.fm public RPCs have a rate limit of 30 requests per second per IP address. Higher limits
 are available through [admin.gateway.fm](https://admin.gateway.fm).
 
+### Account and storage proofs
+
+Gateway.fm's HTTP and WebSocket endpoints support `eth_getProof` for account and storage
+proofs at `latest` and within the last **864,000 blocks** (about 24 hours).
+
+Support was verified on September 29, 2026. Gateway.fm confirmed the 864,000-block window.
+
 ## Celestia namespaces
 
 Eden mainnet posts data to Celestia under the following namespaces:

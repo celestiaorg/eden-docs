@@ -14,10 +14,21 @@ You can add Eden testnet to your wallet directly from
 
 ## RPCs
 
-| Endpoint                               | Type                                               | Provider                         |
-| -------------------------------------- | -------------------------------------------------- | -------------------------------- |
-| `https://rpc.testnet.eden.gateway.fm/` | RPC: [ev-reth](https://github.com/evstack/ev-reth) | [Gateway.fm](https://gateway.fm) |
-| `wss://rpc.testnet.eden.gateway.fm/ws` | WS: [ev-reth](https://github.com/evstack/ev-reth)  | [Gateway.fm](https://gateway.fm) |
+| Endpoint                                                     | Type                                               | Provider                         | `eth_getProof`                       |
+| ------------------------------------------------------------ | -------------------------------------------------- | -------------------------------- | ------------------------------------ |
+| `https://rpc.testnet.eden.gateway.fm/`                       | RPC: [ev-reth](https://github.com/evstack/ev-reth) | [Gateway.fm](https://gateway.fm) | `latest` and the last 864,000 blocks |
+| `wss://rpc.testnet.eden.gateway.fm/ws`                       | WS: [ev-reth](https://github.com/evstack/ev-reth)  | [Gateway.fm](https://gateway.fm) | `latest` and the last 864,000 blocks |
+| `https://ev-reth-eden-testnet.binarybuilders.services:8545/` | RPC: [ev-reth](https://github.com/evstack/ev-reth) | Binary Builders                  | `latest`                             |
+
+### Account and storage proofs
+
+Gateway.fm's HTTP and WebSocket endpoints support `eth_getProof` for account and storage
+proofs at `latest` and within the last **864,000 blocks** (about 24 hours).
+
+Binary Builders' HTTP endpoint supports account and storage proofs at `latest`.
+Historical proof support has not been confirmed; use Gateway.fm for historical proofs.
+
+Support was verified on September 29, 2026. Gateway.fm confirmed the 864,000-block window.
 
 > **Gateway.fm rate limits:** 30 requests/second per IP. [Register at admin.gateway.fm](https://admin.gateway.fm) for 60 requests/second.
 
