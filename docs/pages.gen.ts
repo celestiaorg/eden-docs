@@ -1,10 +1,14 @@
 // deno-fmt-ignore-file
 // biome-ignore format: generated types do not need formatting
 // prettier-ignore
-import type { PathsForPages } from 'waku/router'
+import type { PathsForPages, GetConfigResponse } from 'waku/router'
+
+// prettier-ignore
+import type { getConfig as File_Root_getConfig } from './pages/_root'
 
 // prettier-ignore
 type Page =
+  | ({ path: '/_root' } & GetConfigResponse<typeof File_Root_getConfig>)
   | { path: '/development-environments/foundry-quickstart'; render: 'static' }
   | { path: '/development-environments/session-keys-cast'; render: 'static' }
   | { path: '/development-environments/supported-eips'; render: 'static' }
