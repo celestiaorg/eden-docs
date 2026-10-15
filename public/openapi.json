@@ -1,0 +1,495 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Eden documentation MCP API",
+    "version": "1.0.0",
+    "description": "Public, read-only documentation access through JSON-RPC over MCP Streamable HTTP. This describes the documentation server, not the Eden blockchain RPC API. No authentication or session ID is required."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "The current documentation host"
+    }
+  ],
+  "security": [],
+  "externalDocs": {
+    "description": "MCP client setup and discovery",
+    "url": "https://docs.eden.zone/use-the-docs-with-ai"
+  },
+  "paths": {
+    "/api/mcp": {
+      "post": {
+        "operationId": "sendMcpMessage",
+        "summary": "List, read, or search Eden documentation",
+        "description": "Send one JSON-RPC request or notification per POST. Responses are JSON, not SSE. Legacy non-empty batches are accepted when the protocol header is omitted or is 2024-11-05 or 2025-03-26. Modern clients must send individual messages. A tool result with isError=true indicates a failed page lookup. JSON-RPC method, parameter, and internal errors use HTTP 200 with an error object.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "MCP-Protocol-Version",
+            "required": false,
+            "description": "Use the version negotiated during initialize. Defaults to 2025-03-26 when absent.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2024-11-05",
+                "2025-03-26",
+                "2025-06-18",
+                "2025-11-25"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Message"
+                  },
+                  {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "$ref": "#/components/schemas/Message"
+                    },
+                    "description": "Legacy batch compatibility only."
+                  }
+                ]
+              },
+              "examples": {
+                "initialize": {
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "initialize",
+                    "params": {
+                      "protocolVersion": "2025-11-25",
+                      "capabilities": {},
+                      "clientInfo": {
+                        "name": "example-client",
+                        "version": "1.0.0"
+                      }
+                    }
+                  }
+                },
+                "listTools": {
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/list"
+                  }
+                },
+                "listPages": {
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "list_pages"
+                    }
+                  }
+                },
+                "readPage": {
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "read_page",
+                      "arguments": {
+                        "pagePath": "/networks/mainnet"
+                      }
+                    }
+                  }
+                },
+                "search": {
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "search_docs",
+                      "arguments": {
+                        "query": "sponsored"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC success or error; legacy batches return an array excluding notifications.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RpcResponse"
+                    },
+                    {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "$ref": "#/components/schemas/RpcResponse"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted notification or notification-only legacy batch; empty response body."
+          },
+          "400": {
+            "description": "Invalid JSON, malformed request, unsupported protocol version, or a batch sent with MCP-Protocol-Version: 2025-06-18 or 2025-11-25.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RpcResponse"
+                },
+                "example": {
+                  "jsonrpc": "2.0",
+                  "id": null,
+                  "error": {
+                    "code": -32600,
+                    "message": "Invalid Request"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "mcpStreamUnavailable",
+        "summary": "SSE streams are not supported",
+        "responses": {
+          "405": {
+            "description": "POST JSON-RPC messages instead.",
+            "headers": {
+              "Allow": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "POST, DELETE, OPTIONS"
+              }
+            },
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "endMcpSession",
+        "summary": "Acknowledge session cleanup",
+        "description": "The server is stateless, so there is no session to delete.",
+        "responses": {
+          "204": {
+            "description": "No content."
+          }
+        }
+      },
+      "options": {
+        "operationId": "mcpCorsPreflight",
+        "summary": "CORS preflight",
+        "responses": {
+          "204": {
+            "description": "No content. Public cross-origin access is allowed."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Message": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/RpcRequest"
+          },
+          {
+            "$ref": "#/components/schemas/Notification"
+          }
+        ]
+      },
+      "RpcRequest": {
+        "type": "object",
+        "required": [
+          "jsonrpc",
+          "id",
+          "method"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "type": [
+              "string",
+              "integer"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "initialize",
+              "ping",
+              "tools/list",
+              "tools/call"
+            ]
+          },
+          "params": {
+            "type": "object"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "method": {
+                  "const": "tools/call"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "params"
+              ],
+              "properties": {
+                "params": {
+                  "$ref": "#/components/schemas/ToolCallParams"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Notification": {
+        "type": "object",
+        "required": [
+          "jsonrpc",
+          "method"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "method": {
+            "type": "string"
+          },
+          "params": {
+            "type": "object"
+          }
+        },
+        "not": {
+          "required": [
+            "id"
+          ]
+        },
+        "description": "Messages without an id are acknowledged without invoking tools."
+      },
+      "ToolCallParams": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "const": "list_pages"
+              },
+              "arguments": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "name",
+              "arguments"
+            ],
+            "properties": {
+              "name": {
+                "const": "read_page"
+              },
+              "arguments": {
+                "type": "object",
+                "properties": {
+                  "pagePath": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "description": "The page path (e.g., \"/why-eden\" or \"/networks/mainnet\")"
+                  }
+                },
+                "required": [
+                  "pagePath"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "name",
+              "arguments"
+            ],
+            "properties": {
+              "name": {
+                "const": "search_docs"
+              },
+              "arguments": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "description": "The search query"
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "RpcResponse": {
+        "type": "object",
+        "required": [
+          "jsonrpc",
+          "id"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "type": [
+              "string",
+              "integer",
+              "null"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "description": "initialize returns protocolVersion, capabilities, and serverInfo; ping returns {}; tools/list returns tools; tools/call returns text content and an optional isError flag.",
+            "properties": {
+              "protocolVersion": {
+                "type": "string"
+              },
+              "capabilities": {
+                "type": "object"
+              },
+              "serverInfo": {
+                "type": "object"
+              },
+              "tools": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "name",
+                    "description",
+                    "inputSchema"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "inputSchema": {
+                      "type": "object"
+                    }
+                  }
+                }
+              },
+              "content": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "isError": {
+                "type": "boolean"
+              }
+            }
+          },
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "integer",
+                "enum": [
+                  -32700,
+                  -32600,
+                  -32601,
+                  -32602,
+                  -32603
+                ],
+                "description": "Parse error, invalid request, method not found, invalid tool arguments, or internal documentation error, respectively."
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "oneOf": [
+          {
+            "required": [
+              "result"
+            ],
+            "not": {
+              "required": [
+                "error"
+              ]
+            }
+          },
+          {
+            "required": [
+              "error"
+            ],
+            "not": {
+              "required": [
+                "result"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

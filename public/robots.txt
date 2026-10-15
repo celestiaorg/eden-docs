@@ -1,2 +1,5 @@
 User-agent: *
+Content-Signal: search=yes, ai-input=yes
 Allow: /
+
+Sitemap: https://docs.eden.zone/sitemap.xml

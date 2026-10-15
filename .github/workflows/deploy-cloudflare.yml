@@ -50,6 +50,8 @@ jobs:
             echo "base_url=https://docs.eden.zone" >> "$GITHUB_OUTPUT"
           else
             alias="$(printf '%s' "$branch" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]/-/g')"
+            # Pages limits branch aliases to 28 characters.
+            alias="${alias:0:28}"
             echo "VOCS_BASE_URL=https://${alias}.${PAGES_PREVIEW_HOST}" >> "$GITHUB_ENV"
             echo "base_url=https://${alias}.${PAGES_PREVIEW_HOST}" >> "$GITHUB_OUTPUT"
           fi
@@ -78,6 +80,9 @@ jobs:
         run: |
           test -f dist/public/_worker.js
           test -f dist/public/why-eden.md
+          test -f dist/public/openapi.json
+          test -f dist/public/.well-known/agent-skills/index.json
+          test -f dist/public/.well-known/agent-skills/eden-development/SKILL.md
 
           if [[ "${{ steps.deployment-target.outputs.branch }}" == "main" ]]; then
             grep -q '<base href="https://docs.eden.zone"' dist/public/index.html
@@ -96,6 +101,19 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy --branch ${{ steps.deployment-target.outputs.branch }}
+
+      - name: Verify preview hostname
+        if: steps.deploy-pages.outcome == 'success' && steps.deployment-target.outputs.branch != 'main'
+        shell: bash
+        env:
+          EXPECTED_BASE_URL: ${{ steps.deployment-target.outputs.base_url }}
+          DEPLOYMENT_ALIAS_URL: ${{ steps.deploy-pages.outputs.pages-deployment-alias-url }}
+        run: |
+          if [[ "${DEPLOYMENT_ALIAS_URL%/}" != "$EXPECTED_BASE_URL" ]]; then
+            echo "::error::Preview alias $DEPLOYMENT_ALIAS_URL differs from build URL $EXPECTED_BASE_URL"
+            exit 1
+          fi
+          curl --fail --silent --show-error --retry 4 --retry-delay 2 "$EXPECTED_BASE_URL/sitemap.xml" > /dev/null
 
       - name: Summarize deployment
         if: steps.deploy-pages.outcome == 'success'
