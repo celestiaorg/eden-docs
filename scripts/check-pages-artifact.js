@@ -47,6 +47,30 @@ assert.match(robots, /User-agent: \*\nContent-Signal: search=yes, ai-input=yes\n
 assert.doesNotMatch(robots, /ai-train\s*=/)
 const origin = new URL((await read('sitemap.xml')).match(/<loc>([^<]+)<\/loc>/)[1]).origin
 assert.ok(robots.includes(`Sitemap: ${origin}/sitemap.xml`))
+
+const home = await read('index.html')
+assert.match(home, /<title>[^<]*Eden docs[^<]*EVM network/)
+const structured = [...home.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)].map(
+  match => JSON.parse(match[1])
+)
+const graph = structured.flatMap(item => item['@graph'] ?? [item])
+const publisherId = graph.find(item => item['@type'] === 'WebSite')?.publisher['@id']
+const publisher = graph.find(item => item['@id'] === publisherId)
+assert.equal(publisher?.['@type'], 'Organization')
+assert.equal(publisher.contactPoint.contactType, 'security disclosures')
+assert.equal(publisher.contactPoint.email, 'security@celestia.org')
+assert.equal(publisher.address, undefined, 'Do not invent an organization postal address')
+for (const path of ['developers', 'about', 'contact', 'privacy']) {
+  assert.ok(pages.includes(`/${path}`), `${path} must be discoverable in llms.txt`)
+  assert.ok(home.includes(`href="/${path}"`), `${path} must be linked from home`)
+  assert.ok((await read(`${path}.md`)).length > 500)
+}
+assert.ok((await read('privacy/index.html')).includes('href="https://celestia.org/privacy/"'))
+assert.ok((await read('contact/index.html')).includes('href="mailto:security@celestia.org"'))
+assert.match(await read('developers.md'), /Foundry.*Forge and Cast CLI/)
+assert.match(await read('use-the-docs-with-ai.md'), /## Versioning and deprecation/)
+assert.match(await read('use-the-docs-with-ai.md'), /## Rate limits/)
+
 console.log(
   `Verified ${pages.length} Markdown pages, HTML discovery links, skill digests, and Pages worker.`
 )

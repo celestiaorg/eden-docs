@@ -145,7 +145,11 @@ test('legacy batches validate each member and modern MCP rejects batching', asyn
   ]
   const response = await rpc(batch)
   expect(await response.json()).toEqual([
-    { jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid Request' } },
+    expect.objectContaining({
+      jsonrpc: '2.0',
+      id: null,
+      error: expect.objectContaining({ code: -32600, message: 'Invalid Request' })
+    }),
     { jsonrpc: '2.0', id: 1, result: {} }
   ])
   for (const version of ['2025-06-18', '2025-11-25']) {
@@ -391,4 +395,68 @@ test('HTML asset fallbacks never become successful Markdown tool results', async
     }
   )
   expect((await response.json()).result.isError).toBe(true)
+})
+
+test('unsupported API methods and unknown API paths return JSON recovery hints', async () => {
+  for (const method of ['GET', 'HEAD', 'PUT', 'PATCH']) {
+    const response = await request('/api/mcp', 'application/json', method)
+    expect(response.status).toBe(405)
+    expect(response.headers.get('Allow')).toBe('POST, DELETE, OPTIONS')
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
+    if (method === 'HEAD') expect(await response.text()).toBe('')
+    else {
+      const { error } = await response.json()
+      expect(error.code).toBe('METHOD_NOT_ALLOWED')
+      expect(error.hint).toContain('POST')
+    }
+  }
+  for (const path of ['/api', '/api/missing', '/api/mcp/missing']) {
+    const response = await request(path, 'application/json')
+    expect(response.status).toBe(404)
+    expect((await response.json()).error).toMatchObject({
+      code: 'NOT_FOUND',
+      hint: expect.stringContaining('/openapi.json')
+    })
+    expect(await (await request(path, 'application/json', 'HEAD')).text()).toBe('')
+  }
+  const card = await request('/api/mcp/server-card', 'application/json', 'POST')
+  expect(card.status).toBe(405)
+  expect(card.headers.get('Allow')).toBe('GET, HEAD, OPTIONS')
+  expect((await card.json()).error.code).toBe('METHOD_NOT_ALLOWED')
+})
+
+test('JSON-RPC errors include actionable hints without exposing backend details', async () => {
+  for (const body of [{}, { jsonrpc: '2.0', id: 1, method: 'unknown' }]) {
+    const { error } = await (await rpc(body)).json()
+    expect(error.data.hint.length).toBeGreaterThan(0)
+  }
+})
+
+test('OpenAPI describes every discovery response with its actual media type and required fields', async () => {
+  const operationIds = new Set()
+  for (const [path, methods] of Object.entries(openapi.paths)) {
+    for (const operation of Object.values(methods)) {
+      expect(operationIds.has(operation.operationId)).toBe(false)
+      operationIds.add(operation.operationId)
+    }
+    if (path === '/api/mcp') continue
+    const response = await request(path)
+    expect(response.status).toBe(200)
+    const type = response.headers.get('Content-Type')
+    const schemaRef = methods.get.responses['200'].content[type].schema.$ref
+    const schema = openapi.components.schemas[schemaRef.split('/').at(-1)]
+    const body = await response.json()
+    for (const field of schema.required) expect(body[field]).toBeDefined()
+    expect(await (await request(path, '*/*', 'HEAD')).text()).toBe('')
+    const rejected = await request(path, '*/*', 'POST')
+    expect(rejected.status).toBe(405)
+    expect((await rejected.json()).error.code).toBe('METHOD_NOT_ALLOWED')
+  }
+  expect(
+    openapi.paths['/api/mcp'].get.responses['405'].content['application/json'].schema.$ref
+  ).toBe('#/components/schemas/HttpError')
+  expect(
+    openapi.paths['/api/mcp'].post.responses['400'].content['application/json'].schema.$ref
+  ).toBe('#/components/schemas/RpcError')
 })

@@ -52,6 +52,9 @@ export default defineConfig({
   },
   sidebar: [
     { text: 'Welcome', link: '/' },
+    { text: 'Developer portal', link: '/developers' },
+    { text: 'About Eden', link: '/about' },
+    { text: 'Contact', link: '/contact' },
     {
       text: 'Why Eden',
       link: '/why-eden'
@@ -121,7 +124,10 @@ export default defineConfig({
     {
       text: 'Legal',
       collapsed: true,
-      items: [{ text: 'Disclaimer', link: '/legal/disclaimer' }]
+      items: [
+        { text: 'Disclaimer', link: '/legal/disclaimer' },
+        { text: 'Privacy policy', link: '/privacy' }
+      ]
     }
   ]
 })

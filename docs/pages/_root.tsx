@@ -11,11 +11,30 @@ export default function Root({ children }: { children: ReactNode }) {
       <script type="application/ld+json">
         {JSON.stringify({
           '@context': 'https://schema.org',
-          '@type': 'WebSite',
-          name: 'Eden docs',
-          url: 'https://docs.eden.zone',
-          description: 'Developer documentation for Eden, an EVM network powered by Celestia.',
-          inLanguage: 'en'
+          '@graph': [
+            {
+              '@type': 'WebSite',
+              '@id': 'https://docs.eden.zone/#website',
+              name: 'Eden docs',
+              url: 'https://docs.eden.zone',
+              description: 'Developer documentation for Eden, an EVM network powered by Celestia.',
+              inLanguage: 'en',
+              publisher: { '@id': 'https://docs.eden.zone/#organization' }
+            },
+            {
+              '@type': 'Organization',
+              '@id': 'https://docs.eden.zone/#organization',
+              name: 'Celestia Labs',
+              legalName: 'Monoma Ltd.',
+              url: 'https://docs.eden.zone/about',
+              contactPoint: {
+                '@type': 'ContactPoint',
+                contactType: 'security disclosures',
+                email: 'security@celestia.org',
+                url: 'https://docs.eden.zone/contact'
+              }
+            }
+          ]
         })}
       </script>
       <script

@@ -3,7 +3,7 @@
   "info": {
     "title": "Eden documentation MCP API",
     "version": "1.0.0",
-    "description": "Public, read-only documentation access through JSON-RPC over MCP Streamable HTTP. This describes the documentation server, not the Eden blockchain RPC API. No authentication or session ID is required."
+    "description": "Public, read-only documentation access through JSON-RPC over MCP Streamable HTTP. This describes the documentation server, not the Eden blockchain RPC API. No authentication or session ID is required. Unknown /api paths return HTTP 404 with the HttpError schema. No documentation API quota is currently advertised; blockchain RPC limits are provider-specific. See the linked guide for versioning and deprecation behavior."
   },
   "servers": [
     {
@@ -21,7 +21,7 @@
       "post": {
         "operationId": "sendMcpMessage",
         "summary": "List, read, or search Eden documentation",
-        "description": "Send one JSON-RPC request or notification per POST. Responses are JSON, not SSE. Legacy non-empty batches are accepted when the protocol header is omitted or is 2024-11-05 or 2025-03-26. Modern clients must send individual messages. A tool result with isError=true indicates a failed page lookup. JSON-RPC method, parameter, and internal errors use HTTP 200 with an error object.",
+        "description": "Send one JSON-RPC request or notification per POST. Responses are JSON, not SSE. Legacy non-empty batches are accepted when the protocol header is omitted or is 2024-11-05 or 2025-03-26. Modern clients must send individual messages. A tool result with isError=true indicates a failed page lookup. JSON-RPC method, parameter, and internal errors use HTTP 200 with an error object. Error data.hint explains recovery. Internal documentation failures use JSON-RPC -32603 under HTTP 200, not an HTTP 500 response.",
         "parameters": [
           {
             "in": "header",
@@ -151,7 +151,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RpcResponse"
+                  "$ref": "#/components/schemas/RpcError"
                 },
                 "example": {
                   "jsonrpc": "2.0",
@@ -171,24 +171,24 @@
         "summary": "SSE streams are not supported",
         "responses": {
           "405": {
-            "description": "POST JSON-RPC messages instead.",
+            "description": "Unsupported HTTP method. Follow error.hint to choose the supported method.",
             "headers": {
               "Allow": {
                 "schema": {
                   "type": "string"
-                },
-                "example": "POST, DELETE, OPTIONS"
+                }
               }
             },
             "content": {
-              "text/plain": {
+              "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/HttpError"
                 }
               }
             }
           }
-        }
+        },
+        "description": "This stateless MCP endpoint returns a structured HTTP 405 error because it does not offer an SSE stream. Use POST for JSON-RPC."
       },
       "delete": {
         "operationId": "endMcpSession",
@@ -206,6 +206,82 @@
         "responses": {
           "204": {
             "description": "No content. Public cross-origin access is allowed."
+          }
+        }
+      }
+    },
+    "/api/mcp/server-card": {
+      "get": {
+        "operationId": "getMcpServerCard",
+        "summary": "Read Eden documentation MCP connection details",
+        "description": "Public, read-only discovery document. URLs use the current documentation host. HEAD returns the same headers without a body.",
+        "responses": {
+          "200": {
+            "description": "Read Eden documentation MCP connection details.",
+            "content": {
+              "application/mcp-server-card+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerCard"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/mcp/server-card.json": {
+      "get": {
+        "operationId": "getWellKnownMcpServerCard",
+        "summary": "Read the well-known alias of the MCP server card",
+        "description": "Public, read-only discovery document. URLs use the current documentation host. HEAD returns the same headers without a body.",
+        "responses": {
+          "200": {
+            "description": "Read the well-known alias of the MCP server card.",
+            "content": {
+              "application/mcp-server-card+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerCard"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/api-catalog": {
+      "get": {
+        "operationId": "getApiCatalog",
+        "summary": "Find the Eden documentation API description and guide",
+        "description": "Public, read-only discovery document. URLs use the current documentation host. HEAD returns the same headers without a body.",
+        "responses": {
+          "200": {
+            "description": "Find the Eden documentation API description and guide.",
+            "content": {
+              "application/linkset+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiCatalog"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/ai-catalog.json": {
+      "get": {
+        "operationId": "getAiCatalog",
+        "summary": "Discover Eden documentation, MCP, and agent skills",
+        "description": "Public, read-only discovery document. URLs use the current documentation host. HEAD returns the same headers without a body.",
+        "responses": {
+          "200": {
+            "description": "Discover Eden documentation, MCP, and agent skills.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiCatalog"
+                }
+              }
+            }
           }
         }
       }
@@ -393,10 +469,28 @@
                 "type": "string"
               },
               "capabilities": {
-                "type": "object"
+                "type": "object",
+                "required": [],
+                "properties": {
+                  "tools": {
+                    "type": "object"
+                  }
+                }
               },
               "serverInfo": {
-                "type": "object"
+                "type": "object",
+                "required": [
+                  "name",
+                  "version"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  }
+                }
               },
               "tools": {
                 "type": "array",
@@ -463,6 +557,17 @@
               },
               "message": {
                 "type": "string"
+              },
+              "data": {
+                "type": "object",
+                "required": [
+                  "hint"
+                ],
+                "properties": {
+                  "hint": {
+                    "type": "string"
+                  }
+                }
               }
             }
           }
@@ -489,6 +594,219 @@
             }
           }
         ]
+      },
+      "HttpError": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "hint"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "METHOD_NOT_ALLOWED",
+                  "NOT_FOUND"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "hint": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "RpcError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RpcResponse"
+          },
+          {
+            "required": [
+              "error"
+            ]
+          }
+        ]
+      },
+      "ServerCard": {
+        "type": "object",
+        "required": [
+          "name",
+          "title",
+          "description",
+          "version",
+          "websiteUrl",
+          "remotes"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "websiteUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "remotes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "type",
+                "url",
+                "supportedProtocolVersions"
+              ],
+              "properties": {
+                "type": {
+                  "const": "streamable-http"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "supportedProtocolVersions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "AiCatalog": {
+        "type": "object",
+        "required": [
+          "specVersion",
+          "host",
+          "entries"
+        ],
+        "properties": {
+          "specVersion": {
+            "const": "1.0"
+          },
+          "host": {
+            "type": "object",
+            "required": [
+              "displayName",
+              "identifier"
+            ],
+            "properties": {
+              "displayName": {
+                "type": "string"
+              },
+              "identifier": {
+                "type": "string"
+              }
+            }
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "identifier",
+                "displayName",
+                "type",
+                "url",
+                "representativeQueries"
+              ],
+              "properties": {
+                "identifier": {
+                  "type": "string"
+                },
+                "displayName": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "representativeQueries": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "CatalogLink": {
+        "type": "object",
+        "required": [
+          "href",
+          "type"
+        ],
+        "properties": {
+          "href": {
+            "type": "string",
+            "format": "uri"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiCatalog": {
+        "type": "object",
+        "required": [
+          "linkset"
+        ],
+        "properties": {
+          "linkset": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "anchor",
+                "service-desc",
+                "service-doc"
+              ],
+              "properties": {
+                "anchor": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "service-desc": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CatalogLink"
+                  }
+                },
+                "service-doc": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CatalogLink"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
