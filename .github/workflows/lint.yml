@@ -25,6 +25,9 @@ jobs:
       - name: Type check
         run: bun run typecheck
 
+      - name: Test Pages worker
+        run: bun test worker
+
       - name: Check pages.gen.ts is up to date
         run: |
           # The waku route typegen only runs inside `vocs dev` (the plugin is

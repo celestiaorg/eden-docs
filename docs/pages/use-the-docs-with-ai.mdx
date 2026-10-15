@@ -21,6 +21,38 @@ The docs MCP server is public and read-only. It never needs a wallet recovery
 phrase, private key, API key, or `.env` file.
 :::
 
+## Read without an MCP client
+
+Start with the page index at `/llms.txt`, complete documentation at `/llms-full.txt`,
+or agent guidance at `/AGENTS.md`. Each page is also available as Markdown: append
+`.md` to its path, or request the page with `Accept: text/markdown`.
+
+```bash
+curl -L -H 'Accept: text/markdown' https://docs.eden.zone/networks/mainnet
+```
+
+MCP clients can discover connection details through the server card at
+`/api/mcp/server-card`. Connect to `/api/mcp` to list and call tools.
+
+## Agent skills and API discovery
+
+The Eden development skill guides agents to current network settings and the
+relevant contract, frontend, transaction, and token documentation. Tools can
+discover it through `/.well-known/agent-skills/index.json`, which includes the
+skill's URL and a SHA-256 digest to verify the download.
+
+The OpenAPI description at `/openapi.json` documents the existing MCP endpoint's
+JSON-RPC requests and responses. It describes the documentation server; Eden's
+chain RPC endpoints are listed on the network reference pages.
+The API catalog at `/.well-known/api-catalog` links to this description and setup
+guide. The AI catalog at `/.well-known/ai-catalog.json` lists the MCP server, skill
+index, and documentation index.
+
+Malformed requests return JSON-RPC errors. A tool call must include its required
+arguments: `pagePath` for `read_page`, or a non-empty `query` for `search_docs`.
+When a page is missing, `read_page` returns a tool result with `isError: true`;
+use `list_pages` to choose a current path. Send one JSON-RPC message per POST.
+
 ## Codex
 
 ```bash

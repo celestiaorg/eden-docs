@@ -30,9 +30,11 @@ export default defineConfig({
   // _worker.js), which reads the static markdown this build emits.
   renderStrategy: 'full-static',
   title: 'Eden docs',
-  description: 'Documentation for Eden',
+  description:
+    'Developer documentation for Eden, an EVM network powered by Celestia. Find network settings, deploy contracts, and build applications.',
   logoUrl: '/celestia-eden-logo.svg',
   iconUrl: '/favicon.svg',
+  ogImageUrl: `${baseUrl}/og-image.png`,
   // Used verbatim for the emitted <base> tag and absolute metadata URLs.
   baseUrl,
   editLink: {

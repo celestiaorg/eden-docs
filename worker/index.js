@@ -1,8 +1,8 @@
 /**
  * MCP server for the Eden docs, deployed as the `_worker.js` of the
  * Cloudflare Pages site (copied into dist/public at deploy time): it serves
- * the MCP endpoint at /api/mcp and passes every other request through to the
- * static site. Tools mirror vocs's built-in MCP server (list_pages / read_page
+ * the MCP endpoint at /api/mcp and negotiates Markdown for static docs pages.
+ * Tools mirror vocs's built-in MCP server (list_pages / read_page
  * / search_docs), but read the markdown the vocs build emits as static assets
  * — llms.txt for the page index and /assets/md/<path>.md for page content —
  * instead of the filesystem.
@@ -29,6 +29,7 @@ const TOOLS = [
       properties: {
         pagePath: {
           type: 'string',
+          pattern: '\\S',
           description: 'The page path (e.g., "/why-eden" or "/networks/mainnet")'
         }
       },
@@ -41,7 +42,7 @@ const TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {
-        query: { type: 'string', description: 'The search query' }
+        query: { type: 'string', pattern: '\\S', description: 'The search query' }
       },
       required: ['query']
     }
@@ -55,10 +56,80 @@ const CORS_HEADERS = {
     'Content-Type, Accept, Authorization, Mcp-Session-Id, Mcp-Protocol-Version'
 }
 
+function prefersMarkdown(accept = '') {
+  const types = new Map(
+    accept.split(',').map(entry => {
+      const [type, ...parameters] = entry.trim().toLowerCase().split(';')
+      const quality = parameters.find(value => value.trim().startsWith('q='))
+      return [type.trim(), quality ? Number(quality.trim().slice(2)) : 1]
+    })
+  )
+  const markdown = types.get('text/markdown') ?? 0
+  const html = types.get('text/html') ?? types.get('text/*') ?? types.get('*/*') ?? 0
+  return markdown > 0 && markdown >= html
+}
+
+async function serveDocs(request, env) {
+  const response = await env.ASSETS.fetch(request)
+  if (!['GET', 'HEAD'].includes(request.method)) return response
+  const url = new URL(request.url)
+  if (url.pathname === '/openapi.json' || url.pathname.startsWith('/.well-known/agent-skills/')) {
+    const headers = new Headers(response.headers)
+    headers.set('Access-Control-Allow-Origin', '*')
+    if (response.ok) {
+      headers.set(
+        'Content-Type',
+        url.pathname.endsWith('.md') ? 'text/markdown; charset=utf-8' : 'application/json'
+      )
+    }
+    return new Response(request.method === 'HEAD' ? null : response.body, {
+      status: response.status,
+      headers
+    })
+  }
+  if (!response.headers.get('Content-Type')?.includes('text/html')) return response
+
+  let result = response
+  if (prefersMarkdown(request.headers.get('Accept') ?? '')) {
+    if (response.status === 404) {
+      result = new Response(
+        '# Page not found\n\nThis documentation page does not exist. Browse the [page index](/llms.txt) or [documentation home](/).\n',
+        { status: 404, headers: { 'Content-Type': 'text/markdown; charset=utf-8' } }
+      )
+    } else if (response.ok) {
+      const path = url.pathname.replace(/\/$/, '') || '/index'
+      const markdown = await env.ASSETS.fetch(new URL(`/assets/md${path}.md`, url), {
+        method: request.method
+      })
+      if (markdown.ok && !markdown.headers.get('Content-Type')?.includes('text/html')) {
+        result = new Response(markdown.body, markdown)
+        result.headers.set('Content-Type', 'text/markdown; charset=utf-8')
+      }
+    }
+  }
+
+  const headers = new Headers(result.headers)
+  const vary = headers.get('Vary')
+  if (!vary?.split(',').some(value => value.trim().toLowerCase() === 'accept')) {
+    headers.set('Vary', vary ? `${vary}, Accept` : 'Accept')
+  }
+  headers.append(
+    'Link',
+    '</llms.txt>; rel="describedby"; type="text/plain", </sitemap.xml>; rel="sitemap"; type="application/xml", </api/mcp/server-card>; rel="service-desc"; type="application/mcp-server-card+json", </openapi.json>; rel="service-desc"; type="application/vnd.oai.openapi+json", </.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", </.well-known/ai-catalog.json>; rel="ai-catalog"; type="application/json"'
+  )
+  return new Response(request.method === 'HEAD' ? null : result.body, {
+    status: result.status,
+    statusText: result.statusText,
+    headers
+  })
+}
+
 /** Fetch a static docs asset from the site bundled alongside this worker. */
 async function fetchDocs(env, path) {
   const response = await env.ASSETS.fetch(new URL(path, 'https://assets.local'))
-  return response.ok ? response.text() : null
+  return response.ok && !response.headers.get('Content-Type')?.includes('text/html')
+    ? response.text()
+    : null
 }
 
 /** Parse llms.txt sitemap lines: `- [Title](/path)` */
@@ -91,13 +162,29 @@ async function readPageMarkdown(env, pagePath) {
 }
 
 async function callTool(env, name, args) {
+  const tool = TOOLS.find(tool => tool.name === name)
+  if (!tool) throw { code: -32602, message: `Unknown tool: ${name ?? '(missing name)'}` }
+  if (args !== undefined && !isObject(args)) {
+    throw { code: -32602, message: 'Tool arguments must be an object' }
+  }
+  for (const key of tool.inputSchema.required ?? []) {
+    if (typeof args?.[key] !== 'string' || !args[key].trim()) {
+      throw { code: -32602, message: `${name} requires a non-empty string: ${key}` }
+    }
+  }
+
   if (name === 'list_pages') {
     const pages = await getPages(env)
     return { content: [{ type: 'text', text: JSON.stringify(pages, null, 2) }] }
   }
 
   if (name === 'read_page') {
-    const text = await readPageMarkdown(env, args?.pagePath)
+    // Only read indexed pages; user input must never select arbitrary assets.
+    const pages = await getPages(env)
+    const page = pages.find(
+      page => normalizePagePath(page.path) === normalizePagePath(args.pagePath)
+    )
+    const text = page ? await readPageMarkdown(env, page.path) : null
     if (text === null) {
       return {
         content: [{ type: 'text', text: `Page not found: ${args?.pagePath}` }],
@@ -108,7 +195,7 @@ async function callTool(env, name, args) {
   }
 
   if (name === 'search_docs') {
-    const query = String(args?.query ?? '').toLowerCase()
+    const query = args.query.toLowerCase()
     const pages = await getPages(env)
     const contents = await Promise.all(
       pages.map(async page => ({ page, text: await readPageMarkdown(env, page.path) }))
@@ -121,15 +208,30 @@ async function callTool(env, name, args) {
     }
     return { content: [{ type: 'text', text: JSON.stringify(results, null, 2) }] }
   }
+}
 
-  throw { code: -32602, message: `Unknown tool: ${name}` }
+function isObject(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function rpcError(id, code, message) {
+  return { jsonrpc: '2.0', id, error: { code, message } }
 }
 
 async function handleRpc(env, message) {
+  if (
+    !isObject(message) ||
+    message.jsonrpc !== '2.0' ||
+    typeof message.method !== 'string' ||
+    (message.params !== undefined && !isObject(message.params)) ||
+    (message.id !== undefined && typeof message.id !== 'string' && !Number.isInteger(message.id))
+  ) {
+    return rpcError(null, -32600, 'Invalid Request')
+  }
   const { id, method, params } = message
 
   // Notifications expect no response.
-  if (id === undefined || id === null) return null
+  if (id === undefined) return null
 
   try {
     let result
@@ -147,22 +249,15 @@ async function handleRpc(env, message) {
     } else if (method === 'tools/call') {
       result = await callTool(env, params?.name, params?.arguments)
     } else {
-      return {
-        jsonrpc: '2.0',
-        id,
-        error: { code: -32601, message: `Method not found: ${method}` }
-      }
+      return rpcError(id, -32601, `Method not found: ${method}`)
     }
     return { jsonrpc: '2.0', id, result }
   } catch (error) {
-    return {
-      jsonrpc: '2.0',
+    return rpcError(
       id,
-      error: {
-        code: typeof error?.code === 'number' ? error.code : -32603,
-        message: error?.message ?? String(error)
-      }
-    }
+      error?.code === -32602 ? -32602 : -32603,
+      error?.code === -32602 ? error.message : 'Unable to read documentation. Please retry.'
+    )
   }
 }
 
@@ -171,12 +266,110 @@ export default {
     const url = new URL(request.url)
     const isMcpPath = url.pathname === '/api/mcp'
 
+    if (
+      ['GET', 'HEAD'].includes(request.method) &&
+      ['/.well-known/api-catalog', '/.well-known/ai-catalog.json'].includes(url.pathname)
+    ) {
+      const isApiCatalog = url.pathname === '/.well-known/api-catalog'
+      const catalog = isApiCatalog
+        ? {
+            linkset: [
+              {
+                anchor: new URL('/api/mcp', url).href,
+                'service-desc': [
+                  {
+                    href: new URL('/openapi.json', url).href,
+                    type: 'application/vnd.oai.openapi+json'
+                  }
+                ],
+                'service-doc': [
+                  { href: new URL('/use-the-docs-with-ai', url).href, type: 'text/html' }
+                ]
+              }
+            ]
+          }
+        : {
+            specVersion: '1.0',
+            host: {
+              displayName: 'Eden docs',
+              identifier: 'did:web:docs.eden.zone'
+            },
+            entries: [
+              {
+                identifier: 'urn:air:docs.eden.zone:mcp:docs',
+                displayName: 'Eden documentation MCP server',
+                type: 'application/mcp-server-card+json',
+                url: new URL('/api/mcp/server-card', url).href,
+                representativeQueries: [
+                  'Search Eden documentation',
+                  'Read an Eden documentation page'
+                ]
+              },
+              {
+                identifier: 'urn:air:docs.eden.zone:skills:index',
+                displayName: 'Eden development skill',
+                type: 'application/json',
+                url: new URL('/.well-known/agent-skills/index.json', url).href,
+                representativeQueries: ['Deploy a contract on Eden', 'Build an Eden frontend']
+              },
+              {
+                identifier: 'urn:air:docs.eden.zone:docs:llms-txt',
+                displayName: 'Eden documentation index',
+                type: 'text/plain',
+                url: new URL('/llms.txt', url).href,
+                representativeQueries: [
+                  'Find Eden network settings',
+                  'Browse Eden developer guides'
+                ]
+              }
+            ]
+          }
+      return new Response(request.method === 'HEAD' ? null : JSON.stringify(catalog), {
+        headers: {
+          ...CORS_HEADERS,
+          'Cache-Control': 'public, max-age=300',
+          'Content-Type': isApiCatalog ? 'application/linkset+json' : 'application/json'
+        }
+      })
+    }
+
+    if (
+      ['GET', 'HEAD'].includes(request.method) &&
+      ['/api/mcp/server-card', '/.well-known/mcp/server-card.json'].includes(url.pathname)
+    ) {
+      return new Response(
+        request.method === 'HEAD'
+          ? null
+          : JSON.stringify({
+              name: 'io.github.celestiaorg/eden-docs',
+              title: 'Eden docs',
+              description: 'Public, read-only search and Markdown access to Eden documentation.',
+              version: SERVER_INFO.version,
+              websiteUrl: new URL('/use-the-docs-with-ai', url).href,
+              remotes: [
+                {
+                  type: 'streamable-http',
+                  url: new URL('/api/mcp', url).href,
+                  supportedProtocolVersions: PROTOCOL_VERSIONS
+                }
+              ]
+            }),
+        {
+          headers: {
+            ...CORS_HEADERS,
+            'Content-Type': 'application/mcp-server-card+json',
+            'Cache-Control': 'public, max-age=300'
+          }
+        }
+      )
+    }
+
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS_HEADERS })
     }
 
-    // Everything except the MCP endpoint is the static site.
-    if (!isMcpPath) return env.ASSETS.fetch(request)
+    // Serve the static site with Markdown negotiation and discovery headers.
+    if (!isMcpPath) return serveDocs(request, env)
 
     // Stateless server: no SSE stream to resume, no session to terminate.
     if (request.method === 'GET') {
@@ -192,14 +385,29 @@ export default {
       return new Response('Method not allowed', { status: 405, headers: CORS_HEADERS })
     }
 
+    const protocolVersion = request.headers.get('MCP-Protocol-Version') ?? '2025-03-26'
+    if (!PROTOCOL_VERSIONS.includes(protocolVersion)) {
+      return Response.json(rpcError(null, -32600, 'Unsupported MCP-Protocol-Version'), {
+        status: 400,
+        headers: CORS_HEADERS
+      })
+    }
+
     let body
     try {
       body = await request.json()
     } catch {
-      return Response.json(
-        { jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } },
-        { status: 400, headers: CORS_HEADERS }
-      )
+      return Response.json(rpcError(null, -32700, 'Parse error'), {
+        status: 400,
+        headers: CORS_HEADERS
+      })
+    }
+
+    if (Array.isArray(body) && (body.length === 0 || protocolVersion === '2025-06-18')) {
+      return Response.json(rpcError(null, -32600, 'Invalid Request'), {
+        status: 400,
+        headers: CORS_HEADERS
+      })
     }
 
     const messages = Array.isArray(body) ? body : [body]
@@ -213,6 +421,7 @@ export default {
     }
 
     return Response.json(Array.isArray(body) ? responses : responses[0], {
+      status: !Array.isArray(body) && responses[0].error?.code === -32600 ? 400 : 200,
       headers: CORS_HEADERS
     })
   }

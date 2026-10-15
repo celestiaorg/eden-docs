@@ -78,6 +78,9 @@ jobs:
         run: |
           test -f dist/public/_worker.js
           test -f dist/public/why-eden.md
+          test -f dist/public/openapi.json
+          test -f dist/public/.well-known/agent-skills/index.json
+          test -f dist/public/.well-known/agent-skills/eden-development/SKILL.md
 
           if [[ "${{ steps.deployment-target.outputs.branch }}" == "main" ]]; then
             grep -q '<base href="https://docs.eden.zone"' dist/public/index.html
