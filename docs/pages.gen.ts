@@ -10,6 +10,7 @@ import type { getConfig as File_Root_getConfig } from './pages/_root'
 type Page =
   | ({ path: '/_root' } & GetConfigResponse<typeof File_Root_getConfig>)
   | { path: '/about'; render: 'static' }
+  | { path: '/api-reference'; render: 'static' }
   | { path: '/contact'; render: 'static' }
   | { path: '/developers'; render: 'static' }
   | { path: '/development-environments/foundry-quickstart'; render: 'static' }

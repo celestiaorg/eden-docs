@@ -1,7 +1,7 @@
 /**
  * MCP server for the Eden docs, deployed as the `_worker.js` of the
  * Cloudflare Pages site (copied into dist/public at deploy time): it serves
- * the MCP endpoint at /api/mcp and negotiates Markdown for static docs pages.
+ * MCP at /api/mcp, REST at /api/v1/*, and Markdown for static docs pages.
  * Tools mirror vocs's built-in MCP server (list_pages / read_page
  * / search_docs), but read the markdown the vocs build emits as static assets
  * — llms.txt for the page index and /assets/md/<path>.md for page content —
@@ -14,6 +14,7 @@
 
 const SERVER_INFO = { name: 'eden-docs', version: '1.0.0' }
 const PROTOCOL_VERSIONS = ['2024-11-05', '2025-03-26', '2025-06-18', '2025-11-25']
+const REST_PATHS = ['/api/v1/pages', '/api/v1/page', '/api/v1/search']
 
 const TOOLS = [
   {
@@ -53,7 +54,8 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, HEAD, POST, DELETE, OPTIONS',
   'Access-Control-Allow-Headers':
-    'Content-Type, Accept, Authorization, Mcp-Session-Id, Mcp-Protocol-Version'
+    'Content-Type, Accept, Authorization, Mcp-Session-Id, Mcp-Protocol-Version',
+  'Access-Control-Expose-Headers': 'Allow'
 }
 
 function prefersMarkdown(accept = '') {
@@ -161,6 +163,29 @@ async function readPageMarkdown(env, pagePath) {
   return text === null ? null : text.replace(/^<!--[\s\S]*?-->\s*/, '')
 }
 
+async function getPage(env, pagePath) {
+  // Only read indexed pages; user input must never select arbitrary assets.
+  const pages = await getPages(env)
+  const page = pages.find(page => normalizePagePath(page.path) === normalizePagePath(pagePath))
+  const markdown = page ? await readPageMarkdown(env, page.path) : null
+  return markdown === null ? null : { ...page, markdown }
+}
+
+async function searchDocs(env, query) {
+  const needle = query.toLowerCase()
+  const pages = await getPages(env)
+  const contents = await Promise.all(
+    pages.map(async page => ({ page, text: await readPageMarkdown(env, page.path) }))
+  )
+  const results = []
+  for (const { page, text } of contents) {
+    if (!text || !text.toLowerCase().includes(needle)) continue
+    const matchLine = text.split('\n').find(line => line.toLowerCase().includes(needle))
+    results.push({ path: page.path, snippet: matchLine?.trim().slice(0, 200) || '' })
+  }
+  return results
+}
+
 async function callTool(env, name, args) {
   const tool = TOOLS.find(tool => tool.name === name)
   if (!tool) throw { code: -32602, message: `Unknown tool: ${name ?? '(missing name)'}` }
@@ -179,33 +204,18 @@ async function callTool(env, name, args) {
   }
 
   if (name === 'read_page') {
-    // Only read indexed pages; user input must never select arbitrary assets.
-    const pages = await getPages(env)
-    const page = pages.find(
-      page => normalizePagePath(page.path) === normalizePagePath(args.pagePath)
-    )
-    const text = page ? await readPageMarkdown(env, page.path) : null
-    if (text === null) {
+    const page = await getPage(env, args.pagePath)
+    if (page === null) {
       return {
         content: [{ type: 'text', text: `Page not found: ${args?.pagePath}` }],
         isError: true
       }
     }
-    return { content: [{ type: 'text', text }] }
+    return { content: [{ type: 'text', text: page.markdown }] }
   }
 
   if (name === 'search_docs') {
-    const query = args.query.toLowerCase()
-    const pages = await getPages(env)
-    const contents = await Promise.all(
-      pages.map(async page => ({ page, text: await readPageMarkdown(env, page.path) }))
-    )
-    const results = []
-    for (const { page, text } of contents) {
-      if (!text || !text.toLowerCase().includes(query)) continue
-      const matchLine = text.split('\n').find(line => line.toLowerCase().includes(query))
-      results.push({ path: page.path, snippet: matchLine?.trim().slice(0, 200) || '' })
-    }
+    const results = await searchDocs(env, args.query)
     return { content: [{ type: 'text', text: JSON.stringify(results, null, 2) }] }
   }
 }
@@ -238,6 +248,64 @@ function httpError(request, status, code, message, hint, allow) {
       }
     }
   )
+}
+
+async function serveRest(request, env, url) {
+  if (!['GET', 'HEAD'].includes(request.method)) {
+    return httpError(
+      request,
+      405,
+      'METHOD_NOT_ALLOWED',
+      'Method not allowed',
+      'Use GET to read documentation. See /openapi.json.',
+      'GET, HEAD, OPTIONS'
+    )
+  }
+  const parameter =
+    url.pathname === '/api/v1/page' ? 'path' : url.pathname === '/api/v1/search' ? 'query' : null
+  const values = parameter ? url.searchParams.getAll(parameter) : []
+  if (parameter && (values.length !== 1 || !values[0].trim())) {
+    return httpError(
+      request,
+      400,
+      'INVALID_PARAMETER',
+      `Expected one non-empty ${parameter} parameter`,
+      `Supply ${parameter} as a URL-encoded query parameter. See /openapi.json.`
+    )
+  }
+  try {
+    let result
+    if (url.pathname === '/api/v1/pages') result = { pages: await getPages(env) }
+    else if (url.pathname === '/api/v1/search')
+      result = { results: await searchDocs(env, values[0]) }
+    else {
+      result = await getPage(env, values[0])
+      if (!result) {
+        return httpError(
+          request,
+          404,
+          'NOT_FOUND',
+          'Documentation page not found',
+          'Use GET /api/v1/pages to choose a current page path.'
+        )
+      }
+    }
+    return new Response(request.method === 'HEAD' ? null : JSON.stringify(result), {
+      headers: {
+        ...CORS_HEADERS,
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=300'
+      }
+    })
+  } catch {
+    return httpError(
+      request,
+      503,
+      'DOCS_UNAVAILABLE',
+      'Unable to read documentation',
+      'Retry later or read the static documentation at /llms-full.txt.'
+    )
+  }
 }
 
 async function handleRpc(env, message) {
@@ -408,6 +476,8 @@ export default {
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS_HEADERS })
     }
+
+    if (REST_PATHS.includes(url.pathname)) return serveRest(request, env, url)
 
     // Serve the static site with Markdown negotiation and discovery headers.
     if (!isMcpPath) {

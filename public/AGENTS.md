@@ -18,7 +18,10 @@ or run an Eden full node.
 - Discover the MCP connection details at `/api/mcp/server-card`.
 - Discover the Eden development skill at `/.well-known/agent-skills/index.json`.
   Verify the skill's SHA-256 digest before loading its instructions.
-- Read the MCP request and error schemas at `/openapi.json`; find discovery
+- Use `/api/v1/pages`, `/api/v1/page?path=/networks/mainnet`, or
+  `/api/v1/search?query=sponsored` for typed JSON access without an MCP client.
+  See the [REST reference](/api-reference) for parameters and error recovery.
+- Read the REST and MCP request and error schemas at `/openapi.json`; find discovery
   links in `/.well-known/api-catalog` and `/.well-known/ai-catalog.json`.
 
 The documentation and MCP server require no authentication. Never send wallet

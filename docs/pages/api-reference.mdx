@@ -1,0 +1,94 @@
+---
+title: Eden documentation REST API
+description: List, read, and search Eden documentation through a public REST API with typed JSON responses and actionable errors.
+---
+
+# Eden documentation REST API
+
+Use this read-only API to retrieve Eden documentation from scripts or function-calling
+clients. No account, API key, or MCP session is required. For blockchain state and
+transactions, use the RPC endpoints in the [network references](/networks/mainnet).
+
+The [OpenAPI description](https://docs.eden.zone/openapi.json) defines the query
+parameters, unique operation IDs, and success and error schemas. MCP clients can
+use the same documentation through the [MCP server](/use-the-docs-with-ai).
+
+## Endpoints
+
+The base URL is `https://docs.eden.zone`. Each endpoint accepts `GET`, `HEAD`, and
+`OPTIONS`. `HEAD` returns the same status and headers without a body; `OPTIONS`
+returns HTTP 204 for cross-origin requests.
+
+| Endpoint         | Required query parameter              | JSON response                                         |
+| ---------------- | ------------------------------------- | ----------------------------------------------------- |
+| `/api/v1/pages`  | None                                  | `pages`: array of objects with `title` and `path`     |
+| `/api/v1/page`   | `path`: an indexed documentation path | `title`, `path`, and `markdown`                       |
+| `/api/v1/search` | `query`: a non-empty search phrase    | `results`: array of objects with `path` and `snippet` |
+
+List pages, then use a returned path to read one:
+
+```bash
+docs_url='https://docs.eden.zone'
+
+curl --fail-with-body "$docs_url/api/v1/pages"
+
+curl --fail-with-body --get "$docs_url/api/v1/page" \
+  --data-urlencode 'path=/networks/mainnet'
+
+curl --fail-with-body --get "$docs_url/api/v1/search" \
+  --data-urlencode 'query=sponsored'
+```
+
+Supply each required query parameter exactly once. A page path can omit its leading
+slash or include a `.md` suffix or trailing slash; the response returns its indexed
+path. Only indexed documentation pages can be read. Search matches a literal,
+case-insensitive substring and returns at most one snippet per matching page, up to
+200 characters. No matches returns `{"results":[]}` with HTTP 200.
+
+## Errors and recovery
+
+REST errors have `Content-Type: application/json` and a consistent shape:
+
+```json
+{
+  "error": {
+    "code": "INVALID_PARAMETER",
+    "message": "Expected one non-empty path parameter",
+    "hint": "Supply path as a URL-encoded query parameter. See /openapi.json."
+  }
+}
+```
+
+| HTTP status | Code                 | Recovery                                                             |
+| ----------- | -------------------- | -------------------------------------------------------------------- |
+| 400         | `INVALID_PARAMETER`  | Supply one non-blank value for the required parameter.               |
+| 404         | `NOT_FOUND`          | Check the endpoint in OpenAPI or choose a page from `/api/v1/pages`. |
+| 405         | `METHOD_NOT_ALLOWED` | Use a method listed in the `Allow` response header.                  |
+| 503         | `DOCS_UNAVAILABLE`   | Retry with backoff or read `/llms-full.txt`.                         |
+
+Successful responses advertise `Cache-Control: public, max-age=300`; errors use
+`Cache-Control: no-store`. The API allows public cross-origin access. Hosting-layer
+errors can have a different format; check the content type before parsing JSON.
+MCP keeps its [JSON-RPC error conventions](/use-the-docs-with-ai#errors-and-recovery).
+
+## Versioning and deprecation
+
+The `/api/v1` path identifies the REST schema version. Documentation text and the
+page index change as the docs change; clients should refresh paths and tolerate
+additional JSON fields. Incompatible schema changes belong in a new major URL
+version rather than changing the meaning of existing v1 fields.
+
+No REST endpoint is currently deprecated or scheduled for removal. A future
+retirement should be announced here with a migration path and marked in OpenAPI.
+Affected responses should carry a [Deprecation header](https://www.rfc-editor.org/rfc/rfc9745.html)
+and, once a removal date is set, a [Sunset header](https://www.rfc-editor.org/rfc/rfc8594.html).
+There is no guaranteed minimum notice period. MCP negotiates its protocol version
+separately, as described in the [MCP guide](/use-the-docs-with-ai#versioning-and-deprecation).
+
+## Rate limits
+
+The documentation API does not enforce an application-level quota or advertise
+remaining capacity. It does not emit synthetic `RateLimit` headers. Cache successful
+reads and keep request concurrency low. If the hosting layer returns HTTP 429,
+respect `Retry-After` when present; otherwise retry with backoff. Blockchain RPC
+provider quotas are separate from this documentation API.

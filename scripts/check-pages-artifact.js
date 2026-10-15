@@ -70,6 +70,15 @@ assert.ok((await read('contact/index.html')).includes('href="mailto:security@cel
 assert.match(await read('developers.md'), /Foundry.*Forge and Cast CLI/)
 assert.match(await read('use-the-docs-with-ai.md'), /## Versioning and deprecation/)
 assert.match(await read('use-the-docs-with-ai.md'), /## Rate limits/)
+assert.ok(pages.includes('/api-reference'), 'REST API reference must be in llms.txt')
+assert.ok(home.includes('href="/api-reference"'), 'REST API reference must be linked from home')
+const apiReference = await read('api-reference.md')
+for (const path of ['/api/v1/pages', '/api/v1/page', '/api/v1/search']) {
+  assert.ok(apiReference.includes(path), `REST reference must document ${path}`)
+  assert.ok(JSON.parse(await read('openapi.json')).paths[path]?.get)
+}
+assert.match(apiReference, /## Versioning and deprecation/)
+assert.match(apiReference, /DOCS_UNAVAILABLE/)
 
 console.log(
   `Verified ${pages.length} Markdown pages, HTML discovery links, skill digests, and Pages worker.`

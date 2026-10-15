@@ -440,7 +440,7 @@ test('OpenAPI describes every discovery response with its actual media type and 
       expect(operationIds.has(operation.operationId)).toBe(false)
       operationIds.add(operation.operationId)
     }
-    if (path === '/api/mcp') continue
+    if (path === '/api/mcp' || path.startsWith('/api/v1/')) continue
     const response = await request(path)
     expect(response.status).toBe(200)
     const type = response.headers.get('Content-Type')
@@ -459,4 +459,148 @@ test('OpenAPI describes every discovery response with its actual media type and 
   expect(
     openapi.paths['/api/mcp'].post.responses['400'].content['application/json'].schema.$ref
   ).toBe('#/components/schemas/RpcError')
+})
+
+test('REST list, read, and search expose the same documents as MCP', async () => {
+  const listed = await (await request('/api/v1/pages')).json()
+  const mcp = await rpc({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'tools/call',
+    params: { name: 'list_pages' }
+  })
+  expect(listed.pages).toEqual(JSON.parse((await mcp.json()).result.content[0].text))
+  for (const path of ['networks/mainnet.md', '/networks/mainnet/', '/networks/mainnet']) {
+    const response = await request(`/api/v1/page?path=${encodeURIComponent(path)}`)
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      title: 'Mainnet',
+      path: '/networks/mainnet',
+      markdown: '# Eden documentation'
+    })
+  }
+  const search = await (await request('/api/v1/search?query=EDEN')).json()
+  const mcpSearch = await rpc({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'tools/call',
+    params: { name: 'search_docs', arguments: { query: 'EDEN' } }
+  })
+  expect(search.results).toEqual(JSON.parse((await mcpSearch.json()).result.content[0].text))
+  expect(await (await request('/api/v1/search?query=absent')).json()).toEqual({ results: [] })
+  expect((await (await request('/api/v1/page?path=%2F')).json()).title).toBe('Home')
+})
+
+test('REST validates required parameters before reading assets', async () => {
+  for (const [path, parameter] of [
+    ['/api/v1/page', 'path'],
+    ['/api/v1/search', 'query']
+  ]) {
+    for (const suffix of [
+      '',
+      `?${parameter}=`,
+      `?${parameter}=%20%09`,
+      `?${parameter}=a&${parameter}=b`
+    ]) {
+      const response = await worker.fetch(new Request(`https://preview.example${path}${suffix}`), {
+        ASSETS: {
+          fetch() {
+            throw new Error('Must not fetch')
+          }
+        }
+      })
+      expect(response.status).toBe(400)
+      expect(response.headers.get('Cache-Control')).toBe('no-store')
+      expect((await response.json()).error).toEqual({
+        code: 'INVALID_PARAMETER',
+        message: `Expected one non-empty ${parameter} parameter`,
+        hint: `Supply ${parameter} as a URL-encoded query parameter. See /openapi.json.`
+      })
+    }
+  }
+})
+
+test('REST cannot read unindexed assets and hides backend failures', async () => {
+  const reads = []
+  const tracked = {
+    ASSETS: {
+      fetch(input) {
+        reads.push(new URL(input).pathname)
+        return env.ASSETS.fetch(input)
+      }
+    }
+  }
+  for (const path of [
+    '/missing',
+    '/../../AGENTS',
+    '/openapi.json',
+    'https://other.example/',
+    '/networks/mainnet?x=1'
+  ]) {
+    const response = await worker.fetch(
+      new Request(`https://preview.example/api/v1/page?path=${encodeURIComponent(path)}`),
+      tracked
+    )
+    expect(response.status).toBe(404)
+    expect((await response.json()).error.code).toBe('NOT_FOUND')
+  }
+  expect(reads.every(path => path === '/llms.txt')).toBe(true)
+  for (const path of ['/api/v1/pages', '/api/v1/page?path=/', '/api/v1/search?query=Eden']) {
+    for (const method of ['GET', 'HEAD']) {
+      const response = await worker.fetch(
+        new Request(`https://preview.example${path}`, { method }),
+        {
+          ASSETS: {
+            fetch() {
+              throw new Error('Private backend detail')
+            }
+          }
+        }
+      )
+      expect(response.status).toBe(503)
+      expect(response.headers.get('Cache-Control')).toBe('no-store')
+      const body = await response.text()
+      if (method === 'HEAD') expect(body).toBe('')
+      else {
+        expect(body).not.toContain('Private backend detail')
+        expect(JSON.parse(body).error.code).toBe('DOCS_UNAVAILABLE')
+      }
+    }
+  }
+})
+
+test('REST success, HEAD, CORS, unsupported methods, and error responses match OpenAPI', async () => {
+  for (const path of ['/api/v1/pages', '/api/v1/page?path=/', '/api/v1/search?query=Eden']) {
+    const response = await request(path, 'application/json')
+    expect(response.status).toBe(200)
+    expect(response.headers.get('Content-Type')).toBe('application/json')
+    expect(response.headers.get('Cache-Control')).toBe('public, max-age=300')
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
+    const head = await request(path, '*/*', 'HEAD')
+    expect(head.status).toBe(200)
+    expect([...head.headers]).toEqual([...response.headers])
+    expect(await head.text()).toBe('')
+    const preflight = await request(path, '*/*', 'OPTIONS')
+    expect(preflight.status).toBe(204)
+    expect(preflight.headers.get('Access-Control-Allow-Methods')).toContain('GET')
+    expect(await preflight.text()).toBe('')
+    for (const method of ['POST', 'DELETE', 'PATCH']) {
+      const rejected = await request(path, '*/*', method)
+      expect(rejected.status).toBe(405)
+      expect(rejected.headers.get('Allow')).toBe('GET, HEAD, OPTIONS')
+      expect(rejected.headers.get('Access-Control-Expose-Headers')).toContain('Allow')
+      expect((await rejected.json()).error.code).toBe('METHOD_NOT_ALLOWED')
+    }
+    const operation = openapi.paths[path.split('?')[0]].get
+    const schemaRef = operation.responses['200'].content['application/json'].schema.$ref
+    const schema = openapi.components.schemas[schemaRef.split('/').at(-1)]
+    const body = await response.json()
+    expect(Object.keys(body)).toEqual(schema.required)
+    expect(operation.responses['503'].$ref).toBe('#/components/responses/Http503')
+    expect(operation.responses['405'].$ref).toBe('#/components/responses/Http405')
+  }
+  expect((await request('/api/v2/pages')).status).toBe(404)
+  const headError = await request('/api/v1/page', '*/*', 'HEAD')
+  expect(headError.status).toBe(400)
+  expect(await headError.text()).toBe('')
 })
