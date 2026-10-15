@@ -9,6 +9,9 @@ import type { getConfig as File_Root_getConfig } from './pages/_root'
 // prettier-ignore
 type Page =
   | ({ path: '/_root' } & GetConfigResponse<typeof File_Root_getConfig>)
+  | { path: '/about'; render: 'static' }
+  | { path: '/contact'; render: 'static' }
+  | { path: '/developers'; render: 'static' }
   | { path: '/development-environments/foundry-quickstart'; render: 'static' }
   | { path: '/development-environments/session-keys-cast'; render: 'static' }
   | { path: '/development-environments/supported-eips'; render: 'static' }
@@ -22,6 +25,7 @@ type Page =
   | { path: '/legal/disclaimer'; render: 'static' }
   | { path: '/networks/mainnet'; render: 'static' }
   | { path: '/networks/testnet'; render: 'static' }
+  | { path: '/privacy'; render: 'static' }
   | { path: '/tokens/reference'; render: 'static' }
   | { path: '/tooling/bridging'; render: 'static' }
   | { path: '/tooling/indexers/example'; render: 'static' }

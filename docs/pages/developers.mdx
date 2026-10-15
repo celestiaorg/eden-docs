@@ -1,0 +1,55 @@
+---
+title: Eden developer portal
+description: Start building on the Eden EVM network with contract quickstarts, CLI tools, frontend libraries, testnet settings, and agent documentation.
+---
+
+# Eden developer portal
+
+Build EVM applications on Eden with Solidity, Foundry, viem, and wagmi. Start with
+an existing quickstart, then use the network reference for connection details.
+
+## Quickstarts
+
+- [Deploy a contract with Foundry](/development-environments/foundry-quickstart).
+- [Connect with viem](/frontend-libraries/viem-quickstart) or [wagmi](/frontend-libraries/wagmi-quickstart).
+- [Build a frontend](/guides/build-a-frontend).
+- [Explore Eden's transaction features](/why-eden).
+
+## Test environment and network access
+
+Use [Eden testnet](/networks/testnet) to experiment before deploying on
+[mainnet](/networks/mainnet). Each network reference lists its RPC endpoints,
+explorers, and available tooling; the testnet page also links to its faucet.
+Testnet is a public blockchain, so keep secrets and private data out of transactions.
+
+The documentation and its MCP API require no account or API key. Blockchain RPC
+access is separate: consult the network reference and your RPC provider for
+credentials and rate limits. This site does not issue provider API keys.
+
+## Command-line tools
+
+Use [Foundry's Forge and Cast CLI tools](https://www.getfoundry.sh/) to build contracts,
+deploy them, and make RPC calls. The [Foundry quickstart](/development-environments/foundry-quickstart)
+covers installation, network configuration, and encrypted keystore use. These
+are upstream EVM tools, not an Eden-specific CLI package.
+
+For documentation access from a shell:
+
+```bash
+curl -fsSL -H 'Accept: text/markdown' https://docs.eden.zone/networks/testnet
+```
+
+## API and agent resources
+
+- [Eden MCP setup and API behavior](/use-the-docs-with-ai).
+- [OpenAPI request and response schemas](https://docs.eden.zone/openapi.json).
+- [MCP server card](https://docs.eden.zone/api/mcp/server-card).
+- [Documentation page index](https://docs.eden.zone/llms.txt) and [complete Markdown documentation](https://docs.eden.zone/llms-full.txt).
+- [Agent skill index](https://docs.eden.zone/.well-known/agent-skills/index.json).
+
+The documentation API lists, reads, and searches these pages. Send blockchain
+JSON-RPC calls to the network's RPC endpoint, not to the documentation API.
+
+## Help
+
+See [contact options](/contact), [about Eden](/about), and [privacy information](/privacy).

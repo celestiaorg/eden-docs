@@ -51,7 +51,7 @@ const TOOLS = [
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, HEAD, POST, DELETE, OPTIONS',
   'Access-Control-Allow-Headers':
     'Content-Type, Accept, Authorization, Mcp-Session-Id, Mcp-Protocol-Version'
 }
@@ -215,7 +215,29 @@ function isObject(value) {
 }
 
 function rpcError(id, code, message) {
-  return { jsonrpc: '2.0', id, error: { code, message } }
+  const hints = {
+    '-32700': 'Send valid JSON with Content-Type: application/json.',
+    '-32600': 'Check the request envelope and MCP-Protocol-Version against /openapi.json.',
+    '-32601': 'Use initialize, ping, tools/list, or tools/call.',
+    '-32602': 'Call tools/list and supply the required arguments from inputSchema.',
+    '-32603': 'Retry later or read the static documentation at /llms-full.txt.'
+  }
+  return { jsonrpc: '2.0', id, error: { code, message, data: { hint: hints[code] } } }
+}
+
+function httpError(request, status, code, message, hint, allow) {
+  return new Response(
+    request.method === 'HEAD' ? null : JSON.stringify({ error: { code, message, hint } }),
+    {
+      status,
+      headers: {
+        ...CORS_HEADERS,
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
+        ...(allow ? { Allow: allow } : {})
+      }
+    }
+  )
 }
 
 async function handleRpc(env, message) {
@@ -267,6 +289,23 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url)
     const isMcpPath = url.pathname === '/api/mcp'
+    const isDiscoveryPath = [
+      '/api/mcp/server-card',
+      '/.well-known/mcp/server-card.json',
+      '/.well-known/api-catalog',
+      '/.well-known/ai-catalog.json'
+    ].includes(url.pathname)
+
+    if (isDiscoveryPath && !['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
+      return httpError(
+        request,
+        405,
+        'METHOD_NOT_ALLOWED',
+        'Method not allowed',
+        'Use GET to read this discovery document.',
+        'GET, HEAD, OPTIONS'
+      )
+    }
 
     if (
       ['GET', 'HEAD'].includes(request.method) &&
@@ -371,20 +410,32 @@ export default {
     }
 
     // Serve the static site with Markdown negotiation and discovery headers.
-    if (!isMcpPath) return serveDocs(request, env)
+    if (!isMcpPath) {
+      if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
+        return httpError(
+          request,
+          404,
+          'NOT_FOUND',
+          'API endpoint not found',
+          'See /openapi.json for supported endpoints; send documentation requests to /api/mcp.'
+        )
+      }
+      return serveDocs(request, env)
+    }
 
     // Stateless server: no SSE stream to resume, no session to terminate.
-    if (request.method === 'GET') {
-      return new Response('SSE not supported; POST JSON-RPC messages instead', {
-        status: 405,
-        headers: { ...CORS_HEADERS, Allow: 'POST, DELETE, OPTIONS' }
-      })
-    }
     if (request.method === 'DELETE') {
       return new Response(null, { status: 204, headers: CORS_HEADERS })
     }
     if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405, headers: CORS_HEADERS })
+      return httpError(
+        request,
+        405,
+        'METHOD_NOT_ALLOWED',
+        'Method not allowed',
+        'POST JSON-RPC messages to /api/mcp. SSE streams are not supported. See /openapi.json.',
+        'POST, DELETE, OPTIONS'
+      )
     }
 
     const protocolVersion = request.headers.get('MCP-Protocol-Version') ?? '2025-03-26'

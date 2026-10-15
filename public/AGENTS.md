@@ -6,6 +6,7 @@ Use these docs to configure an Eden network connection, deploy Solidity contract
 build frontends with viem or wagmi, understand sponsored and batch transactions,
 or run an Eden full node.
 
+- Browse the [developer portal](/developers) for quickstarts, CLI tools, and testnet access.
 - Start with the page index at `/llms.txt` or complete documentation at `/llms-full.txt`.
 - Request any documentation page with `Accept: text/markdown`, or append `.md`
   to its path. The homepage Markdown is `/index.md`.
