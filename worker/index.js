@@ -13,7 +13,7 @@
  */
 
 const SERVER_INFO = { name: 'eden-docs', version: '1.0.0' }
-const PROTOCOL_VERSIONS = ['2024-11-05', '2025-03-26', '2025-06-18']
+const PROTOCOL_VERSIONS = ['2024-11-05', '2025-03-26', '2025-06-18', '2025-11-25']
 
 const TOOLS = [
   {
@@ -238,7 +238,9 @@ async function handleRpc(env, message) {
     if (method === 'initialize') {
       const requested = params?.protocolVersion
       result = {
-        protocolVersion: PROTOCOL_VERSIONS.includes(requested) ? requested : PROTOCOL_VERSIONS[1],
+        protocolVersion: PROTOCOL_VERSIONS.includes(requested)
+          ? requested
+          : PROTOCOL_VERSIONS.at(-1),
         capabilities: { tools: {} },
         serverInfo: SERVER_INFO
       }
@@ -403,7 +405,10 @@ export default {
       })
     }
 
-    if (Array.isArray(body) && (body.length === 0 || protocolVersion === '2025-06-18')) {
+    if (
+      Array.isArray(body) &&
+      (body.length === 0 || !['2024-11-05', '2025-03-26'].includes(protocolVersion))
+    ) {
       return Response.json(rpcError(null, -32600, 'Invalid Request'), {
         status: 400,
         headers: CORS_HEADERS

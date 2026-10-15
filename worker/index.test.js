@@ -93,6 +93,50 @@ test('notifications remain bodyless and valid request IDs are preserved', async 
   }
 })
 
+test('the scanner can initialize and call tools with MCP 2025-11-25', async () => {
+  const headers = {
+    Accept: 'application/json, text/event-stream',
+    'MCP-Protocol-Version': '2025-11-25'
+  }
+  const initialized = await rpc(
+    {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-11-25',
+        capabilities: {},
+        clientInfo: { name: 'scanner', version: '1.0.0' }
+      }
+    },
+    headers
+  )
+  expect(initialized.status).toBe(200)
+  expect((await initialized.json()).result.protocolVersion).toBe('2025-11-25')
+  const fallback = await rpc({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'initialize',
+    params: { protocolVersion: 'unsupported' }
+  })
+  expect((await fallback.json()).result.protocolVersion).toBe('2025-11-25')
+  const notification = await rpc({ jsonrpc: '2.0', method: 'notifications/initialized' }, headers)
+  expect(notification.status).toBe(202)
+  expect(await notification.text()).toBe('')
+  const listed = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list' }, headers)
+  expect((await listed.json()).result.tools).toHaveLength(3)
+  const read = await rpc(
+    {
+      jsonrpc: '2.0',
+      id: 3,
+      method: 'tools/call',
+      params: { name: 'read_page', arguments: { pagePath: '/networks/mainnet' } }
+    },
+    headers
+  )
+  expect((await read.json()).result.content[0].text).toContain('# Eden documentation')
+})
+
 test('legacy batches validate each member and modern MCP rejects batching', async () => {
   const batch = [
     null,
@@ -104,7 +148,9 @@ test('legacy batches validate each member and modern MCP rejects batching', asyn
     { jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid Request' } },
     { jsonrpc: '2.0', id: 1, result: {} }
   ])
-  expect((await rpc(batch, { 'MCP-Protocol-Version': '2025-06-18' })).status).toBe(400)
+  for (const version of ['2025-06-18', '2025-11-25']) {
+    expect((await rpc(batch, { 'MCP-Protocol-Version': version })).status).toBe(400)
+  }
   expect(
     (
       await rpc(
@@ -231,6 +277,10 @@ test('server cards advertise the current origin and match live MCP negotiation',
     expect(card.version).toBe(result.serverInfo.version)
     expect(card.remotes[0].url).toBe('https://preview.example/api/mcp')
     expect(card.remotes[0].supportedProtocolVersions).toContain(result.protocolVersion)
+    expect(card.remotes[0].supportedProtocolVersions).toContain('2025-11-25')
+    expect(card.remotes[0].supportedProtocolVersions).toEqual(
+      openapi.paths['/api/mcp'].post.parameters[0].schema.enum
+    )
     expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
   }
 })
