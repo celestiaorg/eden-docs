@@ -126,7 +126,7 @@ export default defineConfig({
       collapsed: true,
       items: [
         { text: 'Disclaimer', link: '/legal/disclaimer' },
-        { text: 'Privacy policy', link: '/privacy' }
+        { text: 'Privacy information', link: '/privacy' }
       ]
     }
   ]
