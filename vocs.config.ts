@@ -53,6 +53,7 @@ export default defineConfig({
   sidebar: [
     { text: 'Welcome', link: '/' },
     { text: 'Developer portal', link: '/developers' },
+    { text: 'Documentation REST API', link: '/api-reference' },
     { text: 'About Eden', link: '/about' },
     { text: 'Contact', link: '/contact' },
     {

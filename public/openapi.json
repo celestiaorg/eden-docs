@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Eden documentation MCP API",
-    "version": "1.0.0",
-    "description": "Public, read-only documentation access through JSON-RPC over MCP Streamable HTTP. This describes the documentation server, not the Eden blockchain RPC API. No authentication or session ID is required. Unknown /api paths return HTTP 404 with the HttpError schema. No documentation API quota is currently advertised; blockchain RPC limits are provider-specific. See the linked guide for versioning and deprecation behavior."
+    "title": "Eden documentation API",
+    "version": "1.1.0",
+    "description": "Public, read-only documentation access through REST at /api/v1 and MCP Streamable HTTP at /api/mcp. This describes the documentation server, not the Eden blockchain RPC API. No authentication or session ID is required. Unknown /api paths return HTTP 404 with the HttpError schema. No documentation API quota is currently advertised; blockchain RPC limits are provider-specific. See the linked guides for versioning and deprecation behavior."
   },
   "servers": [
     {
@@ -13,8 +13,8 @@
   ],
   "security": [],
   "externalDocs": {
-    "description": "MCP client setup and discovery",
-    "url": "https://docs.eden.zone/use-the-docs-with-ai"
+    "description": "REST reference, errors, versioning, and MCP setup",
+    "url": "https://docs.eden.zone/api-reference"
   },
   "paths": {
     "/api/mcp": {
@@ -284,6 +284,116 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/pages": {
+      "get": {
+        "operationId": "listDocumentationPages",
+        "summary": "List Eden documentation pages",
+        "description": "Public, read-only REST v1 endpoint. No API key required. HEAD returns the same status and headers without a body; OPTIONS returns an empty 204 response. Successful results may be cached for 300 seconds. See /api-reference for error recovery and versioning.",
+        "responses": {
+          "200": {
+            "description": "List Eden documentation pages.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageList"
+                }
+              }
+            }
+          },
+          "405": {
+            "$ref": "#/components/responses/Http405"
+          },
+          "503": {
+            "$ref": "#/components/responses/Http503"
+          }
+        }
+      }
+    },
+    "/api/v1/page": {
+      "get": {
+        "operationId": "readDocumentationPage",
+        "summary": "Read an Eden documentation page as Markdown in JSON",
+        "description": "Public, read-only REST v1 endpoint. No API key required. HEAD returns the same status and headers without a body; OPTIONS returns an empty 204 response. Successful results may be cached for 300 seconds. See /api-reference for error recovery and versioning.",
+        "responses": {
+          "200": {
+            "description": "Read an Eden documentation page as Markdown in JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Http400"
+          },
+          "404": {
+            "$ref": "#/components/responses/Http404"
+          },
+          "405": {
+            "$ref": "#/components/responses/Http405"
+          },
+          "503": {
+            "$ref": "#/components/responses/Http503"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "path",
+            "required": true,
+            "description": "An indexed page path; leading slash is optional and .md or a trailing slash is accepted. Supply exactly one value.",
+            "schema": {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            "example": "/networks/mainnet"
+          }
+        ]
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "operationId": "searchDocumentation",
+        "summary": "Search Eden documentation for a literal phrase",
+        "description": "Public, read-only REST v1 endpoint. No API key required. HEAD returns the same status and headers without a body; OPTIONS returns an empty 204 response. Successful results may be cached for 300 seconds. See /api-reference for error recovery and versioning.",
+        "responses": {
+          "200": {
+            "description": "Search Eden documentation for a literal phrase.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResults"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Http400"
+          },
+          "405": {
+            "$ref": "#/components/responses/Http405"
+          },
+          "503": {
+            "$ref": "#/components/responses/Http503"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "query",
+            "required": true,
+            "description": "Case-insensitive literal substring. No matches returns an empty results array. Whitespace within a non-blank query is preserved. Supply exactly one value.",
+            "schema": {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            "example": "sponsored"
+          }
+        ]
       }
     }
   },
@@ -613,7 +723,9 @@
                 "type": "string",
                 "enum": [
                   "METHOD_NOT_ALLOWED",
-                  "NOT_FOUND"
+                  "NOT_FOUND",
+                  "INVALID_PARAMETER",
+                  "DOCS_UNAVAILABLE"
                 ]
               },
               "message": {
@@ -804,6 +916,134 @@
                   }
                 }
               }
+            }
+          }
+        }
+      },
+      "PageSummary": {
+        "type": "object",
+        "required": [
+          "title",
+          "path"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "description": "Canonical documentation path from the page index."
+          }
+        }
+      },
+      "PageList": {
+        "type": "object",
+        "required": [
+          "pages"
+        ],
+        "properties": {
+          "pages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageSummary"
+            }
+          }
+        }
+      },
+      "Page": {
+        "type": "object",
+        "required": [
+          "title",
+          "path",
+          "markdown"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "description": "Canonical documentation path from the page index."
+          },
+          "markdown": {
+            "type": "string",
+            "description": "Page content as Markdown, without the generated sitemap comment."
+          }
+        }
+      },
+      "SearchResults": {
+        "type": "object",
+        "required": [
+          "results"
+        ],
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "path",
+                "snippet"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "snippet": {
+                  "type": "string",
+                  "maxLength": 200
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "Http400": {
+        "description": "Missing, blank, or repeated required query parameter.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/HttpError"
+            }
+          }
+        }
+      },
+      "Http404": {
+        "description": "The requested page is not in the documentation index or its Markdown is unavailable.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/HttpError"
+            }
+          }
+        }
+      },
+      "Http405": {
+        "description": "Unsupported method. Use GET, HEAD, or OPTIONS.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/HttpError"
+            }
+          }
+        },
+        "headers": {
+          "Allow": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Supported HTTP methods."
+          }
+        }
+      },
+      "Http503": {
+        "description": "Documentation assets could not be loaded. Retry later or use /llms-full.txt.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/HttpError"
             }
           }
         }
