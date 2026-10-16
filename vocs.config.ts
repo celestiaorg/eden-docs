@@ -103,13 +103,8 @@ export default defineConfig({
         {
           text: 'Indexers',
           collapsed: false,
-          items: [
-            { text: 'Overview of indexers', link: '/tooling/indexers/overview' },
-            { text: 'Quickstart with Goldsky', link: '/tooling/indexers/quickstart' },
-            { text: 'Example with Goldsky', link: '/tooling/indexers/example' }
-          ]
+          items: [{ text: 'Overview of indexers', link: '/tooling/indexers/overview' }]
         },
-        { text: 'Oracles', link: '/tooling/oracles' },
         { text: 'Wallets', link: '/tooling/wallets' }
       ]
     },
