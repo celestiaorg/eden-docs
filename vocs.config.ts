@@ -10,7 +10,11 @@ const cloudflarePreviewBaseUrl = (() => {
 
   try {
     const pagesHost = new URL(pagesUrl).hostname.split('.').slice(1).join('.')
-    const alias = branch.toLowerCase().replace(/[^a-z0-9]/g, '-')
+    const alias = branch
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .slice(0, 28)
+      .replace(/^-+|-+$/g, '')
 
     return `https://${alias}.${pagesHost}`
   } catch {

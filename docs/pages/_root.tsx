@@ -8,6 +8,7 @@ export default function Root({ children }: { children: ReactNode }) {
       <link rel="ai-catalog" type="application/json" href="/.well-known/ai-catalog.json" />
       <link rel="api-catalog" type="application/linkset+json" href="/.well-known/api-catalog" />
       <link rel="describedby" type="application/json" href="/.well-known/agent-skills/index.json" />
+      <script type="module" src="/webmcp.js" />
       <script type="application/ld+json">
         {JSON.stringify({
           '@context': 'https://schema.org',

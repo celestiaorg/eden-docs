@@ -42,3 +42,40 @@ https://docs.eden.zone/api/mcp
 
 Do not configure or document a separate Worker for MCP. The MCP endpoint is
 bundled into the Pages deployment as `_worker.js`.
+
+## DNS-based agent discovery
+
+DNS records are managed separately from the Pages deployment. In the `eden.zone`
+zone, publish this ServiceMode SVCB record for the public documentation MCP server:
+
+```dns
+_mcp._agents.docs.eden.zone. 3600 IN SVCB 1 docs.eden.zone. alpn="mcp,h2,h3" port=443
+```
+
+In Cloudflare, choose type `SVCB`, name `_mcp._agents.docs`, priority `1`, target
+`docs.eden.zone`, and value `alpn="mcp,h2,h3" port=443`. Keep the record DNS-only.
+The target serves the MCP server card at
+`https://docs.eden.zone/.well-known/mcp/server-card.json`; the card identifies the
+Streamable HTTP endpoint at `/api/mcp`. Do not advertise an A2A service.
+
+This follows the experimental
+[DNS-AID draft](https://datatracker.ietf.org/doc/draft-mozleywilliams-dnsop-dnsaid/)
+using standard [SVCB parameters](https://www.rfc-editor.org/rfc/rfc9460).
+DNS-AID's use of `mcp` in ALPN is experimental; review the draft before changing
+these records. No unregistered custom SvcParamKeys are required for this record.
+
+For authenticated discovery, enable DNSSEC for `eden.zone` in Cloudflare and
+publish the exact DS record Cloudflare provides at the domain registrar. Follow
+[Cloudflare's DNSSEC setup](https://developers.cloudflare.com/dns/dnssec/).
+Enabling zone signing alone does not establish the parent chain of trust.
+
+Verify publication and DNSSEC through a validating resolver:
+
+```bash
+dig @1.1.1.1 _mcp._agents.docs.eden.zone SVCB +dnssec
+dig @1.1.1.1 eden.zone DS +dnssec
+```
+
+The SVCB answer should contain the record above and the response flags should
+include `ad`. Then rerun the agent-readiness scan. Committing this guide does not
+publish DNS records or enable DNSSEC.

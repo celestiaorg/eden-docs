@@ -16,6 +16,8 @@ or run an Eden full node.
   Use `list_pages`, `read_page`, or `search_docs`; see the
   [setup guide](/use-the-docs-with-ai) for client configuration.
 - Discover the MCP connection details at `/api/mcp/server-card`.
+- In a WebMCP-capable browser, use `search_eden_docs` with a non-empty `query`
+  to get matching documentation paths and snippets without authentication.
 - Discover the Eden development skill at `/.well-known/agent-skills/index.json`.
   Verify the skill's SHA-256 digest before loading its instructions.
 - Use `/api/v1/pages`, `/api/v1/page?path=/networks/mainnet`, or
