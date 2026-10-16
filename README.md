@@ -45,37 +45,54 @@ bundled into the Pages deployment as `_worker.js`.
 
 ## DNS-based agent discovery
 
-DNS records are managed separately from the Pages deployment. In the `eden.zone`
-zone, publish this ServiceMode SVCB record for the public documentation MCP server:
+Cloudflare DNS records and registrar DNSSEC settings are managed separately from
+the Cloudflare Pages deployment. For discovery of the scanned `docs.eden.zone`
+hostname, publish this ServiceMode SVCB index record in the `eden.zone` zone:
 
 ```dns
-_mcp._agents.docs.eden.zone. 3600 IN SVCB 1 docs.eden.zone. alpn="mcp,h2,h3" port=443
+_index._agents.docs.eden.zone. 3600 IN SVCB 1 docs.eden.zone. alpn="h2" port=443
 ```
 
-In Cloudflare, choose type `SVCB`, name `_mcp._agents.docs`, priority `1`, target
-`docs.eden.zone`, and value `alpn="mcp,h2,h3" port=443`. Keep the record DNS-only.
-The target serves the MCP server card at
-`https://docs.eden.zone/.well-known/mcp/server-card.json`; the card identifies the
-Streamable HTTP endpoint at `/api/mcp`. Do not advertise an A2A service.
+In Cloudflare, choose type `SVCB`, name `_index._agents.docs`, priority `1`,
+target `docs.eden.zone`, parameters `alpn="h2" port=443`, TTL `3600`, and
+DNS-only. Confirm that the target supports HTTP/2 before publishing. Existing
+live `_mcp` records need not be removed.
 
 This follows the experimental
 [DNS-AID draft](https://datatracker.ietf.org/doc/draft-mozleywilliams-dnsop-dnsaid/)
-using standard [SVCB parameters](https://www.rfc-editor.org/rfc/rfc9460).
-DNS-AID's use of `mcp` in ALPN is experimental; review the draft before changing
-these records. No unregistered custom SvcParamKeys are required for this record.
+using standard [SVCB transport parameters](https://www.rfc-editor.org/rfc/rfc9460).
+The target already serves the [AI catalog](https://docs.eden.zone/.well-known/ai-catalog.json),
+which leads to the MCP server card at
+`https://docs.eden.zone/.well-known/mcp/server-card.json` and the `/api/mcp`
+endpoint. The catalog path is a deployment convention: standard SVCB transport
+parameters do not encode a URL path. Clients must know that convention; the DNS
+record alone does not provide automatic end-to-end discovery.
 
-For authenticated discovery, enable DNSSEC for `eden.zone` in Cloudflare and
-publish the exact DS record Cloudflare provides at the domain registrar. Follow
-[Cloudflare's DNSSEC setup](https://developers.cloudflare.com/dns/dnssec/).
-Enabling zone signing alone does not establish the parent chain of trust.
+For authenticated DNS answers, [enable DNSSEC signing in Cloudflare](https://developers.cloudflare.com/dns/dnssec/),
+then publish the exact provider-generated DS record at the domain registrar if
+the registrar does not handle it automatically. Verify the complete chain of
+trust; zone signing alone is insufficient. Do not disable signing while its DS
+record remains in the parent zone.
 
-Verify publication and DNSSEC through a validating resolver:
+After publication, check both validating resolvers and the deployed catalog:
 
 ```bash
-dig @1.1.1.1 _mcp._agents.docs.eden.zone SVCB +dnssec
+dig @1.1.1.1 _index._agents.docs.eden.zone SVCB +dnssec
+dig @8.8.8.8 _index._agents.docs.eden.zone SVCB +dnssec
 dig @1.1.1.1 eden.zone DS +dnssec
+dig @8.8.8.8 eden.zone DS +dnssec
+curl -fsS https://docs.eden.zone/.well-known/ai-catalog.json
+curl -fsS https://docs.eden.zone/.well-known/mcp/server-card.json
 ```
 
-The SVCB answer should contain the record above and the response flags should
-include `ad`. Then rerun the agent-readiness scan. Committing this guide does not
-publish DNS records or enable DNSSEC.
+Require the intended SVCB and DS records and authenticated validation (`ad` in
+the DNS response flags). Allow positive and negative DNS caches to expire before
+rechecking. Then rerun the agent-readiness scan. Committing these instructions
+does not publish DNS records or enable DNSSEC.
+
+[OAuth/OIDC authorization server metadata](https://www.rfc-editor.org/rfc/rfc8414),
+[OAuth protected resource metadata](https://www.rfc-editor.org/rfc/rfc9728), and
+[auth.md registration metadata](https://github.com/workos/auth.md) are unnecessary
+for this public documentation service. Add them only if actual protected
+resources, issuers, or registration flows exist; missing scanner checks are not
+grounds to invent those services.
