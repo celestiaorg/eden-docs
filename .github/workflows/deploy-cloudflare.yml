@@ -50,8 +50,8 @@ jobs:
             echo "base_url=https://docs.eden.zone" >> "$GITHUB_OUTPUT"
           else
             alias="$(printf '%s' "$branch" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]/-/g')"
-            # Pages limits branch aliases to 28 characters.
-            alias="${alias:0:28}"
+            # Pages limits aliases to 28 characters and trims boundary hyphens.
+            alias="$(printf '%s' "${alias:0:28}" | sed -E 's/^-+|-+$//g')"
             echo "VOCS_BASE_URL=https://${alias}.${PAGES_PREVIEW_HOST}" >> "$GITHUB_ENV"
             echo "base_url=https://${alias}.${PAGES_PREVIEW_HOST}" >> "$GITHUB_OUTPUT"
           fi

@@ -25,8 +25,8 @@ jobs:
       - name: Type check
         run: bun run typecheck
 
-      - name: Test Pages worker
-        run: bun test worker scripts/webmcp.test.js
+      - name: Test Pages worker and agent assets
+        run: bun test worker scripts
 
       - name: Check pages.gen.ts is up to date
         run: |
