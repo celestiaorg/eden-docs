@@ -10,6 +10,7 @@ assert.ok(pages.length > 0, 'The documentation index must contain pages')
 for (const path of pages) {
   const name = path.replace(/^\//, '')
   const html = await read(name === 'index' ? 'index.html' : `${name}/index.html`)
+  assert.match(html, /<script\b[^>]*type="module"[^>]*src="\/webmcp\.js"/, path)
   const links = [...html.matchAll(/<link\b[^>]*>/g)].map(match => match[0])
   const markdown = await read(`${name}.md`)
   assert.match(markdown, /^# /m, path)
@@ -27,6 +28,10 @@ for (const path of pages) {
 }
 
 const skills = JSON.parse(await read('.well-known/agent-skills/index.json'))
+assert.equal(
+  await read('webmcp.js'),
+  await readFile(new URL('../public/webmcp.js', import.meta.url), 'utf8')
+)
 assert.ok(skills.skills.length > 0, 'The skill index must contain skills')
 for (const skill of skills.skills) {
   const published = await read(skill.url.slice(1))

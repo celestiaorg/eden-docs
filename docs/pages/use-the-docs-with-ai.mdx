@@ -34,6 +34,17 @@ curl -L -H 'Accept: text/markdown' https://docs.eden.zone/networks/mainnet
 MCP clients can discover connection details through the server card at
 `/api/mcp/server-card`. Connect to `/api/mcp` to list and call tools.
 
+## Search from a browser agent
+
+Browsers with [WebMCP](https://webmachinelearning.github.io/webmcp/) support can
+discover `search_eden_docs` when any documentation page loads. Pass a non-empty
+`query` string to search the docs and receive matching page paths and snippets.
+The tool uses the public [documentation REST API](/api-reference); it requires
+no account, credentials, or wallet access.
+
+WebMCP is an experimental browser API. In browsers without support, use the MCP
+server, REST API, or Markdown pages described above.
+
 ## Agent skills and API discovery
 
 The Eden development skill guides agents to current network settings and the
