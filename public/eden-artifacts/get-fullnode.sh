@@ -15,7 +15,7 @@ mainnet | testnet) ;;
 	;;
 esac
 
-BASE_URL="https://eden-docs.pages.dev/eden-artifacts"
+BASE_URL="https://docs.eden.zone/eden-artifacts"
 DEST_DIR="eden-fullnode"
 SHARED_FILES="compose.yaml,entrypoint.fullnode.sh,init-1-ev-node.sh,init-1-ev-reth-snapshot.sh,init-2-ev-node-snapshot.sh"
 NETWORK_FILES=".env,ev-node.genesis.json,ev-reth.genesis.json"
