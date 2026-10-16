@@ -62,9 +62,8 @@ This follows the experimental
 [DNS-AID draft](https://datatracker.ietf.org/doc/draft-mozleywilliams-dnsop-dnsaid/)
 using standard [SVCB transport parameters](https://www.rfc-editor.org/rfc/rfc9460).
 The target already serves the [AI catalog](https://docs.eden.zone/.well-known/ai-catalog.json),
-which leads to the MCP server card at
-`https://docs.eden.zone/.well-known/mcp/server-card.json` and the `/api/mcp`
-endpoint. The catalog path is a deployment convention: standard SVCB transport
+which links the MCP server card at `https://docs.eden.zone/api/mcp/server-card`
+(also served at `/.well-known/mcp/server-card.json`) and the `/api/mcp` endpoint. The catalog path is a deployment convention: standard SVCB transport
 parameters do not encode a URL path. Clients must know that convention; the DNS
 record alone does not provide automatic end-to-end discovery.
 
