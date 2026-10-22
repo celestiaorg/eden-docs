@@ -58,6 +58,12 @@ target `docs.eden.zone`, parameters `alpn="h2" port=443`, TTL `3600`, and
 DNS-only. Confirm that the target supports HTTP/2 before publishing. Existing
 live `_mcp` records need not be removed.
 
+The target hostname and `port` are the endpoint connection parameters. Advertise
+the transport the host actually negotiates (`h2`), not an application protocol
+such as `mcp` or `a2a` that its TLS endpoint does not negotiate. If experimenting
+with draft-specific SVCB parameters, use numeric `keyNNNNN` names agreed with the
+consumer until registered; the record above needs no custom parameters.
+
 This follows the experimental
 [DNS-AID draft](https://datatracker.ietf.org/doc/draft-mozleywilliams-dnsop-dnsaid/)
 using standard [SVCB transport parameters](https://www.rfc-editor.org/rfc/rfc9460).
@@ -76,18 +82,21 @@ record remains in the parent zone.
 After publication, check both validating resolvers and the deployed catalog:
 
 ```bash
-dig @1.1.1.1 _index._agents.docs.eden.zone SVCB +dnssec
-dig @8.8.8.8 _index._agents.docs.eden.zone SVCB +dnssec
+dig @1.1.1.1 _index._agents.docs.eden.zone TYPE64 +dnssec
+dig @8.8.8.8 _index._agents.docs.eden.zone TYPE64 +dnssec
 dig @1.1.1.1 eden.zone DS +dnssec
 dig @8.8.8.8 eden.zone DS +dnssec
 curl -fsS https://docs.eden.zone/.well-known/ai-catalog.json
 curl -fsS https://docs.eden.zone/.well-known/mcp/server-card.json
 ```
 
+`TYPE64` is SVCB's numeric type and also works with older macOS `dig` versions.
 Require the intended SVCB and DS records and authenticated validation (`ad` in
 the DNS response flags). Allow positive and negative DNS caches to expire before
 rechecking. Then rerun the agent-readiness scan. Committing these instructions
 does not publish DNS records or enable DNSSEC.
+
+## Authentication discovery checks
 
 [OAuth/OIDC authorization server metadata](https://www.rfc-editor.org/rfc/rfc8414),
 [OAuth protected resource metadata](https://www.rfc-editor.org/rfc/rfc9728), and
