@@ -43,6 +43,10 @@ https://docs.eden.zone/api/mcp
 Do not configure or document a separate Worker for MCP. The MCP endpoint is
 bundled into the Pages deployment as `_worker.js`.
 
+For DNS-AID publication and DNSSEC setup, use the
+[agent discovery maintainer runbook](.github/AGENT-DISCOVERY.md). Josh can apply it
+with the required Cloudflare and registrar access; otherwise, hand it to Cris.
+
 ## Authentication discovery checks
 
 [OAuth/OIDC authorization server metadata](https://www.rfc-editor.org/rfc/rfc8414),
