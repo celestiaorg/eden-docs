@@ -23,6 +23,29 @@ documentation service; blockchain RPC providers have separate access rules.
 Never send a wallet recovery phrase, private key, or `.env` file.
 :::
 
+## Quickstart
+
+1. **Configure your client.** Use the setup instructions for [Codex](#codex),
+   [Claude Code](#claude-code), [Cursor](#cursor), [VS Code](#vs-code--github-copilot),
+   or [Windsurf](#windsurf--cascade) below. You only need an MCP-capable client;
+   no wallet, TIA, or blockchain connection is needed to read documentation.
+2. **Connect to `eden-docs`.** Confirm that the client lists `list_pages`,
+   `read_page`, and `search_docs` as available tools.
+3. **Read and verify a page.** Ask your agent:
+
+```text
+Use eden-docs to list the documentation pages, then read /networks/testnet.
+Report its chain ID, RPC URL, and faucet link, citing the page.
+```
+
+The `read_page` tool takes `{"pagePath":"/networks/testnet"}` and returns the
+page's Markdown. Confirm the answer uses that page's chain info and faucet section.
+For scripts without an MCP client, use the [REST API examples](/api-reference#endpoints).
+
+This service does not issue credentials or register agents, so OAuth/OIDC discovery,
+OAuth protected resource metadata, and `auth.md` registration instructions do not
+apply. Connect directly without an authentication flow.
+
 ## Read without an MCP client
 
 Start with the page index at `/llms.txt`, complete documentation at `/llms-full.txt`,
@@ -174,12 +197,4 @@ Add this to `~/.codeium/windsurf/mcp_config.json`:
     }
   }
 }
-```
-
-## Try it
-
-After connecting the server, ask your agent:
-
-```text
-Search the Eden docs for the mainnet RPC URL and block explorer.
 ```

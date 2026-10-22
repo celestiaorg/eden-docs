@@ -26,21 +26,35 @@ Start with the [Eden developer portal](/developers) for quickstarts, CLI tools, 
 
 ## How to start
 
-::::steps
+### Build an application
 
-### Join the chat
+1. **Choose a network.** Start with [Eden testnet](/networks/testnet) for experiments,
+   or use [Eden mainnet](/networks/mainnet). Copy the RPC URL and chain ID from that
+   network's reference into your [wallet](/tooling/wallets) or development tools.
+2. **Fund your address.** Get testnet TIA from the [testnet faucet](/networks/testnet#faucet).
+   For mainnet, deposit TIA through the [Eden bridge](https://eden.zone/) before sending transactions.
+3. **Deploy or connect.** Follow the [Foundry quickstart](/development-environments/foundry-quickstart)
+   to deploy a contract, or connect an application with [viem](/frontend-libraries/viem-quickstart)
+   or [wagmi](/frontend-libraries/wagmi-quickstart). These examples use mainnet settings;
+   replace them with your chosen network's settings when testing.
+4. **Check the result.** Look up your contract or transaction in the explorer linked
+   from your network reference. Use the [developer portal](/developers) for next steps
+   and [contact options](/contact) for help.
 
-Join the [Telegram group](https://t.me/celestiacommunity) to get connected, ask questions, and see what others are launching.
+### Integrate the documentation
 
-### Deploy on Eden
+You only need an HTTP client such as `curl`, or an MCP-capable coding agent.
+The documentation REST API and MCP server are public and read-only: no account,
+API key, OAuth, agent registration, wallet, or TIA is required. Blockchain RPC
+providers have separate credentials and rate limits; see your network reference.
 
-Use familiar EVM tooling to deploy contracts and interact with the chain. See the [Eden mainnet](/networks/mainnet) page for RPC, explorer, and contract info.
-
-### Get help & iterate
-
-Use the Telegram group for technical support and questions and keep shipping!
-
-::::
+1. **Choose an interface.** Use the [REST API](/api-reference) from scripts, or
+   follow the [MCP quickstart](/use-the-docs-with-ai#quickstart) for a coding agent.
+2. **Read a page.** List the available pages, then read `/networks/testnet` using
+   the REST examples or MCP's `list_pages` and `read_page` tools.
+3. **Verify access.** Confirm the response contains the page's Markdown, including
+   its chain info and faucet section. Use the network's RPC endpoint for blockchain
+   state and transactions; the documentation API only returns documentation.
 
 ## The stack behind Eden
 
@@ -85,4 +99,4 @@ sponsored gas, and a 128 KB contract size limit. See [Why Eden](/why-eden) for t
 - Query the docs from scripts: [REST API reference](/api-reference)
 - Eden bridge: [https://eden.zone/](https://eden.zone/)
 - Eden explorers: [Blockscout](https://eden.blockscout.com/) and [Mammoblocks](https://eden.mammoblocks.io/)
-- Telegram: [t.me/edenbuilders](http://t.me/celestiacommunity)
+- Telegram: [Celestia community](https://t.me/celestiacommunity)
