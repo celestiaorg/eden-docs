@@ -2,6 +2,10 @@
 
 Indexers are tools that allow you to turn raw onchain data into queryable databases so apps can make queries without scanning or re-executing the whole chain. They pre-process events into indexed tables and expose them via fast APIs (GraphQL/SQL), eliminating the need to run your own archive node.
 
+The public RPC is rate limited and not guaranteed to serve full history. See
+[Historical data and archival access](/networks/mainnet#historical-data-and-archival-access)
+before pointing an indexer at it.
+
 ---
 
 ## Indexing with Goldsky on Eden
