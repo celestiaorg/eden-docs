@@ -35,6 +35,20 @@ proofs at `latest` and within the last **864,000 blocks** (about 24 hours).
 
 Support was verified on September 29, 2026. Gateway.fm confirmed the 864,000-block window.
 
+### Historical data and archival access
+
+The public RPC endpoints are provisioned as non-archival nodes. Historical state queries
+(`eth_getBalance`, `eth_call`, `eth_getStorageAt`, and `trace_*` at past blocks) may work today,
+but full history is not guaranteed and may be pruned in the future.
+
+- `eth_getProof` is limited to the most recent 864,000 blocks.
+- `debug_*` methods are not exposed.
+
+If your app or indexer needs guaranteed access to historical data, or needs to backfill,
+[run your own full node](/guides/run-a-full-node) or use an
+[indexer](/tooling/indexers/overview). The public endpoint's rate limit makes it unsuitable for
+backfills.
+
 ## Celestia namespaces
 
 Eden mainnet posts data to Celestia under the following namespaces:
