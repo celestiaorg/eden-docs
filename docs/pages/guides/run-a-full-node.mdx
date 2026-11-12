@@ -122,8 +122,9 @@ Snapshot sizes as of this writing:
 ### Method A: Restore from snapshot (recommended)
 
 The default `compose.yaml` includes init containers (`init-1-snapshot-ev-reth`,
-`init-2-snapshot-ev-node`) that automatically download the latest database snapshots from Binary
-Builders storage before starting ev-reth and ev-node. No changes to `compose.yaml` are needed.
+`init-2-snapshot-ev-node`) that automatically download the latest database snapshots from the
+network's snapshot storage (`SNAPSHOT_BASE_URL` in `.env`) before starting ev-reth and ev-node. No
+changes to `compose.yaml` are needed.
 
 Start the stack:
 
@@ -302,16 +303,27 @@ enode://0d56dff552c795daf4f44594857958f20e8396ac973a3054d716530c9e1b16b0e7c53827
 
 ### Testnet
 
+:::info[Testnet infrastructure migration]
+Eden testnet peers and snapshots moved to new infrastructure. If you set up a testnet node before
+this change, replace `EV_RETH_TRUSTED_PEERS`, `EV_NODE_P2P_PEERS`, and `SNAPSHOT_BASE_URL` in your
+`.env` with the values below (or re-run `get-fullnode.sh testnet`, which overwrites your local
+`.env`, so reapply any custom `DA_ADDRESS` or port edits), then restart with `docker compose up -d`.
+:::
+
 **ev-reth peers:**
 
 ```
-enode://e3e0025a64440eff4879b216766550d7237291cb94b79bb641b1e25933b08c9a3aada6583e25b320aebe84b643b85e14be934a8725eb6aacb74d6f65abfbeb74@fullnode-1-eden-testnet.binarybuilders.services:30313
-enode://477544b9c4bc4136b9d25759b38be971c29dcf669105e02e8630f1e0407f58dc740137d3f21d02451d5f7b08bbbf31909cbd876af99818a34e64892e73498906@fullnode-2-eden-testnet.binarybuilders.services:30313
+enode://4c3fb0724861fb83d901bcf31f17d01228ad44dcf6fab76b42708d8e73e7ebdecab98b441b3dd97be3b7d1fd71a349dd7eea34d854cccd0b4df1c2fb6e9f277a@fullnode-1-mocha.eden.zone:30313
+enode://1a6884d9621c5d41c65288954ee99782791b59f28ddcb23325915c6e6e32212b6fb900907a7939b77c5d74b4ee9d22472d16e65537cc760986e1270eafd412b8@fullnode-2-mocha.eden.zone:30313
+enode://2836e7431f71ff47a0f3ea3ae5f68ab8fae843181e07f841d7efa064e7586e24e47bc0751dc9baacf2f2d875f281d12d7ef55ed46d3c26fb2185db06b17e1d27@fullnode-3-mocha.eden.zone:30313
 ```
 
 **ev-node peers:**
 
 ```
-/ip4/157.180.53.133/tcp/7686/p2p/12D3KooWMCfKiRXrd3o1m8TBDknmjZFqnmgFpP6gfjhBBVwnuCXK
-/ip4/157.180.53.70/tcp/7686/p2p/12D3KooWEpRjbVZuQVZNxaifZDZ3dGLV6Dj7fT5Eox95PQhgWsJ7
+/ip4/195.154.218.170/tcp/7676/p2p/12D3KooWMT4XRoNhx3LrKs8uNzKieUoDDDUGLBZS9yUmpfjHqmVP
+/ip4/195.154.218.167/tcp/7676/p2p/12D3KooWPQtNRCoz6Sx3Vqcj9oJ5UT7AH56XWdNE8AAMgbsvfRkG
+/ip4/195.154.103.100/tcp/7676/p2p/12D3KooWKJ5Wxijoa1AQ5C8paD1hYi61k72WuiGcz49SSi65psYD
 ```
+
+`SNAPSHOT_BASE_URL` for testnet is `https://snapshots-mocha.eden.zone`.
