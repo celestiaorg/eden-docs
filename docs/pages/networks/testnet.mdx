@@ -14,35 +14,41 @@ You can add Eden testnet to your wallet directly from
 
 ## RPCs
 
-| Endpoint                                                     | Type                                               | Provider                         | `eth_getProof`                       |
-| ------------------------------------------------------------ | -------------------------------------------------- | -------------------------------- | ------------------------------------ |
-| `https://rpc.testnet.eden.gateway.fm/`                       | RPC: [ev-reth](https://github.com/evstack/ev-reth) | [Gateway.fm](https://gateway.fm) | `latest` and the last 864,000 blocks |
-| `wss://rpc.testnet.eden.gateway.fm/ws`                       | WS: [ev-reth](https://github.com/evstack/ev-reth)  | [Gateway.fm](https://gateway.fm) | `latest` and the last 864,000 blocks |
-| `https://ev-reth-eden-testnet.binarybuilders.services:8545/` | RPC: [ev-reth](https://github.com/evstack/ev-reth) | Binary Builders                  | `latest`                             |
+| Endpoint                               | Type                                               | Provider                         | `eth_getProof`                       |
+| -------------------------------------- | -------------------------------------------------- | -------------------------------- | ------------------------------------ |
+| `https://rpc.testnet.eden.gateway.fm/` | RPC: [ev-reth](https://github.com/evstack/ev-reth) | [Gateway.fm](https://gateway.fm) | `latest` and the last 864,000 blocks |
+| `wss://rpc.testnet.eden.gateway.fm/ws` | WS: [ev-reth](https://github.com/evstack/ev-reth)  | [Gateway.fm](https://gateway.fm) | `latest` and the last 864,000 blocks |
+| `https://rpc-mocha.eden.zone`          | RPC: [ev-reth](https://github.com/evstack/ev-reth) | Celestia                         | `latest`                             |
 
 ### Account and storage proofs
 
 Gateway.fm's HTTP and WebSocket endpoints support `eth_getProof` for account and storage
 proofs at `latest` and within the last **864,000 blocks** (about 24 hours).
 
-Binary Builders' HTTP endpoint supports account and storage proofs at `latest`.
-Historical proof support has not been confirmed; use Gateway.fm for historical proofs.
+Celestia's HTTP endpoint supports account and storage proofs at `latest` only. Use Gateway.fm for
+historical proofs.
 
 Support was verified on September 29, 2026. Gateway.fm confirmed the 864,000-block window.
+Celestia endpoint support was verified on November 12, 2026.
 
 > **Gateway.fm rate limits:** 30 requests/second per IP. [Register at admin.gateway.fm](https://admin.gateway.fm) for 60 requests/second.
 
+### Historical data
+
+The Celestia endpoint is a pruned node that keeps about the last 100,000 blocks of state (verified
+on November 12, 2026). Older state queries return `pruned history unavailable`.
+
+For history, use Gateway.fm (see the proof window above),
+[run your own full node](/guides/run-a-full-node), or use an
+[indexer](/tooling/indexers/overview).
+
 ## Faucet
 
-- [**TIA (native token)**](https://faucet-eden-testnet.binarybuilders.services)
+- [**TIA (native token)**](https://faucet-mocha.eden.zone)
 
 ## Explorer
 
 - [https://eden-testnet.blockscout.com/](https://eden-testnet.blockscout.com/)
-
-## Network status
-
-- [https://status-eden-testnet.binarybuilders.services](https://status-eden-testnet.binarybuilders.services)
 
 ## Celestia namespaces
 
