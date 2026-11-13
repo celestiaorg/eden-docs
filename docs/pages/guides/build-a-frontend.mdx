@@ -4,10 +4,13 @@ This guide will walk you through the process of building a minimal frontend for 
 
 ## Prerequisites
 
+- Node.js 26.x LTS
 - [Foundry quickstart](/development-environments/foundry-quickstart)
-- [wagmi quickstart](/frontend-libraries/wagmi-quickstart)
+- [wagmi quickstart](/frontend-libraries/wagmi-quickstart) for wallet connection
 
 ## Getting started
+
+Complete the [wagmi quickstart](/frontend-libraries/wagmi-quickstart) so your app can connect MetaMask to Eden. The steps below add the Counter contract to that app.
 
 ::::steps
 
@@ -45,37 +48,6 @@ export const counterABI = [
 export const COUNTER_ADDRESS = '0x...' as const
 ```
 
-### Configure wagmi
-
-Then update your wagmi configuration to use environment variables:
-
-```ts
-// src/wagmi.ts
-import { createConfig, http } from 'wagmi'
-import { metaMask } from 'wagmi/connectors'
-
-export const eden = {
-  id: 714,
-  name: 'Eden',
-  nativeCurrency: { name: 'TIA', symbol: 'TIA', decimals: 18 },
-  rpcUrls: {
-    default: {
-      http: ['https://rpc.eden.gateway.fm/'],
-      webSocket: ['wss://rpc.eden.gateway.fm/ws']
-    }
-  },
-  blockExplorers: {
-    default: { name: 'Blockscout', url: 'https://eden.blockscout.com/' }
-  }
-} as const
-
-export const config = createConfig({
-  chains: [eden],
-  connectors: [metaMask()],
-  transports: { [eden.id]: http('https://rpc.eden.gateway.fm/') }
-})
-```
-
 ### Create the Counter component
 
 ```tsx
@@ -95,7 +67,8 @@ export function Counter() {
   })
 
   // Setup contract write hooks
-  const { writeContract, data: hash } = useWriteContract()
+  const writeContract = useWriteContract()
+  const hash = writeContract.data
 
   // Wait for transaction confirmation
   const { isLoading, isSuccess } = useWaitForTransactionReceipt({
@@ -108,7 +81,7 @@ export function Counter() {
   }
 
   const handleIncrement = () => {
-    writeContract({
+    writeContract.mutate({
       address: COUNTER_ADDRESS,
       abi: counterABI,
       functionName: 'increment'
@@ -118,7 +91,7 @@ export function Counter() {
   const handleSetNumber = () => {
     if (!newNumber) return
 
-    writeContract({
+    writeContract.mutate({
       address: COUNTER_ADDRESS,
       abi: counterABI,
       functionName: 'setNumber',
@@ -232,22 +205,17 @@ export function Counter() {
 
 ### Integrate Counter into your App
 
-Update your App component to include the Counter:
+Keep the connect, disconnect, and chain switch UI from the [wagmi quickstart](/frontend-libraries/wagmi-quickstart) where the comment is. Render `Counter` when that wallet is connected to Eden:
 
 ```tsx
 // src/App.tsx
-import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { eden } from './wagmi'
 import { Counter } from './components/Counter'
 
 export default function App() {
-  const { address, chainId, status } = useAccount()
-  const { connect, connectors, isPending: isConnecting } = useConnect()
-  const { disconnect } = useDisconnect()
-  const { switchChain, isPending: isSwitching } = useSwitchChain()
-
+  const { address, chainId } = useConnection()
   const isOnEden = chainId === eden.id
-  const metaMask = connectors.find(c => c.id === 'metaMask') ?? connectors[0]
 
   return (
     <div
@@ -259,118 +227,10 @@ export default function App() {
         boxSizing: 'border-box'
       }}
     >
-      {/* Wallet connection UI */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          marginBottom: '2rem'
-        }}
-      >
-        {!address ? (
-          <button
-            onClick={() => connect({ connector: metaMask })}
-            disabled={isConnecting}
-            style={{
-              padding: '0.85rem 1.5rem',
-              borderRadius: '0.5rem',
-              border: 'none',
-              background: '#2563eb',
-              color: 'white',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontSize: '1rem'
-            }}
-          >
-            {isConnecting ? 'Connecting…' : 'Connect MetaMask'}
-          </button>
-        ) : (
-          <div
-            style={{
-              background: 'white',
-              padding: '1.5rem',
-              borderRadius: '0.5rem',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1.5rem'
-            }}
-          >
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <span
-                style={{
-                  fontSize: '0.875rem',
-                  color: '#6b7280',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
-                onClick={() => {
-                  navigator.clipboard.writeText(address || '')
-                  alert('Address copied!')
-                }}
-                title={address}
-              >
-                {address?.slice(0, 6)}...{address?.slice(-4)}
-              </span>
-              <span
-                style={{
-                  fontSize: '0.875rem',
-                  color: '#6b7280',
-                  padding: '0.25rem 0.5rem',
-                  background: '#f3f4f6',
-                  borderRadius: '0.25rem'
-                }}
-              >
-                Chain: {chainId ?? '—'}
-              </span>
-            </div>
+      {/* Wallet connection UI from the wagmi quickstart */}
 
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              {!isOnEden && (
-                <button
-                  onClick={() => switchChain({ chainId: eden.id })}
-                  disabled={isSwitching}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '0.375rem',
-                    border: 'none',
-                    background: '#f59e0b',
-                    color: 'white',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    fontSize: '0.875rem'
-                  }}
-                >
-                  {isSwitching ? 'Switching…' : 'Switch to Eden'}
-                </button>
-              )}
-
-              <button
-                onClick={() => disconnect()}
-                style={{
-                  padding: '0.5rem 1rem',
-                  borderRadius: '0.375rem',
-                  border: 'none',
-                  background: '#dc2626',
-                  color: 'white',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  fontSize: '0.875rem'
-                }}
-              >
-                Disconnect
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Show Counter when connected to Eden */}
       {address && isOnEden && <Counter />}
 
-      {/* Show message when connected but on wrong network */}
       {address && !isOnEden && (
         <div
           style={{
