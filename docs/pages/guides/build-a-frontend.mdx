@@ -4,7 +4,6 @@ This guide will walk you through the process of building a minimal frontend for 
 
 ## Prerequisites
 
-- Node.js 26.x LTS
 - [Foundry quickstart](/development-environments/foundry-quickstart)
 - [wagmi quickstart](/frontend-libraries/wagmi-quickstart) for wallet connection
 
@@ -205,7 +204,7 @@ export function Counter() {
 
 ### Integrate Counter into your App
 
-Keep the connect, disconnect, and chain switch UI from the [wagmi quickstart](/frontend-libraries/wagmi-quickstart) where the comment is. Render `Counter` when that wallet is connected to Eden:
+Edit the `src/App.tsx` you built in the [wagmi quickstart](/frontend-libraries/wagmi-quickstart). Do not replace the file. Keep its hooks and its connect, disconnect, and chain switch UI where the comment is. Add the `Counter` import and render `Counter` when the wallet is connected to Eden:
 
 ```tsx
 // src/App.tsx
