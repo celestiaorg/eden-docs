@@ -19,12 +19,12 @@ You can add Eden testnet to your wallet directly from
 | `https://rpc.testnet.eden.gateway.fm/` | RPC: [ev-reth](https://github.com/evstack/ev-reth) | [Gateway.fm](https://gateway.fm) | `latest` and the last 864,000 blocks |
 | `wss://rpc.testnet.eden.gateway.fm/ws` | WS: [ev-reth](https://github.com/evstack/ev-reth)  | [Gateway.fm](https://gateway.fm) | `latest` and the last 864,000 blocks |
 | `https://rpc-mocha.eden.zone`          | RPC: [ev-reth](https://github.com/evstack/ev-reth) | Celestia Labs                    | `latest` and the last 864,000 blocks |
+| `wss://ws-mocha.eden.zone`             | WS: [ev-reth](https://github.com/evstack/ev-reth)  | Celestia Labs                    | `latest` and the last 864,000 blocks |
 
 ### Account and storage proofs
 
-Gateway.fm's HTTP and WebSocket endpoints and Celestia Labs' HTTP endpoint support `eth_getProof`
-for account and storage proofs at `latest` and within the last **864,000 blocks** (about 24
-hours).
+All listed HTTP and WebSocket endpoints support `eth_getProof` for account and storage proofs at
+`latest` and within the last **864,000 blocks** (about 24 hours).
 
 Support was verified on September 29, 2026. Gateway.fm confirmed the 864,000-block window.
 Celestia Labs endpoint support was verified on November 13, 2026.
@@ -33,10 +33,10 @@ Celestia Labs endpoint support was verified on November 13, 2026.
 
 ### Historical data
 
-The Celestia Labs endpoint (`https://rpc-mocha.eden.zone`) is an archive node: historical state
-queries such as `eth_getBalance`, `eth_call`, and `eth_getStorageAt` at past blocks work back to
-genesis (verified on November 13, 2026). Gateway.fm endpoints are not archival, so full history is not
-guaranteed there. `eth_getProof` is limited to the 864,000-block window on every endpoint.
+The Celestia Labs endpoints (`https://rpc-mocha.eden.zone` and `wss://ws-mocha.eden.zone`) are
+archive nodes: historical state queries such as `eth_getBalance`, `eth_call`, and
+`eth_getStorageAt` at past blocks work back to genesis (verified on November 13, 2026). Gateway.fm
+endpoints are not archival, so full history is not guaranteed there. `eth_getProof` is limited to the 864,000-block window on every endpoint.
 
 For backfills or history at scale, [run your own full node](/guides/run-a-full-node) or use an
 [indexer](/tooling/indexers/overview).
