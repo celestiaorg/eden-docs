@@ -33,7 +33,7 @@ services:
         condition: service_completed_successfully
 
   init-1-ev-node:
-    image: &image ghcr.io/evstack/ev-node-evm:v1.1.4
+    image: &image ghcr.io/evstack/ev-node-evm:v1.3.0
     env_file: .env
     volumes:
       - ev-node-data:/root/.evm
@@ -60,7 +60,7 @@ services:
         condition: service_completed_successfully
 
   ev-reth:
-    image: ghcr.io/evstack/ev-reth:v0.4.1
+    image: ghcr.io/evstack/ev-reth:v0.7.0
     depends_on:
       jwt-init:
         condition: service_completed_successfully
