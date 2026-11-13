@@ -18,26 +18,34 @@ You can add Eden testnet to your wallet directly from
 | -------------------------------------- | -------------------------------------------------- | -------------------------------- | ------------------------------------ |
 | `https://rpc.testnet.eden.gateway.fm/` | RPC: [ev-reth](https://github.com/evstack/ev-reth) | [Gateway.fm](https://gateway.fm) | `latest` and the last 864,000 blocks |
 | `wss://rpc.testnet.eden.gateway.fm/ws` | WS: [ev-reth](https://github.com/evstack/ev-reth)  | [Gateway.fm](https://gateway.fm) | `latest` and the last 864,000 blocks |
-| `https://rpc-mocha.eden.zone`          | RPC: [ev-reth](https://github.com/evstack/ev-reth) | Celestia Labs                    | `latest`                             |
+| `https://rpc-mocha.eden.zone`          | RPC: [ev-reth](https://github.com/evstack/ev-reth) | Celestia Labs                    | `latest` and the last 864,000 blocks |
+| `wss://ws-mocha.eden.zone`             | WS: [ev-reth](https://github.com/evstack/ev-reth)  | Celestia Labs                    | `latest` and the last 864,000 blocks |
 
 ### Account and storage proofs
 
-Gateway.fm's HTTP and WebSocket endpoints support `eth_getProof` for account and storage
-proofs at `latest` and within the last **864,000 blocks** (about 24 hours).
+All listed HTTP and WebSocket endpoints support `eth_getProof` for account and storage proofs at
+`latest` and within the last **864,000 blocks** (about 24 hours).
 
 Support was verified on September 29, 2026. Gateway.fm confirmed the 864,000-block window.
-
-Celestia Labs' HTTP endpoint, `https://rpc-mocha.eden.zone`, supports account and storage proofs
-at `latest`, verified on November 12, 2026. Its historical proof window has not been verified;
-use Gateway.fm for historical proofs.
+Celestia Labs endpoint support was verified on November 13, 2026.
 
 > **Gateway.fm rate limits:** 30 requests/second per IP. [Register at admin.gateway.fm](https://admin.gateway.fm) for 60 requests/second.
 
+### Historical data
+
+The Celestia Labs endpoints (`https://rpc-mocha.eden.zone` and `wss://ws-mocha.eden.zone`) are
+archive nodes: historical state queries such as `eth_getBalance`, `eth_call`, and
+`eth_getStorageAt` at past blocks work back to genesis. Gateway.fm's testnet endpoint also returned
+historical state back to genesis when tested, but Gateway.fm has not confirmed archive retention.
+Both were verified on November 13, 2026. `eth_getProof` is limited to the 864,000-block window on
+every endpoint.
+
+For backfills or history at scale, [run your own full node](/guides/run-a-full-node) or use an
+[indexer](/tooling/indexers/overview).
+
 ## Faucet
 
-{/* TODO: Confirm a replacement faucet URL; the Binary Builders faucet returned HTTP 503 on November 12, 2026. */}
-
-- [**TIA (native token)**](https://faucet-eden-testnet.binarybuilders.services)
+- [**TIA (native token)**](https://faucet-mocha.eden.zone)
 
 ## Explorer
 
@@ -45,9 +53,7 @@ use Gateway.fm for historical proofs.
 
 ## Network status
 
-{/* TODO: Confirm a replacement status page URL; the Binary Builders status page returned HTTP 503 on November 12, 2026. */}
-
-- [https://status-eden-testnet.binarybuilders.services](https://status-eden-testnet.binarybuilders.services)
+- [https://status.celestia.dev/status/eden-mocha](https://status.celestia.dev/status/eden-mocha)
 
 ## Celestia namespaces
 
