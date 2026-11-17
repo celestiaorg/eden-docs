@@ -59,22 +59,6 @@ jobs:
       - name: Build site (full-static Pages artifact)
         run: bun run build
 
-      - name: Normalize preview URLs
-        if: steps.deployment-target.outputs.branch != 'main'
-        shell: bash
-        run: |
-          export PREVIEW_BASE_URL="${{ steps.deployment-target.outputs.base_url }}"
-
-          find dist/public -name '*.html' -print0 | xargs -0 perl -0pi -e '
-            s#<base href="https://docs\.eden\.zone"#<base href="$ENV{PREVIEW_BASE_URL}"#g;
-            s#(rel="canonical" href=")https://docs\.eden\.zone#$1$ENV{PREVIEW_BASE_URL}#g;
-            s#(property="og:url" content=")https://docs\.eden\.zone#$1$ENV{PREVIEW_BASE_URL}#g;
-          '
-
-          if [[ -f dist/public/sitemap.xml ]]; then
-            perl -0pi -e 's#https://docs\.eden\.zone#$ENV{PREVIEW_BASE_URL}#g' dist/public/sitemap.xml
-          fi
-
       - name: Verify Pages artifact
         shell: bash
         run: |
@@ -113,7 +97,10 @@ jobs:
             echo "::error::Preview alias $DEPLOYMENT_ALIAS_URL differs from build URL $EXPECTED_BASE_URL"
             exit 1
           fi
-          curl --fail --silent --show-error --retry 4 --retry-delay 2 "$EXPECTED_BASE_URL/sitemap.xml" > /dev/null
+          # Retry HTTP errors while the preview becomes available.
+          curl --fail --silent --show-error --retry 12 --retry-all-errors \
+            --retry-delay 5 --retry-max-time 60 --max-time 10 \
+            --output /dev/null "$EXPECTED_BASE_URL/sitemap.xml"
 
       - name: Summarize deployment
         if: steps.deploy-pages.outcome == 'success'
