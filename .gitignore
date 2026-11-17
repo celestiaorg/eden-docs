@@ -12,6 +12,7 @@ _pagefind/
 
 # Environment variables
 .env
+!public/eden-artifacts/**/.env
 .env.development.local
 .env.test.local
 .env.production.local
