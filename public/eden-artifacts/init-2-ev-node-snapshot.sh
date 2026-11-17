@@ -80,7 +80,7 @@ if [[ ! -f ${EV_NODE_DATA_PATH}/_created_by_init_script ]]; then
 	rm /tmp/ev-node-snap.tar
 	log "SUCCESS" "Temporary files cleaned up"
 
-	log "SUCCESS" "Init container 2 completed"
+	log "SUCCESS" "init-2-snapshot-ev-node completed"
 	touch "${EV_NODE_DATA_PATH}/_created_by_init_script"
 
 fi

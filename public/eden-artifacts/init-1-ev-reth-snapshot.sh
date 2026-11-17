@@ -80,7 +80,7 @@ if [[ ! -f ${EV_RETH_DATA_PATH}/_created_by_init_script ]]; then
 	rm /tmp/ev-reth-snap.tar
 	log "SUCCESS" "Temporary files cleaned up"
 
-	log "SUCCESS" "Init container 2 completed"
+	log "SUCCESS" "init-1-snapshot-ev-reth completed"
 	touch "${EV_RETH_DATA_PATH}/_created_by_init_script"
 
 fi

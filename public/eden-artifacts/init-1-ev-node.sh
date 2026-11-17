@@ -58,7 +58,7 @@ if [ ! -f "${CONFIG_HOME}/config/node_key.json" ]; then
 	INIT_COMMAND="evm init ${init_flags}"
 	log "INIT" "Initializing full node with command: ${INIT_COMMAND}"
 	${INIT_COMMAND}
-	log "SUCCESS" "Sequencer initialization completed"
+	log "SUCCESS" "Full node initialization completed"
 else
 	log "INFO" "Node key already exists. Skipping initialization"
 fi
