@@ -5,7 +5,6 @@ set -e
 # Fail when using undeclared variables
 set -u
 
-# Source shared logging utility
 log() {
 	level="$1"
 	message="$2"
@@ -42,7 +41,7 @@ CONFIG_HOME=$(get_home_dir "$@")
 log "INFO" "Using config home directory: ${CONFIG_HOME}"
 
 if [ ! -f "${CONFIG_HOME}/config/node_key.json" ]; then
-	log "INFO" "Node key not found. Initializing new sequencer configuration"
+	log "INFO" "Node key not found. Initializing new full node configuration"
 
 	# Build init flags array
 	init_flags="--home=${CONFIG_HOME}"
@@ -57,9 +56,9 @@ if [ ! -f "${CONFIG_HOME}/config/node_key.json" ]; then
 	fi
 
 	INIT_COMMAND="evm init ${init_flags}"
-	log "INIT" "Initializing sequencer with command: ${INIT_COMMAND}"
+	log "INIT" "Initializing full node with command: ${INIT_COMMAND}"
 	${INIT_COMMAND}
-	log "SUCCESS" "Sequencer initialization completed"
+	log "SUCCESS" "Full node initialization completed"
 else
 	log "INFO" "Node key already exists. Skipping initialization"
 fi

@@ -8,7 +8,6 @@ set -o pipefail
 # Fail when using undeclared variables
 set -u
 
-# Source shared logging utility
 log() {
 	level="$1"
 	message="$2"
@@ -23,7 +22,7 @@ BASE_URL="${SNAPSHOT_BASE_URL}"
 if [[ ! -f ${EV_RETH_DATA_PATH}/_created_by_init_script ]]; then
 	apk add --no-cache lz4 zstd
 
-	log "INIT" "Starting ev-reth snapshot download and configuration (Init Container 2)"
+	log "INIT" "Starting ev-reth snapshot download and configuration (init-1-snapshot-ev-reth)"
 
 	log "INFO" "Fetching snapshot information"
 	snapshot_metadata="${BASE_URL}/index.html"
@@ -81,7 +80,7 @@ if [[ ! -f ${EV_RETH_DATA_PATH}/_created_by_init_script ]]; then
 	rm /tmp/ev-reth-snap.tar
 	log "SUCCESS" "Temporary files cleaned up"
 
-	log "SUCCESS" "Init container 2 completed"
+	log "SUCCESS" "init-1-snapshot-ev-reth completed"
 	touch "${EV_RETH_DATA_PATH}/_created_by_init_script"
 
 fi

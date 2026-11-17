@@ -5,7 +5,6 @@ set -e
 # Fail when using undeclared variables
 set -u
 
-# Source shared logging utility
 log() {
 	level="$1"
 	message="$2"
@@ -138,7 +137,6 @@ if [ -n "${EVM_ETH_URL-}" ]; then
 	log "DEBUG" "Added ETH URL flag: ${EVM_ETH_URL}"
 fi
 
-log "INFO" "Configuring Data Availability (DA) settings"
 if [ -n "${SEQUENCER_P2P_INFO-}" ]; then
 	default_flags="${default_flags} --evnode.p2p.peers ${SEQUENCER_P2P_INFO}"
 	log "DEBUG" "Added p2p peer flag: ${SEQUENCER_P2P_INFO}"
