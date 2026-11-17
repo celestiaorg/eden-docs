@@ -97,7 +97,10 @@ jobs:
             echo "::error::Preview alias $DEPLOYMENT_ALIAS_URL differs from build URL $EXPECTED_BASE_URL"
             exit 1
           fi
-          curl --fail --silent --show-error --retry 4 --retry-delay 2 "$EXPECTED_BASE_URL/sitemap.xml" > /dev/null
+          # Retry HTTP errors while the preview becomes available.
+          curl --fail --silent --show-error --retry 12 --retry-all-errors \
+            --retry-delay 5 --retry-max-time 60 --max-time 10 \
+            --output /dev/null "$EXPECTED_BASE_URL/sitemap.xml"
 
       - name: Summarize deployment
         if: steps.deploy-pages.outcome == 'success'
