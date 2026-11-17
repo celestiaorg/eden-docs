@@ -8,7 +8,6 @@ set -o pipefail
 # Fail when using undeclared variables
 set -u
 
-# Source shared logging utility
 log() {
 	level="$1"
 	message="$2"
@@ -23,7 +22,7 @@ BASE_URL="${SNAPSHOT_BASE_URL}"
 if [[ ! -f ${EV_NODE_DATA_PATH}/_created_by_init_script ]]; then
 	apk add --no-cache lz4 zstd
 
-	log "INIT" "Starting ev-node snapshot download and configuration (Init Container 2)"
+	log "INIT" "Starting ev-node snapshot download and configuration (init-2-snapshot-ev-node)"
 
 	log "INFO" "Fetching snapshot information"
 	snapshot_metadata="${BASE_URL}/index.html"
