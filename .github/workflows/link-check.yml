@@ -25,9 +25,15 @@ jobs:
             lychee-${{ runner.os }}-${{ github.ref_name }}-
             lychee-${{ runner.os }}-
 
-      - name: Check URLs
+      - name: Set up Lychee
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --config ./lychee.toml .
+          args: --version
+          failIfEmpty: false
+          output: ${{ runner.temp }}/lychee-version.txt
+          jobSummary: false
+
+      - name: Check URLs
+        run: bash scripts/check-links.sh .
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -14,7 +14,7 @@
     "deploy": "bun run build && wrangler pages deploy --branch main",
     "preview": "vocs preview",
     "fmt": "prettier --write .",
-    "links": "cd \"$(git rev-parse --show-toplevel)\" && lychee .",
+    "links": "bash scripts/check-links.sh .",
     "fmt:check": "prettier --check .",
     "typecheck": "tsc --noEmit"
   },
