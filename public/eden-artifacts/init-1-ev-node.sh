@@ -46,15 +46,6 @@ if [ ! -f "${CONFIG_HOME}/config/node_key.json" ]; then
 	# Build init flags array
 	init_flags="--home=${CONFIG_HOME}"
 
-	# Add required flags if environment variables are set
-	if [ -n "${EVM_SIGNER_PASSPHRASE-}" ]; then
-		# Create passphrase file
-		PASSPHRASE_FILE="${CONFIG_HOME}/signer_passphrase.txt"
-		echo "${EVM_SIGNER_PASSPHRASE}" >"${PASSPHRASE_FILE}"
-		chmod 600 "${PASSPHRASE_FILE}"
-		init_flags="${init_flags} --evnode.node.aggregator=true --evnode.signer.passphrase_file ${PASSPHRASE_FILE}"
-	fi
-
 	INIT_COMMAND="evm init ${init_flags}"
 	log "INIT" "Initializing full node with command: ${INIT_COMMAND}"
 	${INIT_COMMAND}
