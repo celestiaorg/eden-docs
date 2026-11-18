@@ -22,8 +22,6 @@ services:
     image: *alpine
     env_file: .env
     volumes:
-      - ./ev-reth.genesis.json:/root/genesis.json:ro
-      - jwttoken:/root/jwt:ro
       - ev-reth-data:/root/reth
       - ./init-1-ev-reth-snapshot.sh:/init-1-ev-reth-snapshot.sh
     entrypoint: [/bin/sh, /init-1-ev-reth-snapshot.sh]
@@ -37,9 +35,6 @@ services:
     env_file: .env
     volumes:
       - ev-node-data:/root/.evm
-      - ./ev-node.genesis.json:/volumes/sequencer_export/genesis.json:ro
-      - ./ev-reth.genesis.json:/root/genesis.json:ro
-      - jwttoken:/root/jwt:ro
       - ./init-1-ev-node.sh:/init-1-ev-node.sh
     entrypoint: [/bin/sh, /init-1-ev-node.sh]
     restart: "no"
@@ -49,9 +44,6 @@ services:
     env_file: .env
     volumes:
       - ev-node-data:/root/.evm
-      - ./ev-node.genesis.json:/volumes/sequencer_export/genesis.json:ro
-      - ./ev-reth.genesis.json:/root/genesis.json:ro
-      - jwttoken:/root/jwt:ro
       - ./init-2-ev-node-snapshot.sh:/init-2-ev-node-snapshot.sh
     entrypoint: [/bin/bash, /init-2-ev-node-snapshot.sh]
     restart: "no"
@@ -131,7 +123,6 @@ services:
     volumes:
       - ev-node-data:/root/.evm
       - ./ev-node.genesis.json:/volumes/sequencer_export/genesis.json:ro
-      - ./ev-reth.genesis.json:/root/genesis.json:ro
       - jwttoken:/root/jwt:ro
       - ./entrypoint.fullnode.sh:/usr/bin/entrypoint.sh
     command:
@@ -141,7 +132,6 @@ services:
       - --evnode.instrumentation.prometheus_listen_addr=:${EV_NODE_PROMETHEUS_PORT}
       - --evnode.p2p.listen_address=/ip4/0.0.0.0/tcp/7676
       - --evnode.p2p.peers=${EV_NODE_P2P_PEERS}
-      # - --evnode.log.level=debug
     environment:
       - DA_HEADER_NAMESPACE=${DA_HEADER_NAMESPACE}
       - DA_DATA_NAMESPACE=${DA_DATA_NAMESPACE}
