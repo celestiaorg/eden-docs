@@ -19,6 +19,10 @@ max_cache_age = "2d"
 # See <https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments>
 include_fragments = "full"
 
+# GitHub's file-view pages can return 503 while the raw files remain available.
+# Match only whole-file/line links; Lychee already skips GitHub line fragments.
+remap = ['^https://github\.com/([^/]+/[^/]+)/blob/([^?#]+)(?:#L\d+(?:-L?\d+)?)?$ https://raw.githubusercontent.com/$1/$2']
+
 
 # Check links inside `<code>` and `<pre>` blocks as well as Markdown code
 # blocks.
