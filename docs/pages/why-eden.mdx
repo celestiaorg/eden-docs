@@ -68,7 +68,7 @@ MEV is not eliminated; ordering authority is centralized in the sequencer, and t
 **What this means in practice:**
 
 - Contracts that assume fair ordering (AMMs, auctions, games) don't need to defend against public frontrunning at the contract level.
-- Oracle updates, liquidations, and other time-sensitive operations are not displaced by priority gas auctions.
+- Oracle updates, liquidations, and other time-sensitive operations are not visible to third parties before inclusion. The sequencer's txpool still orders transactions by priority fee.
 - Users aren't paying an implicit public MEV tax on swaps and other competitive operations.
 
 ## Predictable gas costs

@@ -99,9 +99,13 @@ Default port assignments for reference (identical on both networks):
 | `EV_NODE_RPC_PORT`        | `7331`  | ev-node RPC           |
 | `EV_NODE_PROMETHEUS_PORT` | `26660` | ev-node metrics       |
 
-:::warning[Prometheus endpoints]
-Both ev-reth and ev-node bind their Prometheus metrics to `0.0.0.0` (all interfaces). Restrict
-access to these ports at your firewall if this machine is publicly reachable.
+:::warning[Ports bound to all interfaces]
+The Compose file uses host networking and binds every port in this table to `0.0.0.0` (all
+interfaces). That includes the ev-reth Engine API, HTTP RPC, and WebSocket RPC, the ev-node RPC,
+and both Prometheus endpoints. If this machine is publicly reachable, restrict access to these
+ports at your firewall. Only ev-node needs the Engine API, and it connects over localhost, so
+never expose `EV_RETH_ENGINE_PORT`. Expose the RPC ports only if you intend to serve public
+requests.
 :::
 
 ## Choose a sync method
