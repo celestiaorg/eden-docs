@@ -106,6 +106,8 @@ The bundled Compose file uses host networking. Use your firewall to control inbo
 - **Engine API:** Keep `EV_RETH_ENGINE_PORT` private. In this stack, ev-node connects over localhost.
 - **RPC and metrics:** Restrict the HTTP, WebSocket, ev-node RPC, and both Prometheus ports to their
   intended clients. If you serve public Ethereum RPC, expose only the methods you intend to offer.
+  The bundled file enables the `txpool` namespace over HTTP, which lists the node's pending
+  transactions; remove it from `--http.api` in `compose.yaml` if you do not want to serve it.
 - **P2P:** Allow inbound peer traffic only where intended: ev-reth uses `EV_RETH_DISCOVERY_PORT`
   for TCP peering, and ev-node listens on TCP port `7676`.
 
