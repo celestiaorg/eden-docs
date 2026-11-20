@@ -98,14 +98,17 @@ Default port assignments for reference (identical on both networks):
 | `EV_RETH_PROMETHEUS_PORT` | `9001`  | ev-reth metrics       |
 | `EV_NODE_RPC_PORT`        | `7331`  | ev-node RPC           |
 | `EV_NODE_PROMETHEUS_PORT` | `26660` | ev-node metrics       |
+| Fixed in `compose.yaml`   | `7676`  | ev-node P2P (TCP)     |
 
 :::warning[Ports bound to all interfaces]
-The Compose file uses host networking and binds every port in this table to `0.0.0.0` (all
-interfaces). That includes the ev-reth Engine API, HTTP RPC, and WebSocket RPC, the ev-node RPC,
-and both Prometheus endpoints. If this machine is publicly reachable, restrict access to these
-ports at your firewall. Only ev-node needs the Engine API, and it connects over localhost, so
-never expose `EV_RETH_ENGINE_PORT`. Expose the RPC ports only if you intend to serve public
-requests.
+The bundled Compose file uses host networking. Use your firewall to control inbound access:
+
+- **Engine API:** Keep `EV_RETH_ENGINE_PORT` private. In this stack, ev-node connects over localhost.
+- **RPC and metrics:** Restrict the HTTP, WebSocket, ev-node RPC, and both Prometheus ports to their
+  intended clients. If you serve public Ethereum RPC, expose only the methods you intend to offer.
+- **P2P:** Allow inbound peer traffic only where intended: ev-reth uses `EV_RETH_DISCOVERY_PORT`
+  for TCP peering, and ev-node listens on TCP port `7676`.
+
 :::
 
 ## Choose a sync method
